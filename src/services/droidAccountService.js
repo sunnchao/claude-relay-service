@@ -65,6 +65,26 @@ class DroidAccountService {
     return 'anthropic'
   }
 
+  _isTruthy(value) {
+    if (value === undefined || value === null) {
+      return false
+    }
+    if (typeof value === 'boolean') {
+      return value
+    }
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase()
+      if (normalized === 'true') {
+        return true
+      }
+      if (normalized === 'false') {
+        return false
+      }
+      return normalized.length > 0 && normalized !== '0' && normalized !== 'no'
+    }
+    return Boolean(value)
+  }
+
   /**
    * 生成加密密钥（缓存优化）
    */
@@ -781,6 +801,9 @@ class DroidAccountService {
       throw new Error(`Droid account not found: ${accountId}`)
     }
 
+    const storedAccount = await redis.getDroidAccount(accountId)
+    const hasStoredAccount =
+      storedAccount && typeof storedAccount === 'object' && Object.keys(storedAccount).length > 0
     const sanitizedUpdates = { ...updates }
 
     if (typeof sanitizedUpdates.accessToken === 'string') {
@@ -902,7 +925,12 @@ class DroidAccountService {
       sanitizedUpdates.proxy = account.proxy || ''
     }
 
-    const existingApiKeyEntries = this._parseApiKeyEntries(account.apiKeys)
+    // 使用 Redis 中的原始数据获取加密的 API Key 条目
+    const existingApiKeyEntries = this._parseApiKeyEntries(
+      hasStoredAccount && Object.prototype.hasOwnProperty.call(storedAccount, 'apiKeys')
+        ? storedAccount.apiKeys
+        : ''
+    )
     const newApiKeysInput = Array.isArray(updates.apiKeys) ? updates.apiKeys : []
     const wantsClearApiKeys = Boolean(updates.clearApiKeys)
 
@@ -951,13 +979,29 @@ class DroidAccountService {
       encryptedUpdates.accessToken = this._encryptSensitiveData(sanitizedUpdates.accessToken)
     }
 
+    const baseAccountData = hasStoredAccount ? { ...storedAccount } : { id: accountId }
+
     const updatedData = {
-      ...account,
-      ...encryptedUpdates,
-      refreshToken:
-        encryptedUpdates.refreshToken || this._encryptSensitiveData(account.refreshToken),
-      accessToken: encryptedUpdates.accessToken || this._encryptSensitiveData(account.accessToken),
-      proxy: encryptedUpdates.proxy
+      ...baseAccountData,
+      ...encryptedUpdates
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(updatedData, 'refreshToken')) {
+      updatedData.refreshToken =
+        hasStoredAccount && Object.prototype.hasOwnProperty.call(storedAccount, 'refreshToken')
+          ? storedAccount.refreshToken
+          : this._encryptSensitiveData(account.refreshToken)
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(updatedData, 'accessToken')) {
+      updatedData.accessToken =
+        hasStoredAccount && Object.prototype.hasOwnProperty.call(storedAccount, 'accessToken')
+          ? storedAccount.accessToken
+          : this._encryptSensitiveData(account.accessToken)
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(updatedData, 'proxy')) {
+      updatedData.proxy = hasStoredAccount ? storedAccount.proxy || '' : account.proxy || ''
     }
 
     await redis.setDroidAccount(accountId, updatedData)
@@ -1134,13 +1178,11 @@ class DroidAccountService {
 
     return allAccounts
       .filter((account) => {
-        // 基本过滤条件
-        const isSchedulable =
-          account.isActive === 'true' &&
-          account.schedulable === 'true' &&
-          account.status === 'active'
+        const isActive = this._isTruthy(account.isActive)
+        const isSchedulable = this._isTruthy(account.schedulable)
+        const status = typeof account.status === 'string' ? account.status.toLowerCase() : ''
 
-        if (!isSchedulable) {
+        if (!isActive || !isSchedulable || status !== 'active') {
           return false
         }
 
