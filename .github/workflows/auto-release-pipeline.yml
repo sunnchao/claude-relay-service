@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - main_sunnchao
 
 permissions:
   contents: write
