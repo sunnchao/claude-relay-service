@@ -11,10 +11,12 @@
         跟着这个教程，你可以轻松在自己的电脑上安装并使用 Claude Code。
       </p>
     </div>
-                          
+
     <!-- 系统选择标签 -->
     <div class="mb-4 sm:mb-8">
-      <div class="flex flex-wrap gap-1 rounded-none bg-gray-100 p-1 dark:bg-gray-800 sm:gap-2 sm:p-2">
+      <div
+        class="flex flex-wrap gap-1 rounded-none bg-gray-100 p-1 dark:bg-gray-800 sm:gap-2 sm:p-2"
+      >
         <button
           v-for="system in tutorialSystems"
           :key="system.key"
@@ -298,7 +300,9 @@
           </div>
           <p class="mt-3 text-xs text-purple-700 dark:text-purple-300 sm:text-sm">
             🚀 如果你在后台添加了 <strong>Droid</strong> 类型账号，请将上述命令中的
-            <code class="rounded-none bg-purple-100 px-1 dark:bg-purple-900">{{ currentBaseUrl }}</code>
+            <code class="rounded-none bg-purple-100 px-1 dark:bg-purple-900">{{
+              currentBaseUrl
+            }}</code>
             替换为
             <code class="rounded-none bg-purple-100 px-1 dark:bg-purple-900">{{
               droidClaudeBaseUrl
@@ -1011,7 +1015,9 @@
           </div>
           <p class="mt-3 text-xs text-orange-700 dark:text-orange-300 sm:text-sm">
             🚀 如果你创建了 <strong>Droid</strong> 类型账号，请把上述命令中的
-            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{ currentBaseUrl }}</code>
+            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{
+              currentBaseUrl
+            }}</code>
             替换为
             <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{
               droidClaudeBaseUrl
@@ -1676,7 +1682,9 @@
           </div>
           <p class="mt-3 text-xs text-orange-700 dark:text-orange-300 sm:text-sm">
             🚀 如果你创建了 <strong>Droid</strong> 类型账号，请把上述命令中的
-            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{ currentBaseUrl }}</code>
+            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{
+              currentBaseUrl
+            }}</code>
             替换为
             <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{
               droidClaudeBaseUrl
@@ -1935,7 +1943,9 @@
           </h5>
           <p class="mb-3 text-sm text-gray-700 dark:text-gray-300 sm:mb-4 sm:text-base">
             Droid CLI 使用
-            <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800">~/.factory/config.json</code>
+            <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800"
+              >~/.factory/config.json</code
+            >
             保存自定义模型；在 Linux 或 WSL2 中，可直接编辑
             <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800"
               >/home/你的用户名/.factory/config.json</code

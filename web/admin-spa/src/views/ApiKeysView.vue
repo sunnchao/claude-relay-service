@@ -861,11 +861,13 @@
                               >
                                 {{ apiKeyModelStats[key.id].length }} 个模型
                               </span>
-                              
+
                               <!-- API Keys日期筛选器 -->
                               <div class="flex items-center gap-1">
                                 <!-- 快捷日期选择 -->
-                                <div class="flex gap-1 rounded-none bg-gray-100 p-1 dark:bg-gray-700">
+                                <div
+                                  class="flex gap-1 rounded-none bg-gray-100 p-1 dark:bg-gray-700"
+                                >
                                   <button
                                     v-for="option in getApiKeyDateFilter(key.id).presetOptions"
                                     :key="option.value"
