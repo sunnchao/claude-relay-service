@@ -27,6 +27,12 @@ const userRoutes = require('./routes/userRoutes')
 const azureOpenaiRoutes = require('./routes/azureOpenaiRoutes')
 const webhookRoutes = require('./routes/webhook')
 
+// Import client API routes (if they exist)
+const clientAuthRoutes = require('./client-api/routes/auth')
+const clientUserRoutes = require('./client-api/routes/users')
+const clientKeyRoutes = require('./client-api/routes/keys')
+const clientRelayRoutes = require('./client-api/routes/relay')
+
 // Import middleware
 const {
   corsMiddleware,
@@ -267,6 +273,12 @@ class Application {
       this.app.use('/droid', droidRoutes) // Droid (Factory.ai) API 转发
       this.app.use('/azure', azureOpenaiRoutes)
       this.app.use('/admin/webhook', webhookRoutes)
+
+      // 🚀 客户端 API 路由（用于用户自助服务）
+      this.app.use('/client/auth', clientAuthRoutes)
+      this.app.use('/client/users', clientUserRoutes)
+      this.app.use('/client/keys', clientKeyRoutes)
+      this.app.use('/client/v1', clientRelayRoutes)
 
       // 🏠 根路径重定向到新版管理界面
       this.app.get('/', (req, res) => {
