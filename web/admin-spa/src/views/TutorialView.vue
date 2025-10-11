@@ -11,15 +11,15 @@
         跟着这个教程，你可以轻松在自己的电脑上安装并使用 Claude Code。
       </p>
     </div>
-
+                          
     <!-- 系统选择标签 -->
     <div class="mb-4 sm:mb-8">
-      <div class="flex flex-wrap gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800 sm:gap-2 sm:p-2">
+      <div class="flex flex-wrap gap-1 rounded-none bg-gray-100 p-1 dark:bg-gray-800 sm:gap-2 sm:p-2">
         <button
           v-for="system in tutorialSystems"
           :key="system.key"
           :class="[
-            'flex flex-1 items-center justify-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-300 sm:gap-2 sm:px-6 sm:py-3 sm:text-sm',
+            'flex flex-1 items-center justify-center gap-1 rounded-none px-3 py-2 text-xs font-semibold transition-all duration-300 sm:gap-2 sm:px-6 sm:py-3 sm:text-sm',
             activeTutorialSystem === system.key
               ? 'bg-white text-blue-600 shadow-sm dark:bg-blue-600 dark:text-white dark:shadow-blue-500/40'
               : 'text-gray-600 hover:bg-white/50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
@@ -40,7 +40,7 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-blue-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >1</span
           >
           安装 Node.js 环境
@@ -50,7 +50,7 @@
         </p>
 
         <div
-          class="mb-4 rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:border-blue-500/40 dark:from-blue-950/30 dark:to-indigo-950/30 sm:mb-4 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:border-blue-500/40 dark:from-blue-950/30 dark:to-indigo-950/30 sm:mb-4 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -68,7 +68,7 @@
               <li>
                 打开浏览器访问
                 <code
-                  class="rounded bg-gray-100 px-1 py-1 text-xs dark:bg-gray-800 dark:text-yellow-400 sm:px-2 sm:text-sm"
+                  class="rounded-none bg-gray-100 px-1 py-1 text-xs dark:bg-gray-800 dark:text-yellow-400 sm:px-2 sm:text-sm"
                   >https://nodejs.org/</code
                 >
               </li>
@@ -76,7 +76,7 @@
               <li>
                 下载完成后双击
                 <code
-                  class="rounded bg-gray-100 px-1 py-1 text-xs dark:bg-gray-800 dark:text-yellow-400 sm:px-2 sm:text-sm"
+                  class="rounded-none bg-gray-100 px-1 py-1 text-xs dark:bg-gray-800 dark:text-yellow-400 sm:px-2 sm:text-sm"
                   >.msi</code
                 >
                 文件
@@ -92,7 +92,7 @@
               如果你安装了 Chocolatey 或 Scoop，可以使用命令行安装：
             </p>
             <div
-              class="overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
+              class="overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
             >
               <div class="mb-2"># 使用 Chocolatey</div>
               <div class="whitespace-nowrap text-gray-300">choco install nodejs</div>
@@ -101,7 +101,7 @@
             </div>
           </div>
           <div
-            class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
+            class="rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
           >
             <h6 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-300 sm:text-base">
               Windows 注意事项
@@ -116,7 +116,7 @@
 
         <!-- 验证安装 -->
         <div
-          class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+          class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
         >
           <h6 class="mb-2 text-sm font-medium text-green-800 dark:text-green-300 sm:text-base">
             验证安装是否成功
@@ -125,7 +125,7 @@
             安装完成后，打开 PowerShell 或 CMD，输入以下命令：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">node --version</div>
             <div class="whitespace-nowrap text-gray-300">npm --version</div>
@@ -142,14 +142,14 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-green-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >2</span
           >
           安装 Claude Code
         </h4>
 
         <div
-          class="mb-4 rounded-xl border border-green-100 bg-gradient-to-r from-green-50 to-emerald-50 p-4 dark:border-green-500/40 dark:from-green-950/30 dark:to-emerald-950/30 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-green-100 bg-gradient-to-r from-green-50 to-emerald-50 p-4 dark:border-green-500/40 dark:from-green-950/30 dark:to-emerald-950/30 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -161,7 +161,7 @@
             打开 PowerShell 或 CMD，运行以下命令：
           </p>
           <div
-            class="mb-4 overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
+            class="mb-4 overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
           >
             <div class="mb-2"># 全局安装 Claude Code</div>
             <div class="whitespace-nowrap text-gray-300">
@@ -173,7 +173,7 @@
           </p>
 
           <div
-            class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
+            class="mt-4 rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
           >
             <h6 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-300 sm:text-base">
               提示
@@ -187,14 +187,14 @@
 
         <!-- 验证安装 -->
         <div
-          class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+          class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">验证 Claude Code 安装</h6>
           <p class="mb-3 text-sm text-green-700 dark:text-green-300">
             安装完成后，输入以下命令检查是否安装成功：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">claude --version</div>
           </div>
@@ -210,14 +210,14 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-purple-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >3</span
           >
           设置环境变量
         </h4>
 
         <div
-          class="mb-4 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:border-purple-500/40 dark:from-purple-950/30 dark:to-pink-950/30 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:border-purple-500/40 dark:from-purple-950/30 dark:to-pink-950/30 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -231,7 +231,7 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-purple-200 bg-white p-3 dark:border-purple-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-purple-200 bg-white p-3 dark:border-purple-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 方法一：PowerShell 临时设置（当前会话）
@@ -240,7 +240,7 @@
                 在 PowerShell 中运行以下命令：
               </p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">
                   $env:ANTHROPIC_BASE_URL = "{{ currentBaseUrl }}"
@@ -255,7 +255,7 @@
             </div>
 
             <div
-              class="rounded-lg border border-purple-200 bg-white p-3 dark:border-purple-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-purple-200 bg-white p-3 dark:border-purple-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 方法二：PowerShell 永久设置（用户级）
@@ -264,7 +264,7 @@
                 在 PowerShell 中运行以下命令设置用户级环境变量：
               </p>
               <div
-                class="mb-3 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mb-3 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 设置用户级环境变量（永久生效）</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -279,7 +279,7 @@
               </div>
               <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">查看已设置的环境变量：</p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 查看用户级环境变量</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -298,9 +298,9 @@
           </div>
           <p class="mt-3 text-xs text-purple-700 dark:text-purple-300 sm:text-sm">
             🚀 如果你在后台添加了 <strong>Droid</strong> 类型账号，请将上述命令中的
-            <code class="rounded bg-purple-100 px-1 dark:bg-purple-900">{{ currentBaseUrl }}</code>
+            <code class="rounded-none bg-purple-100 px-1 dark:bg-purple-900">{{ currentBaseUrl }}</code>
             替换为
-            <code class="rounded bg-purple-100 px-1 dark:bg-purple-900">{{
+            <code class="rounded-none bg-purple-100 px-1 dark:bg-purple-900">{{
               droidClaudeBaseUrl
             }}</code
             >，其余配置保持不变。
@@ -309,7 +309,7 @@
 
         <!-- VSCode 插件配置 -->
         <div
-          class="mt-6 rounded-lg border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/40 dark:bg-indigo-950/30 sm:p-4"
+          class="mt-6 rounded-none border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/40 dark:bg-indigo-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-indigo-800 dark:text-indigo-300">
             VSCode Claude 插件配置
@@ -320,7 +320,7 @@
           <div class="mb-3 space-y-2">
             <p class="text-sm text-indigo-700 dark:text-indigo-300">
               <strong>配置文件位置：</strong>
-              <code class="rounded bg-indigo-100 px-1 dark:bg-indigo-900"
+              <code class="rounded-none bg-indigo-100 px-1 dark:bg-indigo-900"
                 >C:\Users\你的用户名\.claude\config.json</code
               >
             </p>
@@ -329,7 +329,7 @@
             </p>
           </div>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">{</div>
             <div class="whitespace-nowrap text-gray-300">"primaryApiKey": "crs"</div>
@@ -339,7 +339,7 @@
 
         <!-- 验证环境变量设置 -->
         <div
-          class="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
+          class="mt-6 rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-blue-800 dark:text-blue-300">验证环境变量设置</h6>
           <p class="mb-3 text-sm text-blue-700 dark:text-blue-300">
@@ -352,7 +352,7 @@
                 在 PowerShell 中验证：
               </h6>
               <div
-                class="space-y-1 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="space-y-1 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">echo $env:ANTHROPIC_BASE_URL</div>
                 <div class="whitespace-nowrap text-gray-300">echo $env:ANTHROPIC_AUTH_TOKEN</div>
@@ -364,7 +364,7 @@
                 在 CMD 中验证：
               </h6>
               <div
-                class="space-y-1 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="space-y-1 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">echo %ANTHROPIC_BASE_URL%</div>
                 <div class="whitespace-nowrap text-gray-300">echo %ANTHROPIC_AUTH_TOKEN%</div>
@@ -376,7 +376,7 @@
             <p class="text-sm text-blue-700 dark:text-blue-300">
               <strong>预期输出示例：</strong>
             </p>
-            <div class="rounded bg-gray-100 p-2 font-mono text-sm dark:bg-gray-700">
+            <div class="rounded-none bg-gray-100 p-2 font-mono text-sm dark:bg-gray-700">
               <div>{{ currentBaseUrl }}</div>
               <div>cr_xxxxxxxxxxxxxxxxxx</div>
             </div>
@@ -400,7 +400,7 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 PowerShell 设置方法
@@ -409,7 +409,7 @@
                 在 PowerShell 中运行以下命令：
               </p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">
                   $env:CODE_ASSIST_ENDPOINT = "{{ geminiBaseUrl }}"
@@ -427,7 +427,7 @@
             </div>
 
             <div
-              class="rounded-lg border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 PowerShell 永久设置（用户级）
@@ -436,7 +436,7 @@
                 在 PowerShell 中运行以下命令：
               </p>
               <div
-                class="mb-3 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mb-3 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 设置用户级环境变量（永久生效）</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -459,14 +459,14 @@
             </div>
 
             <div
-              class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+              class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
             >
               <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">
                 验证 Gemini CLI 环境变量
               </h6>
               <p class="mb-3 text-sm text-green-700 dark:text-green-300">在 PowerShell 中验证：</p>
               <div
-                class="space-y-1 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="space-y-1 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">echo $env:CODE_ASSIST_ENDPOINT</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -492,18 +492,18 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-500/40 dark:bg-yellow-950/30 sm:p-4"
+              class="rounded-none border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-500/40 dark:bg-yellow-950/30 sm:p-4"
             >
               <h6 class="mb-2 font-medium text-yellow-800 dark:text-yellow-300">Codex 配置文件</h6>
               <p class="mb-3 text-sm text-yellow-700 dark:text-yellow-300">
                 在
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900"
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900"
                   >~/.codex/config.toml</code
                 >
                 文件开头添加以下配置：
               </p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div
                   v-for="line in codexConfigContent.configToml"
@@ -516,24 +516,24 @@
               </div>
               <p class="mt-2 text-xs text-yellow-700 dark:text-yellow-300 sm:text-sm">
                 🚀 如果你要使用 <strong>Droid</strong> 类型账号池，请把配置中的
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900">{{
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900">{{
                   openaiBaseUrl
                 }}</code>
                 替换为
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900">{{
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900">{{
                   droidOpenaiBaseUrl
                 }}</code
                 >。
               </p>
               <p class="mt-3 text-sm text-yellow-700 dark:text-yellow-300">
                 在
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900"
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900"
                   >~/.codex/auth.json</code
                 >
                 文件中配置API密钥：
               </p>
               <div
-                class="mt-2 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mt-2 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div
                   v-for="line in codexConfigContent.authJson"
@@ -558,7 +558,7 @@
                     {{ codexConfigContent.authInstructions.platform.title }}:
                   </p>
                   <div
-                    class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                    class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                   >
                     <div class="whitespace-nowrap text-gray-300">
                       {{ codexConfigContent.authInstructions.platform.command }}
@@ -575,7 +575,7 @@
                     {{ codexConfigContent.authInstructions.persistent.description }}
                   </p>
                   <div
-                    class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                    class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                   >
                     <div
                       v-for="command in codexConfigContent.authInstructions.persistent.commands"
@@ -603,14 +603,14 @@
         </h5>
         <p class="mb-3 text-sm text-gray-700 dark:text-gray-300 sm:mb-4 sm:text-base">
           Droid CLI 使用
-          <code class="rounded bg-gray-100 px-1 dark:bg-gray-800">~/.factory/config.json</code>
+          <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800">~/.factory/config.json</code>
           保存自定义模型；在 Windows 中可直接编辑
-          <code class="rounded bg-gray-100 px-1 dark:bg-gray-800"
+          <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800"
             >C:\Users\你的用户名\.factory\config.json</code
           >。
         </p>
         <div
-          class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
+          class="rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
         >
           <h6 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200 sm:text-base">
             配置文件示例
@@ -619,7 +619,7 @@
             将以下内容追加到配置文件中，并替换示例中的域名和 API 密钥：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div
               v-for="(line, index) in droidCliConfigLines"
@@ -640,13 +640,13 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-orange-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >4</span
           >
           开始使用 Claude Code
         </h4>
         <div
-          class="rounded-xl border border-orange-100 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-yellow-950/30 sm:p-6"
+          class="rounded-none border border-orange-100 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-yellow-950/30 sm:p-6"
         >
           <p class="mb-3 text-sm text-gray-700 dark:text-gray-300 sm:mb-4 sm:text-base">
             现在你可以开始使用 Claude Code 了！
@@ -658,7 +658,7 @@
                 启动 Claude Code
               </h6>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">claude</div>
               </div>
@@ -669,7 +669,7 @@
                 在特定项目中使用
               </h6>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 进入你的项目目录</div>
                 <div class="whitespace-nowrap text-gray-300">cd C:\path\to\your\project</div>
@@ -691,7 +691,7 @@
         </h4>
         <div class="space-y-4">
           <details
-            class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
           >
             <summary
               class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -704,7 +704,7 @@
                 <li>以管理员身份运行 PowerShell</li>
                 <li>
                   或者配置 npm 使用用户目录：<code
-                    class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                    class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                     >npm config set prefix %APPDATA%\npm</code
                   >
                 </li>
@@ -713,7 +713,7 @@
           </details>
 
           <details
-            class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
           >
             <summary
               class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -723,7 +723,7 @@
             <div class="px-3 pb-3 text-gray-600 dark:text-gray-400 sm:px-4 sm:pb-4">
               <p class="mb-2">如果遇到执行策略限制，运行：</p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">
                   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -733,7 +733,7 @@
           </details>
 
           <details
-            class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
           >
             <summary
               class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -747,7 +747,7 @@
                 <li>或者注销并重新登录 Windows</li>
                 <li>
                   验证设置：<code
-                    class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                    class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                     >echo $env:ANTHROPIC_BASE_URL</code
                   >
                 </li>
@@ -766,7 +766,7 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-blue-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >1</span
           >
           安装 Node.js 环境
@@ -776,7 +776,7 @@
         </p>
 
         <div
-          class="mb-4 rounded-xl border border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50 p-4 dark:border-gray-700 dark:from-gray-800 dark:to-slate-800 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50 p-4 dark:border-gray-700 dark:from-gray-800 dark:to-slate-800 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -790,7 +790,7 @@
               如果你已经安装了 Homebrew，使用它安装 Node.js 会更方便：
             </p>
             <div
-              class="overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
+              class="overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
             >
               <div class="mb-2"># 更新 Homebrew</div>
               <div class="whitespace-nowrap text-gray-300">brew update</div>
@@ -806,7 +806,7 @@
               <li>
                 访问
                 <code
-                  class="rounded bg-gray-100 px-1 py-1 text-xs dark:bg-gray-700 sm:px-2 sm:text-sm"
+                  class="rounded-none bg-gray-100 px-1 py-1 text-xs dark:bg-gray-700 sm:px-2 sm:text-sm"
                   >https://nodejs.org/</code
                 >
               </li>
@@ -814,7 +814,7 @@
               <li>
                 打开下载的
                 <code
-                  class="rounded bg-gray-100 px-1 py-1 text-xs dark:bg-gray-700 sm:px-2 sm:text-sm"
+                  class="rounded-none bg-gray-100 px-1 py-1 text-xs dark:bg-gray-700 sm:px-2 sm:text-sm"
                   >.pkg</code
                 >
                 文件
@@ -823,7 +823,7 @@
             </ol>
           </div>
           <div
-            class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800 sm:p-4"
+            class="rounded-none border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800 sm:p-4"
           >
             <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
               macOS 注意事项
@@ -831,7 +831,7 @@
             <ul class="space-y-1 text-xs text-gray-700 dark:text-gray-300 sm:text-sm">
               <li>
                 • 如果遇到权限问题，可能需要使用
-                <code class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                <code class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                   >sudo</code
                 >
               </li>
@@ -843,14 +843,14 @@
 
         <!-- 验证安装 -->
         <div
-          class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+          class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">验证安装是否成功</h6>
           <p class="mb-3 text-sm text-green-700 dark:text-green-300">
             安装完成后，打开 Terminal，输入以下命令：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">node --version</div>
             <div class="whitespace-nowrap text-gray-300">npm --version</div>
@@ -867,14 +867,14 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-green-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >2</span
           >
           安装 Claude Code
         </h4>
 
         <div
-          class="mb-4 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:border-purple-500/40 dark:from-purple-950/30 dark:to-pink-950/30 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:border-purple-500/40 dark:from-purple-950/30 dark:to-pink-950/30 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -886,7 +886,7 @@
             打开 Terminal，运行以下命令：
           </p>
           <div
-            class="mb-4 overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
+            class="mb-4 overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
           >
             <div class="mb-2"># 全局安装 Claude Code</div>
             <div class="whitespace-nowrap text-gray-300">
@@ -897,7 +897,7 @@
             如果遇到权限问题，可以使用 sudo：
           </p>
           <div
-            class="overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">
               sudo npm install -g @anthropic-ai/claude-code
@@ -907,14 +907,14 @@
 
         <!-- 验证安装 -->
         <div
-          class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+          class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">验证 Claude Code 安装</h6>
           <p class="mb-3 text-sm text-green-700 dark:text-green-300">
             安装完成后，输入以下命令检查是否安装成功：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">claude --version</div>
           </div>
@@ -930,14 +930,14 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-orange-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >3</span
           >
           设置环境变量
         </h4>
 
         <div
-          class="mb-4 rounded-xl border border-orange-100 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-yellow-950/30 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-orange-100 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-yellow-950/30 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -951,7 +951,7 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 方法一：临时设置（当前会话）
@@ -960,7 +960,7 @@
                 在 Terminal 中运行以下命令：
               </p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">
                   export ANTHROPIC_BASE_URL="{{ currentBaseUrl }}"
@@ -975,7 +975,7 @@
             </div>
 
             <div
-              class="rounded-lg border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 方法二：永久设置
@@ -984,7 +984,7 @@
                 编辑你的 shell 配置文件（根据你使用的 shell）：
               </p>
               <div
-                class="mb-3 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mb-3 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 zsh (默认)</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -996,7 +996,7 @@
                 <div class="whitespace-nowrap text-gray-300">source ~/.zshrc</div>
               </div>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 bash</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -1011,9 +1011,9 @@
           </div>
           <p class="mt-3 text-xs text-orange-700 dark:text-orange-300 sm:text-sm">
             🚀 如果你创建了 <strong>Droid</strong> 类型账号，请把上述命令中的
-            <code class="rounded bg-orange-100 px-1 dark:bg-orange-900">{{ currentBaseUrl }}</code>
+            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{ currentBaseUrl }}</code>
             替换为
-            <code class="rounded bg-orange-100 px-1 dark:bg-orange-900">{{
+            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{
               droidClaudeBaseUrl
             }}</code
             >，其余配置保持不变。
@@ -1022,7 +1022,7 @@
 
         <!-- VSCode 插件配置 (macOS) -->
         <div
-          class="mt-6 rounded-lg border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/40 dark:bg-indigo-950/30 sm:p-4"
+          class="mt-6 rounded-none border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/40 dark:bg-indigo-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-indigo-800 dark:text-indigo-300">
             VSCode Claude 插件配置
@@ -1033,7 +1033,7 @@
           <div class="mb-3 space-y-2">
             <p class="text-sm text-indigo-700 dark:text-indigo-300">
               <strong>配置文件位置：</strong>
-              <code class="rounded bg-indigo-100 px-1 dark:bg-indigo-900"
+              <code class="rounded-none bg-indigo-100 px-1 dark:bg-indigo-900"
                 >~/.claude/config.json</code
               >
             </p>
@@ -1042,7 +1042,7 @@
             </p>
           </div>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">{</div>
             <div class="whitespace-nowrap text-gray-300">"primaryApiKey": "crs"</div>
@@ -1064,7 +1064,7 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 Terminal 设置方法
@@ -1073,7 +1073,7 @@
                 在 Terminal 中运行以下命令：
               </p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">
                   export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"
@@ -1091,7 +1091,7 @@
             </div>
 
             <div
-              class="rounded-lg border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 永久设置方法
@@ -1100,7 +1100,7 @@
                 添加到你的 shell 配置文件：
               </p>
               <div
-                class="mb-3 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mb-3 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 zsh (默认)</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -1115,7 +1115,7 @@
                 <div class="whitespace-nowrap text-gray-300">source ~/.zshrc</div>
               </div>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 bash</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -1132,14 +1132,14 @@
             </div>
 
             <div
-              class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+              class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
             >
               <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">
                 验证 Gemini CLI 环境变量
               </h6>
               <p class="mb-3 text-sm text-green-700 dark:text-green-300">在 Terminal 中验证：</p>
               <div
-                class="space-y-1 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="space-y-1 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">echo $CODE_ASSIST_ENDPOINT</div>
                 <div class="whitespace-nowrap text-gray-300">echo $GOOGLE_CLOUD_ACCESS_TOKEN</div>
@@ -1163,18 +1163,18 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-500/40 dark:bg-yellow-950/30 sm:p-4"
+              class="rounded-none border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-500/40 dark:bg-yellow-950/30 sm:p-4"
             >
               <h6 class="mb-2 font-medium text-yellow-800 dark:text-yellow-300">Codex 配置文件</h6>
               <p class="mb-3 text-sm text-yellow-700 dark:text-yellow-300">
                 在
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900"
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900"
                   >~/.codex/config.toml</code
                 >
                 文件开头添加以下配置：
               </p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div
                   v-for="line in codexConfigContent.configToml"
@@ -1187,24 +1187,24 @@
               </div>
               <p class="mt-2 text-xs text-yellow-700 dark:text-yellow-300 sm:text-sm">
                 🚀 如果你要使用 <strong>Droid</strong> 类型账号池，请把配置中的
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900">{{
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900">{{
                   openaiBaseUrl
                 }}</code>
                 替换为
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900">{{
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900">{{
                   droidOpenaiBaseUrl
                 }}</code
                 >。
               </p>
               <p class="mt-3 text-sm text-yellow-700 dark:text-yellow-300">
                 在
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900"
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900"
                   >~/.codex/auth.json</code
                 >
                 文件中配置API密钥：
               </p>
               <div
-                class="mt-2 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mt-2 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div
                   v-for="line in codexConfigContent.authJson"
@@ -1229,7 +1229,7 @@
                     {{ codexConfigContent.authInstructions.platform.title }}:
                   </p>
                   <div
-                    class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                    class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                   >
                     <div class="whitespace-nowrap text-gray-300">
                       {{ codexConfigContent.authInstructions.platform.command }}
@@ -1246,7 +1246,7 @@
                     {{ codexConfigContent.authInstructions.persistent.description }}
                   </p>
                   <div
-                    class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                    class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                   >
                     <div
                       v-for="command in codexConfigContent.authInstructions.persistent.commands"
@@ -1274,15 +1274,15 @@
         </h5>
         <p class="mb-3 text-sm text-gray-700 dark:text-gray-300 sm:mb-4 sm:text-base">
           Droid CLI 使用
-          <code class="rounded bg-gray-100 px-1 dark:bg-gray-800">~/.factory/config.json</code>
+          <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800">~/.factory/config.json</code>
           保存自定义模型；你可以在 Finder 中按
-          <code class="rounded bg-gray-100 px-1 dark:bg-gray-800">⌘ + Shift + G</code>
+          <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800">⌘ + Shift + G</code>
           并输入路径，或运行
-          <code class="rounded bg-gray-100 px-1 dark:bg-gray-800">open ~/.factory</code>
+          <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800">open ~/.factory</code>
           快速打开配置目录。
         </p>
         <div
-          class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
+          class="rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
         >
           <h6 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200 sm:text-base">
             配置文件示例
@@ -1291,7 +1291,7 @@
             将以下内容追加到配置文件中，并替换示例中的域名和 API 密钥：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div
               v-for="(line, index) in droidCliConfigLines"
@@ -1313,13 +1313,13 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-yellow-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >4</span
           >
           开始使用 Claude Code
         </h4>
         <div
-          class="rounded-xl border border-yellow-100 bg-gradient-to-r from-yellow-50 to-amber-50 p-4 dark:border-yellow-500/40 dark:from-yellow-950/30 dark:to-amber-950/30 sm:p-6"
+          class="rounded-none border border-yellow-100 bg-gradient-to-r from-yellow-50 to-amber-50 p-4 dark:border-yellow-500/40 dark:from-yellow-950/30 dark:to-amber-950/30 sm:p-6"
         >
           <p class="mb-3 text-sm text-gray-700 dark:text-gray-300 sm:mb-4 sm:text-base">
             现在你可以开始使用 Claude Code 了！
@@ -1331,7 +1331,7 @@
                 启动 Claude Code
               </h6>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">claude</div>
               </div>
@@ -1342,7 +1342,7 @@
                 在特定项目中使用
               </h6>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 进入你的项目目录</div>
                 <div class="whitespace-nowrap text-gray-300">cd /path/to/your/project</div>
@@ -1364,7 +1364,7 @@
         </h4>
         <div class="space-y-4">
           <details
-            class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
           >
             <summary
               class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -1376,13 +1376,13 @@
               <ul class="list-inside list-disc space-y-1 text-sm">
                 <li>
                   使用 sudo 安装：<code
-                    class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                    class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                     >sudo npm install -g @anthropic-ai/claude-code</code
                   >
                 </li>
                 <li>
                   或者配置 npm 使用用户目录：<code
-                    class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                    class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                     >npm config set prefix ~/.npm-global</code
                   >
                 </li>
@@ -1391,7 +1391,7 @@
           </details>
 
           <details
-            class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
           >
             <summary
               class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -1405,7 +1405,7 @@
                 <li>点击"仍要打开"或"允许"</li>
                 <li>
                   或者在 Terminal 中运行：<code
-                    class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                    class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                     >sudo spctl --master-disable</code
                   >
                 </li>
@@ -1414,7 +1414,7 @@
           </details>
 
           <details
-            class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+            class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
           >
             <summary
               class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -1428,7 +1428,7 @@
                 <li>重新启动 Terminal</li>
                 <li>
                   验证设置：<code
-                    class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                    class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                     >echo $ANTHROPIC_BASE_URL</code
                   >
                 </li>
@@ -1447,7 +1447,7 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-blue-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >1</span
           >
           安装 Node.js 环境
@@ -1457,7 +1457,7 @@
         </p>
 
         <div
-          class="mb-4 rounded-xl border border-orange-100 bg-gradient-to-r from-orange-50 to-red-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-red-950/30 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-orange-100 bg-gradient-to-r from-orange-50 to-red-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-red-950/30 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -1468,7 +1468,7 @@
           <div class="mb-4">
             <p class="mb-3 text-gray-700 dark:text-gray-300">方法一：使用官方仓库（推荐）</p>
             <div
-              class="overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
+              class="overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
             >
               <div class="mb-2"># 添加 NodeSource 仓库</div>
               <div class="whitespace-nowrap text-gray-300">
@@ -1484,7 +1484,7 @@
               虽然版本可能不是最新的，但对于基本使用已经足够：
             </p>
             <div
-              class="overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
+              class="overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 dark:border dark:border-slate-700 dark:bg-slate-900 sm:p-4 sm:text-sm"
             >
               <div class="mb-2"># Ubuntu/Debian</div>
               <div class="whitespace-nowrap text-gray-300">sudo apt update</div>
@@ -1494,7 +1494,7 @@
             </div>
           </div>
           <div
-            class="rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-500/40 dark:bg-orange-950/30 sm:p-4"
+            class="rounded-none border border-orange-200 bg-orange-50 p-3 dark:border-orange-500/40 dark:bg-orange-950/30 sm:p-4"
           >
             <h6 class="mb-2 text-sm font-medium text-orange-800 dark:text-orange-300 sm:text-base">
               Linux 注意事项
@@ -1503,7 +1503,7 @@
               <li>• 某些发行版可能需要安装额外的依赖</li>
               <li>
                 • 如果遇到权限问题，使用
-                <code class="rounded bg-orange-200 px-1 dark:bg-orange-900">sudo</code>
+                <code class="rounded-none bg-orange-200 px-1 dark:bg-orange-900">sudo</code>
               </li>
               <li>• 确保你的用户在 npm 的全局目录有写权限</li>
             </ul>
@@ -1512,14 +1512,14 @@
 
         <!-- 验证安装 -->
         <div
-          class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+          class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">验证安装是否成功</h6>
           <p class="mb-3 text-sm text-green-700 dark:text-green-300">
             安装完成后，打开终端，输入以下命令：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">node --version</div>
             <div class="whitespace-nowrap text-gray-300">npm --version</div>
@@ -1536,14 +1536,14 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-green-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >2</span
           >
           安装 Claude Code
         </h4>
 
         <div
-          class="mb-4 rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:border-purple-500/40 dark:from-purple-950/30 dark:to-pink-950/30 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:border-purple-500/40 dark:from-purple-950/30 dark:to-pink-950/30 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -1555,7 +1555,7 @@
             打开终端，运行以下命令：
           </p>
           <div
-            class="mb-4 overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
+            class="mb-4 overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
           >
             <div class="mb-2"># 全局安装 Claude Code</div>
             <div class="whitespace-nowrap text-gray-300">
@@ -1566,7 +1566,7 @@
             如果遇到权限问题，可以使用 sudo：
           </p>
           <div
-            class="overflow-x-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-3 font-mono text-xs text-green-400 sm:p-4 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">
               sudo npm install -g @anthropic-ai/claude-code
@@ -1576,14 +1576,14 @@
 
         <!-- 验证安装 -->
         <div
-          class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+          class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">验证 Claude Code 安装</h6>
           <p class="mb-3 text-sm text-green-700 dark:text-green-300">
             安装完成后，输入以下命令检查是否安装成功：
           </p>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">claude --version</div>
           </div>
@@ -1599,14 +1599,14 @@
           class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
         >
           <span
-            class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+            class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-orange-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
             >3</span
           >
           设置环境变量
         </h4>
 
         <div
-          class="mb-4 rounded-xl border border-orange-100 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-yellow-950/30 sm:mb-6 sm:p-6"
+          class="mb-4 rounded-none border border-orange-100 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 dark:border-orange-500/40 dark:from-orange-950/30 dark:to-yellow-950/30 sm:mb-6 sm:p-6"
         >
           <h5
             class="mb-2 flex items-center text-base font-semibold text-gray-800 dark:text-gray-200 sm:mb-3 sm:text-lg"
@@ -1620,14 +1620,14 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 方法一：临时设置（当前会话）
               </h6>
               <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">在终端中运行以下命令：</p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">
                   export ANTHROPIC_BASE_URL="{{ currentBaseUrl }}"
@@ -1642,14 +1642,14 @@
             </div>
 
             <div
-              class="rounded-lg border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-orange-200 bg-white p-3 dark:border-orange-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 方法二：永久设置
               </h6>
               <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">编辑你的 shell 配置文件：</p>
               <div
-                class="mb-3 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mb-3 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 bash (默认)</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -1661,7 +1661,7 @@
                 <div class="whitespace-nowrap text-gray-300">source ~/.bashrc</div>
               </div>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 zsh</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -1676,9 +1676,9 @@
           </div>
           <p class="mt-3 text-xs text-orange-700 dark:text-orange-300 sm:text-sm">
             🚀 如果你创建了 <strong>Droid</strong> 类型账号，请把上述命令中的
-            <code class="rounded bg-orange-100 px-1 dark:bg-orange-900">{{ currentBaseUrl }}</code>
+            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{ currentBaseUrl }}</code>
             替换为
-            <code class="rounded bg-orange-100 px-1 dark:bg-orange-900">{{
+            <code class="rounded-none bg-orange-100 px-1 dark:bg-orange-900">{{
               droidClaudeBaseUrl
             }}</code
             >，其余配置保持不变。
@@ -1699,14 +1699,14 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 终端设置方法
               </h6>
               <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">在终端中运行以下命令：</p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">
                   export CODE_ASSIST_ENDPOINT="{{ geminiBaseUrl }}"
@@ -1724,7 +1724,7 @@
             </div>
 
             <div
-              class="rounded-lg border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
+              class="rounded-none border border-green-200 bg-white p-3 dark:border-green-700 dark:bg-gray-800 sm:p-4"
             >
               <h6 class="mb-2 text-sm font-medium text-gray-800 dark:text-gray-300 sm:text-base">
                 永久设置方法
@@ -1733,7 +1733,7 @@
                 添加到你的 shell 配置文件：
               </p>
               <div
-                class="mb-3 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mb-3 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 bash (默认)</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -1748,7 +1748,7 @@
                 <div class="whitespace-nowrap text-gray-300">source ~/.bashrc</div>
               </div>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="mb-2"># 对于 zsh</div>
                 <div class="whitespace-nowrap text-gray-300">
@@ -1765,14 +1765,14 @@
             </div>
 
             <div
-              class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
+              class="rounded-none border border-green-200 bg-green-50 p-3 dark:border-green-500/40 dark:bg-green-950/30 sm:p-4"
             >
               <h6 class="mb-2 font-medium text-green-800 dark:text-green-300">
                 验证 Gemini CLI 环境变量
               </h6>
               <p class="mb-3 text-sm text-green-700 dark:text-green-300">在终端中验证：</p>
               <div
-                class="space-y-1 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="space-y-1 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div class="whitespace-nowrap text-gray-300">echo $CODE_ASSIST_ENDPOINT</div>
                 <div class="whitespace-nowrap text-gray-300">echo $GOOGLE_CLOUD_ACCESS_TOKEN</div>
@@ -1796,18 +1796,18 @@
 
           <div class="space-y-4">
             <div
-              class="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-500/40 dark:bg-yellow-950/30 sm:p-4"
+              class="rounded-none border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-500/40 dark:bg-yellow-950/30 sm:p-4"
             >
               <h6 class="mb-2 font-medium text-yellow-800 dark:text-yellow-300">Codex 配置文件</h6>
               <p class="mb-3 text-sm text-yellow-700 dark:text-yellow-300">
                 在
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900"
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900"
                   >~/.codex/config.toml</code
                 >
                 文件开头添加以下配置：
               </p>
               <div
-                class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div
                   v-for="line in codexConfigContent.configToml"
@@ -1820,24 +1820,24 @@
               </div>
               <p class="mt-2 text-xs text-yellow-700 dark:text-yellow-300 sm:text-sm">
                 🚀 如果你要使用 <strong>Droid</strong> 类型账号池，请把配置中的
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900">{{
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900">{{
                   openaiBaseUrl
                 }}</code>
                 替换为
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900">{{
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900">{{
                   droidOpenaiBaseUrl
                 }}</code
                 >。
               </p>
               <p class="mt-3 text-sm text-yellow-700 dark:text-yellow-300">
                 在
-                <code class="rounded bg-yellow-100 px-1 dark:bg-yellow-900"
+                <code class="rounded-none bg-yellow-100 px-1 dark:bg-yellow-900"
                   >~/.codex/auth.json</code
                 >
                 文件中配置API密钥：
               </p>
               <div
-                class="mt-2 overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                class="mt-2 overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
               >
                 <div
                   v-for="line in codexConfigContent.authJson"
@@ -1862,7 +1862,7 @@
                     {{ codexConfigContent.authInstructions.platform.title }}:
                   </p>
                   <div
-                    class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                    class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                   >
                     <div class="whitespace-nowrap text-gray-300">
                       {{ codexConfigContent.authInstructions.platform.command }}
@@ -1879,7 +1879,7 @@
                     {{ codexConfigContent.authInstructions.persistent.description }}
                   </p>
                   <div
-                    class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                    class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                   >
                     <div
                       v-for="command in codexConfigContent.authInstructions.persistent.commands"
@@ -1897,7 +1897,7 @@
         </div>
         <!-- VSCode 插件配置 (Linux) -->
         <div
-          class="mt-6 rounded-lg border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/40 dark:bg-indigo-950/30 sm:p-4"
+          class="mt-6 rounded-none border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-500/40 dark:bg-indigo-950/30 sm:p-4"
         >
           <h6 class="mb-2 font-medium text-indigo-800 dark:text-indigo-300">
             VSCode Claude 插件配置
@@ -1908,7 +1908,7 @@
           <div class="mb-3 space-y-2">
             <p class="text-sm text-indigo-700 dark:text-indigo-300">
               <strong>配置文件位置：</strong>
-              <code class="rounded bg-indigo-100 px-1 dark:bg-indigo-900"
+              <code class="rounded-none bg-indigo-100 px-1 dark:bg-indigo-900"
                 >~/.claude/config.json</code
               >
             </p>
@@ -1917,7 +1917,7 @@
             </p>
           </div>
           <div
-            class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+            class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
           >
             <div class="whitespace-nowrap text-gray-300">{</div>
             <div class="whitespace-nowrap text-gray-300">"primaryApiKey": "crs"</div>
@@ -1935,17 +1935,17 @@
           </h5>
           <p class="mb-3 text-sm text-gray-700 dark:text-gray-300 sm:mb-4 sm:text-base">
             Droid CLI 使用
-            <code class="rounded bg-gray-100 px-1 dark:bg-gray-800">~/.factory/config.json</code>
+            <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800">~/.factory/config.json</code>
             保存自定义模型；在 Linux 或 WSL2 中，可直接编辑
-            <code class="rounded bg-gray-100 px-1 dark:bg-gray-800"
+            <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800"
               >/home/你的用户名/.factory/config.json</code
             >
             或在终端运行
-            <code class="rounded bg-gray-100 px-1 dark:bg-gray-800">xdg-open ~/.factory</code>
+            <code class="rounded-none bg-gray-100 px-1 dark:bg-gray-800">xdg-open ~/.factory</code>
             打开目录。
           </p>
           <div
-            class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
+            class="rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/40 dark:bg-blue-950/30 sm:p-4"
           >
             <h6 class="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200 sm:text-base">
               配置文件示例
@@ -1954,7 +1954,7 @@
               将以下内容追加到配置文件中，并替换示例中的域名和 API 密钥：
             </p>
             <div
-              class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+              class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
             >
               <div
                 v-for="(line, index) in droidCliConfigLines"
@@ -1976,13 +1976,13 @@
             class="mb-3 flex items-center text-lg font-semibold text-gray-800 dark:text-gray-300 sm:mb-4 sm:text-xl"
           >
             <span
-              class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
+              class="mr-2 flex h-6 w-6 items-center justify-center rounded-none bg-yellow-500 text-xs font-bold text-white sm:mr-3 sm:h-8 sm:w-8 sm:text-sm"
               >4</span
             >
             开始使用 Claude Code
           </h4>
           <div
-            class="rounded-xl border border-yellow-100 bg-gradient-to-r from-yellow-50 to-amber-50 p-4 dark:border-yellow-500/40 dark:from-yellow-950/30 dark:to-amber-950/30 sm:p-6"
+            class="rounded-none border border-yellow-100 bg-gradient-to-r from-yellow-50 to-amber-50 p-4 dark:border-yellow-500/40 dark:from-yellow-950/30 dark:to-amber-950/30 sm:p-6"
           >
             <p class="mb-3 text-sm text-gray-700 dark:text-gray-300 sm:mb-4 sm:text-base">
               现在你可以开始使用 Claude Code 了！
@@ -1994,7 +1994,7 @@
                   启动 Claude Code
                 </h6>
                 <div
-                  class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                  class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                 >
                   <div class="whitespace-nowrap text-gray-300">claude</div>
                 </div>
@@ -2005,7 +2005,7 @@
                   在特定项目中使用
                 </h6>
                 <div
-                  class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                  class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                 >
                   <div class="mb-2"># 进入你的项目目录</div>
                   <div class="whitespace-nowrap text-gray-300">cd /path/to/your/project</div>
@@ -2027,7 +2027,7 @@
           </h4>
           <div class="space-y-4">
             <details
-              class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+              class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
             >
               <summary
                 class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -2039,19 +2039,19 @@
                 <ul class="list-inside list-disc space-y-1 text-sm">
                   <li>
                     使用 sudo 安装：<code
-                      class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                      class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                       >sudo npm install -g @anthropic-ai/claude-code</code
                     >
                   </li>
                   <li>
                     或者配置 npm 使用用户目录：<code
-                      class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                      class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                       >npm config set prefix ~/.npm-global</code
                     >
                   </li>
                   <li>
                     然后添加到 PATH：<code
-                      class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                      class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                       >export PATH=~/.npm-global/bin:$PATH</code
                     >
                   </li>
@@ -2060,7 +2060,7 @@
             </details>
 
             <details
-              class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+              class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
             >
               <summary
                 class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -2070,7 +2070,7 @@
               <div class="px-3 pb-3 text-gray-600 dark:text-gray-400 sm:px-4 sm:pb-4">
                 <p class="mb-2">某些 Linux 发行版需要安装额外依赖：</p>
                 <div
-                  class="overflow-x-auto rounded bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
+                  class="overflow-x-auto rounded-none bg-gray-900 p-2 font-mono text-xs text-green-400 sm:p-3 sm:text-sm"
                 >
                   <div class="mb-2"># Ubuntu/Debian</div>
                   <div class="whitespace-nowrap text-gray-300">
@@ -2085,7 +2085,7 @@
             </details>
 
             <details
-              class="rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+              class="rounded-none border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
             >
               <summary
                 class="cursor-pointer p-3 text-sm font-medium text-gray-800 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 sm:p-4 sm:text-base"
@@ -2098,13 +2098,13 @@
                   <li>确认修改了正确的配置文件（.bashrc 或 .zshrc）</li>
                   <li>
                     重新启动终端或运行
-                    <code class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                    <code class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                       >source ~/.bashrc</code
                     >
                   </li>
                   <li>
                     验证设置：<code
-                      class="rounded bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
+                      class="rounded-none bg-gray-200 px-1 text-xs dark:bg-gray-700 sm:text-sm"
                       >echo $ANTHROPIC_BASE_URL</code
                     >
                   </li>
@@ -2117,7 +2117,7 @@
 
       <!-- 结尾 -->
       <div
-        class="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-center text-white sm:p-6"
+        class="rounded-none bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-center text-white sm:p-6"
       >
         <h5 class="mb-2 text-lg font-semibold sm:text-xl">🎉 恭喜你！</h5>
         <p class="mb-3 text-sm text-blue-100 sm:mb-4 sm:text-base">

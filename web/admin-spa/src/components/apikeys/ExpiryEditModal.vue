@@ -13,7 +13,7 @@
         <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600"
+              class="flex h-10 w-10 items-center justify-center rounded-none bg-gradient-to-br from-amber-500 to-orange-600"
             >
               <i class="fas fa-clock text-white" />
             </div>
@@ -35,7 +35,7 @@
         <div class="space-y-6">
           <!-- 当前状态显示 -->
           <div
-            class="rounded-lg border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-4 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800"
+            class="rounded-none border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-4 dark:border-gray-600 dark:from-gray-700 dark:to-gray-800"
           >
             <div class="flex items-center justify-between">
               <div>
@@ -70,7 +70,7 @@
                 </p>
               </div>
               <div
-                class="flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-gray-700"
+                class="flex h-12 w-12 items-center justify-center rounded-none bg-white shadow-sm dark:bg-gray-700"
               >
                 <i
                   :class="[
@@ -87,7 +87,7 @@
           <!-- 激活按钮（仅在未激活状态显示） -->
           <div v-if="apiKey.expirationMode === 'activation' && !apiKey.isActivated" class="mb-4">
             <button
-              class="w-full rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition-all hover:from-blue-600 hover:to-blue-700 hover:shadow-lg"
+              class="w-full rounded-none bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition-all hover:from-blue-600 hover:to-blue-700 hover:shadow-lg"
               @click="handleActivateNow"
             >
               <i class="fas fa-rocket mr-2" />
@@ -113,7 +113,7 @@
                 v-for="option in quickOptions"
                 :key="option.value"
                 :class="[
-                  'rounded-lg px-3 py-2 text-sm font-medium transition-all',
+                  'rounded-none px-3 py-2 text-sm font-medium transition-all',
                   localForm.expireDuration === option.value
                     ? 'bg-blue-500 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -124,7 +124,7 @@
               </button>
               <button
                 :class="[
-                  'rounded-lg px-3 py-2 text-sm font-medium transition-all',
+                  'rounded-none px-3 py-2 text-sm font-medium transition-all',
                   localForm.expireDuration === 'custom'
                     ? 'bg-blue-500 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -157,7 +157,7 @@
           <!-- 预览新的过期时间 -->
           <div
             v-if="localForm.expiresAt !== apiKey.expiresAt"
-            class="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:border-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20"
+            class="rounded-none border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:border-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20"
           >
             <div class="flex items-center justify-between">
               <div>
@@ -183,7 +183,7 @@
                 </p>
               </div>
               <div
-                class="flex h-12 w-12 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-gray-700"
+                class="flex h-12 w-12 items-center justify-center rounded-none bg-white shadow-sm dark:bg-gray-700"
               >
                 <i class="fas fa-check text-lg text-green-500" />
               </div>
@@ -193,7 +193,7 @@
           <!-- 操作按钮 -->
           <div class="flex gap-3 pt-2">
             <button
-              class="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              class="flex-1 rounded-none bg-gray-100 px-4 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               @click="$emit('close')"
             >
               取消

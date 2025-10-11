@@ -5,7 +5,7 @@
         <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600"
+              class="flex h-10 w-10 items-center justify-center rounded-none bg-gradient-to-br from-green-500 to-green-600"
             >
               <i class="fas fa-clock text-white" />
             </div>
@@ -20,10 +20,10 @@
         </div>
 
         <div class="modal-scroll-content custom-scrollbar flex-1 space-y-6">
-          <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <div class="rounded-none border border-blue-200 bg-blue-50 p-4">
             <div class="flex items-start gap-3">
               <div
-                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500"
+                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-none bg-blue-500"
               >
                 <i class="fas fa-info text-sm text-white" />
               </div>
@@ -73,7 +73,7 @@
 
         <div class="flex gap-3 pt-4">
           <button
-            class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+            class="flex-1 rounded-none bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200"
             type="button"
             @click="$emit('close')"
           >

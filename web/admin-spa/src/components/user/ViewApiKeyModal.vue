@@ -4,7 +4,7 @@
     class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50"
   >
     <div
-      class="relative top-20 mx-auto w-[768px] max-w-4xl rounded-md border bg-white p-5 shadow-lg"
+      class="relative top-20 mx-auto w-[768px] max-w-4xl rounded-none border bg-white p-5 shadow-lg"
     >
       <div class="mt-3">
         <div class="mb-4 flex items-center justify-between">
@@ -39,12 +39,12 @@
             <label class="block text-sm font-medium text-gray-700">API Key</label>
             <div class="mt-1 flex items-center space-x-2">
               <div class="flex-1">
-                <div v-if="showFullKey" class="rounded-md border border-gray-300 bg-gray-50 p-3">
+                <div v-if="showFullKey" class="rounded-none border border-gray-300 bg-gray-50 p-3">
                   <code class="break-all font-mono text-sm text-gray-900">{{
                     apiKey.key || 'Not available'
                   }}</code>
                 </div>
-                <div v-else class="rounded-md border border-gray-300 bg-gray-50 p-3">
+                <div v-else class="rounded-none border border-gray-300 bg-gray-50 p-3">
                   <code class="font-mono text-sm text-gray-900">{{
                     apiKey.keyPreview || 'cr_****'
                   }}</code>
@@ -53,7 +53,7 @@
               <div class="flex flex-col space-y-1">
                 <button
                   v-if="apiKey.key"
-                  class="inline-flex items-center rounded border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  class="inline-flex items-center rounded-none border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   @click="showFullKey = !showFullKey"
                 >
                   <svg
@@ -94,7 +94,7 @@
                 </button>
                 <button
                   v-if="showFullKey && apiKey.key"
-                  class="inline-flex items-center rounded border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  class="inline-flex items-center rounded-none border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   @click="copyToClipboard(apiKey.key)"
                 >
                   <svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@
             <div class="mt-1">
               <span
                 :class="[
-                  'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                  'inline-flex items-center rounded-none px-2.5 py-0.5 text-xs font-medium',
                   apiKey.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 ]"
               >
@@ -183,7 +183,7 @@
 
           <div class="flex justify-end pt-4">
             <button
-              class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              class="rounded-none border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               @click="emit('close')"
             >
               Close

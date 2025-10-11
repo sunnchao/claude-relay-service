@@ -5,7 +5,7 @@
       <label class="flex cursor-pointer items-center">
         <input
           v-model="proxy.enabled"
-          class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500"
+          class="h-4 w-4 rounded-none border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500"
           type="checkbox"
         />
         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">启用代理</span>
@@ -14,10 +14,12 @@
 
     <div
       v-if="proxy.enabled"
-      class="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800"
+      class="space-y-4 rounded-none border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800"
     >
       <div class="mb-3 flex items-start gap-3">
-        <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gray-500">
+        <div
+          class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-none bg-gray-500"
+        >
           <i class="fas fa-server text-sm text-white" />
         </div>
         <div class="flex-1">
@@ -113,7 +115,7 @@
           <input
             id="proxyAuth"
             v-model="showAuth"
-            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500"
+            class="h-4 w-4 rounded-none border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500"
             type="checkbox"
           />
           <label
@@ -160,7 +162,7 @@
       </div>
 
       <div
-        class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/30"
+        class="rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/30"
       >
         <p class="text-xs text-blue-700 dark:text-blue-300">
           <i class="fas fa-info-circle mr-1" />

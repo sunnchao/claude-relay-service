@@ -3,7 +3,7 @@
     <!-- 检查是否为无限制状态 -->
     <div
       v-if="!limit || limit <= 0"
-      class="flex items-center justify-center rounded-lg px-3 py-2 text-xs"
+      class="flex items-center justify-center rounded-none px-3 py-2 text-xs"
     >
       <div class="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
         <i class="fas fa-infinity text-sm text-gray-500 dark:text-gray-400" />
@@ -21,9 +21,9 @@
           >${{ current.toFixed(2) }} / ${{ limit.toFixed(2) }}</span
         >
       </div>
-      <div class="relative h-1.5 overflow-hidden rounded-full bg-gray-200/85 dark:bg-gray-700/70">
+      <div class="relative h-1.5 overflow-hidden rounded-none bg-gray-200/85 dark:bg-gray-700/70">
         <div
-          class="absolute inset-y-0 rounded-full transition-all duration-500 ease-out"
+          class="absolute inset-y-0 rounded-none transition-all duration-500 ease-out"
           :class="compactBarClass"
           :style="{ width: progress + '%' }"
         ></div>
@@ -31,7 +31,7 @@
     </div>
     <div
       v-else
-      class="group relative h-9 w-full overflow-hidden rounded-xl border transition-all duration-300 ease-out"
+      class="group relative h-9 w-full overflow-hidden rounded-none border transition-all duration-300 ease-out"
       :class="containerClass"
     >
       <!-- 背景层 -->
@@ -46,7 +46,7 @@
 
       <!-- 内部高光边框 -->
       <div
-        class="pointer-events-none absolute inset-0 rounded-xl border border-white/50 opacity-40 mix-blend-overlay dark:border-white/10"
+        class="pointer-events-none absolute inset-0 rounded-none border border-white/50 opacity-40 mix-blend-overlay dark:border-white/10"
       ></div>
 
       <!-- 文字层 - 使用双层文字技术确保可读性 -->

@@ -1,5 +1,5 @@
 <template>
-  <div class="glass-strong rounded-3xl p-6">
+  <div class="glass-strong rounded-none p-6">
     <div class="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
       <h2 class="flex items-center text-xl font-bold text-gray-800">
         <i class="fas fa-robot mr-2 text-purple-500" />
@@ -31,10 +31,10 @@
         <div
           v-for="(stat, index) in sortedStats"
           :key="stat.model"
-          class="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+          class="flex items-center justify-between rounded-none bg-gray-50 p-3"
         >
           <div class="flex items-center gap-3">
-            <div class="h-4 w-4 rounded" :style="`background-color: ${getColor(index)}`" />
+            <div class="h-4 w-4 rounded-none" :style="`background-color: ${getColor(index)}`" />
             <span class="font-medium text-gray-700">{{ stat.model }}</span>
           </div>
           <div class="text-right">

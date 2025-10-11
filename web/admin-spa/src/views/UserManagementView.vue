@@ -10,7 +10,7 @@
       </div>
       <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
         <button
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 sm:w-auto"
+          class="inline-flex items-center justify-center rounded-none border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 sm:w-auto"
           :disabled="loading"
           @click="loadUsers"
         >
@@ -29,7 +29,7 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
+      <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -61,7 +61,7 @@
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
+      <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -93,7 +93,7 @@
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
+      <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -125,7 +125,7 @@
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
+      <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -159,13 +159,13 @@
     </div>
 
     <!-- Search and Filters -->
-    <div class="rounded-lg bg-white shadow dark:bg-gray-800">
+    <div class="rounded-none bg-white shadow dark:bg-gray-800">
       <div class="px-4 py-5 sm:p-6">
         <div class="sm:flex sm:items-center sm:justify-between">
           <div class="space-y-4 sm:flex sm:items-center sm:space-x-4 sm:space-y-0">
             <!-- Search -->
             <div class="min-w-0 flex-1">
-              <div class="relative rounded-md shadow-sm">
+              <div class="relative rounded-none shadow-sm">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <svg
                     class="h-5 w-5 text-gray-400"
@@ -183,7 +183,7 @@
                 </div>
                 <input
                   v-model="searchQuery"
-                  class="block w-full rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  class="block w-full rounded-none border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                   placeholder="Search users..."
                   type="search"
                   @input="debouncedSearch"
@@ -195,7 +195,7 @@
             <div>
               <select
                 v-model="selectedRole"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                class="block w-full rounded-none border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                 @change="loadUsers"
               >
                 <option value="">All Roles</option>
@@ -208,7 +208,7 @@
             <div>
               <select
                 v-model="selectedStatus"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                class="block w-full rounded-none border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                 @change="loadUsers"
               >
                 <option value="">All Status</option>
@@ -222,7 +222,7 @@
     </div>
 
     <!-- Users Table -->
-    <div class="overflow-hidden bg-white shadow dark:bg-gray-800 sm:rounded-md">
+    <div class="overflow-hidden bg-white shadow dark:bg-gray-800 sm:rounded-none">
       <div class="border-b border-gray-200 px-4 py-5 dark:border-gray-700 sm:px-6">
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
           Users
@@ -268,7 +268,7 @@
             <div class="flex min-w-0 flex-1 items-center">
               <div class="flex-shrink-0">
                 <div
-                  class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600"
+                  class="flex h-10 w-10 items-center justify-center rounded-none bg-gray-300 dark:bg-gray-600"
                 >
                   <svg
                     class="h-6 w-6 text-gray-600 dark:text-gray-400"
@@ -293,7 +293,7 @@
                   <div class="ml-2 flex items-center space-x-2">
                     <span
                       :class="[
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                        'inline-flex items-center rounded-none px-2.5 py-0.5 text-xs font-medium',
                         user.isActive
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
@@ -303,7 +303,7 @@
                     </span>
                     <span
                       :class="[
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                        'inline-flex items-center rounded-none px-2.5 py-0.5 text-xs font-medium',
                         user.role === 'admin'
                           ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                           : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
@@ -336,7 +336,7 @@
             <div class="flex items-center space-x-2">
               <!-- View Usage Stats -->
               <button
-                class="inline-flex items-center rounded border border-transparent p-1 text-gray-400 hover:text-blue-600"
+                class="inline-flex items-center rounded-none border border-transparent p-1 text-gray-400 hover:text-blue-600"
                 title="View Usage Stats"
                 @click="viewUserStats(user)"
               >
@@ -352,7 +352,7 @@
 
               <!-- Disable User API Keys -->
               <button
-                class="inline-flex items-center rounded border border-transparent p-1 text-gray-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                class="inline-flex items-center rounded-none border border-transparent p-1 text-gray-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                 :disabled="user.apiKeyCount === 0"
                 title="Disable All API Keys"
                 @click="disableUserApiKeys(user)"
@@ -370,7 +370,7 @@
               <!-- Toggle User Status -->
               <button
                 :class="[
-                  'inline-flex items-center rounded border border-transparent p-1',
+                  'inline-flex items-center rounded-none border border-transparent p-1',
                   user.isActive
                     ? 'text-gray-400 hover:text-red-600'
                     : 'text-gray-400 hover:text-green-600'
@@ -404,7 +404,7 @@
 
               <!-- Change Role -->
               <button
-                class="inline-flex items-center rounded border border-transparent p-1 text-gray-400 hover:text-purple-600"
+                class="inline-flex items-center rounded-none border border-transparent p-1 text-gray-400 hover:text-purple-600"
                 title="Change Role"
                 @click="changeUserRole(user)"
               >

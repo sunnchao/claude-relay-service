@@ -3,11 +3,11 @@
     <!-- Claude OAuth流程 -->
     <div v-if="platform === 'claude'">
       <div
-        class="rounded-lg border border-blue-200 bg-blue-50 p-6 dark:border-blue-700 dark:bg-blue-900/30"
+        class="rounded-none border border-blue-200 bg-blue-50 p-6 dark:border-blue-700 dark:bg-blue-900/30"
       >
         <div class="flex items-start gap-4">
           <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-none bg-blue-500"
           >
             <i class="fas fa-link text-white" />
           </div>
@@ -20,11 +20,11 @@
             <div class="space-y-4">
               <!-- 步骤1: 生成授权链接 -->
               <div
-                class="rounded-lg border border-blue-300 bg-white/80 p-4 dark:border-blue-600 dark:bg-gray-800/80"
+                class="rounded-none border border-blue-300 bg-white/80 p-4 dark:border-blue-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-blue-600 text-xs font-bold text-white"
                   >
                     1
                   </div>
@@ -51,7 +51,7 @@
                           :value="authUrl"
                         />
                         <button
-                          class="rounded-lg bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+                          class="rounded-none bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
                           title="复制链接"
                           @click="copyAuthUrl"
                         >
@@ -71,11 +71,11 @@
 
               <!-- 步骤2: 访问链接并授权 -->
               <div
-                class="rounded-lg border border-blue-300 bg-white/80 p-4 dark:border-blue-600 dark:bg-gray-800/80"
+                class="rounded-none border border-blue-300 bg-white/80 p-4 dark:border-blue-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-blue-600 text-xs font-bold text-white"
                   >
                     2
                   </div>
@@ -87,7 +87,7 @@
                       请在新标签页中打开授权链接，登录您的 Claude 账户并授权。
                     </p>
                     <div
-                      class="rounded border border-yellow-300 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/30"
+                      class="rounded-none border border-yellow-300 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/30"
                     >
                       <p class="text-xs text-yellow-800 dark:text-yellow-300">
                         <i class="fas fa-exclamation-triangle mr-1" />
@@ -101,11 +101,11 @@
 
               <!-- 步骤3: 输入授权码 -->
               <div
-                class="rounded-lg border border-blue-300 bg-white/80 p-4 dark:border-blue-600 dark:bg-gray-800/80"
+                class="rounded-none border border-blue-300 bg-white/80 p-4 dark:border-blue-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-blue-600 text-xs font-bold text-white"
                   >
                     3
                   </div>
@@ -148,11 +148,11 @@
     <!-- Gemini OAuth流程 -->
     <div v-else-if="platform === 'gemini'">
       <div
-        class="rounded-lg border border-green-200 bg-green-50 p-6 dark:border-green-700 dark:bg-green-900/30"
+        class="rounded-none border border-green-200 bg-green-50 p-6 dark:border-green-700 dark:bg-green-900/30"
       >
         <div class="flex items-start gap-4">
           <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-green-500"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-none bg-green-500"
           >
             <i class="fas fa-robot text-white" />
           </div>
@@ -165,11 +165,11 @@
             <div class="space-y-4">
               <!-- 步骤1: 生成授权链接 -->
               <div
-                class="rounded-lg border border-green-300 bg-white/80 p-4 dark:border-green-600 dark:bg-gray-800/80"
+                class="rounded-none border border-green-300 bg-white/80 p-4 dark:border-green-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-green-600 text-xs font-bold text-white"
                   >
                     1
                   </div>
@@ -196,7 +196,7 @@
                           :value="authUrl"
                         />
                         <button
-                          class="rounded-lg bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+                          class="rounded-none bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
                           title="复制链接"
                           @click="copyAuthUrl"
                         >
@@ -216,11 +216,11 @@
 
               <!-- 步骤2: 操作说明 -->
               <div
-                class="rounded-lg border border-green-300 bg-white/80 p-4 dark:border-green-600 dark:bg-gray-800/80"
+                class="rounded-none border border-green-300 bg-white/80 p-4 dark:border-green-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-green-600 text-xs font-bold text-white"
                   >
                     2
                   </div>
@@ -232,7 +232,7 @@
                       请在新标签页中打开授权链接，登录您的 Gemini 账户并授权。
                     </p>
                     <div
-                      class="rounded border border-yellow-300 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/30"
+                      class="rounded-none border border-yellow-300 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/30"
                     >
                       <p class="text-xs text-yellow-800 dark:text-yellow-300">
                         <i class="fas fa-exclamation-triangle mr-1" />
@@ -246,11 +246,11 @@
 
               <!-- 步骤3: 输入授权码 -->
               <div
-                class="rounded-lg border border-green-300 bg-white/80 p-4 dark:border-green-600 dark:bg-gray-800/80"
+                class="rounded-none border border-green-300 bg-white/80 p-4 dark:border-green-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-green-600 text-xs font-bold text-white"
                   >
                     3
                   </div>
@@ -294,11 +294,11 @@
     <!-- OpenAI OAuth流程 -->
     <div v-else-if="platform === 'openai'">
       <div
-        class="rounded-lg border border-orange-200 bg-orange-50 p-6 dark:border-orange-700 dark:bg-orange-900/30"
+        class="rounded-none border border-orange-200 bg-orange-50 p-6 dark:border-orange-700 dark:bg-orange-900/30"
       >
         <div class="flex items-start gap-4">
           <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-orange-500"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-none bg-orange-500"
           >
             <i class="fas fa-brain text-white" />
           </div>
@@ -311,11 +311,11 @@
             <div class="space-y-4">
               <!-- 步骤1: 生成授权链接 -->
               <div
-                class="rounded-lg border border-orange-300 bg-white/80 p-4 dark:border-orange-600 dark:bg-gray-800/80"
+                class="rounded-none border border-orange-300 bg-white/80 p-4 dark:border-orange-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-orange-600 text-xs font-bold text-white"
                   >
                     1
                   </div>
@@ -342,7 +342,7 @@
                           :value="authUrl"
                         />
                         <button
-                          class="rounded-lg bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+                          class="rounded-none bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
                           title="复制链接"
                           @click="copyAuthUrl"
                         >
@@ -362,11 +362,11 @@
 
               <!-- 步骤2: 访问链接并授权 -->
               <div
-                class="rounded-lg border border-orange-300 bg-white/80 p-4 dark:border-orange-600 dark:bg-gray-800/80"
+                class="rounded-none border border-orange-300 bg-white/80 p-4 dark:border-orange-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-orange-600 text-xs font-bold text-white"
                   >
                     2
                   </div>
@@ -378,7 +378,7 @@
                       请在新标签页中打开授权链接，登录您的 OpenAI 账户并授权。
                     </p>
                     <div
-                      class="mb-3 rounded border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-900/30"
+                      class="mb-3 rounded-none border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-900/30"
                     >
                       <p class="text-xs text-amber-800 dark:text-amber-300">
                         <i class="fas fa-clock mr-1" />
@@ -391,7 +391,7 @@
                       </p>
                     </div>
                     <div
-                      class="rounded border border-yellow-300 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/30"
+                      class="rounded-none border border-yellow-300 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/30"
                     >
                       <p class="text-xs text-yellow-800 dark:text-yellow-300">
                         <i class="fas fa-exclamation-triangle mr-1" />
@@ -405,11 +405,11 @@
 
               <!-- 步骤3: 输入授权码 -->
               <div
-                class="rounded-lg border border-orange-300 bg-white/80 p-4 dark:border-orange-600 dark:bg-gray-800/80"
+                class="rounded-none border border-orange-300 bg-white/80 p-4 dark:border-orange-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-orange-600 text-xs font-bold text-white"
                   >
                     3
                   </div>
@@ -436,7 +436,7 @@
                         />
                       </div>
                       <div
-                        class="rounded border border-blue-300 bg-blue-50 p-2 dark:border-blue-700 dark:bg-blue-900/30"
+                        class="rounded-none border border-blue-300 bg-blue-50 p-2 dark:border-blue-700 dark:bg-blue-900/30"
                       >
                         <p class="text-xs text-blue-700 dark:text-blue-300">
                           <i class="fas fa-lightbulb mr-1" />
@@ -467,11 +467,11 @@
     <!-- Droid OAuth流程 -->
     <div v-else-if="platform === 'droid'">
       <div
-        class="rounded-lg border border-cyan-200 bg-cyan-50 p-6 dark:border-cyan-700 dark:bg-cyan-900/30"
+        class="rounded-none border border-cyan-200 bg-cyan-50 p-6 dark:border-cyan-700 dark:bg-cyan-900/30"
       >
         <div class="flex items-start gap-4">
           <div
-            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-cyan-500"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-none bg-cyan-500"
           >
             <i class="fas fa-robot text-white" />
           </div>
@@ -484,11 +484,11 @@
             <div class="space-y-4">
               <!-- 步骤1: 生成授权链接 -->
               <div
-                class="rounded-lg border border-cyan-300 bg-white/80 p-4 dark:border-cyan-600 dark:bg-gray-800/80"
+                class="rounded-none border border-cyan-300 bg-white/80 p-4 dark:border-cyan-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-cyan-600 text-xs font-bold text-white"
                   >
                     1
                   </div>
@@ -512,7 +512,7 @@
                           >授权链接</label
                         >
                         <div
-                          class="flex flex-col gap-2 rounded-md border border-cyan-200 bg-white p-3 dark:border-cyan-700 dark:bg-gray-800"
+                          class="flex flex-col gap-2 rounded-none border border-cyan-200 bg-white p-3 dark:border-cyan-700 dark:bg-gray-800"
                         >
                           <div class="flex items-center gap-2">
                             <input
@@ -522,7 +522,7 @@
                               :value="authUrl"
                             />
                             <button
-                              class="rounded-lg bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
+                              class="rounded-none bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
                               title="复制链接"
                               @click="copyAuthUrl"
                             >
@@ -531,13 +531,13 @@
                           </div>
                           <div class="flex flex-wrap items-center gap-2">
                             <button
-                              class="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-white px-3 py-1.5 text-xs font-medium text-cyan-600 shadow-sm transition-colors hover:border-cyan-300 hover:bg-cyan-50 dark:border-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-200 dark:hover:border-cyan-500 dark:hover:bg-cyan-900/60"
+                              class="inline-flex items-center gap-1 rounded-none border border-cyan-200 bg-white px-3 py-1.5 text-xs font-medium text-cyan-600 shadow-sm transition-colors hover:border-cyan-300 hover:bg-cyan-50 dark:border-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-200 dark:hover:border-cyan-500 dark:hover:bg-cyan-900/60"
                               @click="openVerificationPage"
                             >
                               <i class="fas fa-external-link-alt text-xs" /> 在新标签中打开
                             </button>
                             <button
-                              class="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium text-cyan-600 transition-colors hover:text-cyan-700 dark:text-cyan-300 dark:hover:text-cyan-200"
+                              class="inline-flex items-center gap-1 rounded-none px-3 py-1.5 text-xs font-medium text-cyan-600 transition-colors hover:text-cyan-700 dark:text-cyan-300 dark:hover:text-cyan-200"
                               @click="regenerateAuthUrl"
                             >
                               <i class="fas fa-sync-alt text-xs" />重新生成
@@ -550,7 +550,7 @@
                           >授权验证码</label
                         >
                         <div
-                          class="flex items-center justify-between rounded-md border border-cyan-200 bg-cyan-50 px-4 py-3 dark:border-cyan-700 dark:bg-cyan-900/30"
+                          class="flex items-center justify-between rounded-none border border-cyan-200 bg-cyan-50 px-4 py-3 dark:border-cyan-700 dark:bg-cyan-900/30"
                         >
                           <span
                             class="font-mono text-xl font-semibold text-cyan-700 dark:text-cyan-200"
@@ -558,7 +558,7 @@
                             {{ userCode || '------' }}
                           </span>
                           <button
-                            class="rounded-lg bg-white px-3 py-1 text-sm text-cyan-600 transition-colors hover:bg-cyan-100 dark:bg-cyan-800 dark:text-cyan-200 dark:hover:bg-cyan-700"
+                            class="rounded-none bg-white px-3 py-1 text-sm text-cyan-600 transition-colors hover:bg-cyan-100 dark:bg-cyan-800 dark:text-cyan-200 dark:hover:bg-cyan-700"
                             @click="copyUserCode"
                           >
                             <i class="fas fa-copy mr-1" />复制
@@ -580,11 +580,11 @@
 
               <!-- 步骤2: 访问链接并授权 -->
               <div
-                class="rounded-lg border border-cyan-300 bg-white/80 p-4 dark:border-cyan-600 dark:bg-gray-800/80"
+                class="rounded-none border border-cyan-300 bg-white/80 p-4 dark:border-cyan-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-cyan-600 text-xs font-bold text-white"
                   >
                     2
                   </div>
@@ -604,11 +604,11 @@
 
               <!-- 步骤3: 输入授权结果 -->
               <div
-                class="rounded-lg border border-cyan-300 bg-white/80 p-4 dark:border-cyan-600 dark:bg-gray-800/80"
+                class="rounded-none border border-cyan-300 bg-white/80 p-4 dark:border-cyan-600 dark:bg-gray-800/80"
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-600 text-xs font-bold text-white"
+                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-cyan-600 text-xs font-bold text-white"
                   >
                     3
                   </div>
@@ -630,7 +630,7 @@
 
     <div class="flex gap-3 pt-4">
       <button
-        class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        class="flex-1 rounded-none bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
         type="button"
         @click="$emit('back')"
       >

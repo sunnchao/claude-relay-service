@@ -31,7 +31,7 @@
         <div
           v-if="showDropdown"
           ref="dropdownRef"
-          class="absolute z-50 flex flex-col rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800"
+          class="absolute z-50 flex flex-col rounded-none border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800"
           :style="dropdownStyle"
         >
           <!-- 搜索框 -->
@@ -120,7 +120,7 @@
                   <div>
                     <span class="text-gray-700 dark:text-gray-300">{{ account.name }}</span>
                     <span
-                      class="ml-2 rounded-full px-2 py-0.5 text-xs"
+                      class="ml-2 rounded-none px-2 py-0.5 text-xs"
                       :class="
                         account.isActive
                           ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -159,7 +159,7 @@
                   <div>
                     <span class="text-gray-700 dark:text-gray-300">{{ account.name }}</span>
                     <span
-                      class="ml-2 rounded-full px-2 py-0.5 text-xs"
+                      class="ml-2 rounded-none px-2 py-0.5 text-xs"
                       :class="
                         account.isActive
                           ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -198,7 +198,7 @@
                   <div>
                     <span class="text-gray-700 dark:text-gray-300">{{ account.name }}</span>
                     <span
-                      class="ml-2 rounded-full px-2 py-0.5 text-xs"
+                      class="ml-2 rounded-none px-2 py-0.5 text-xs"
                       :class="
                         account.isActive === 'true' || account.isActive === true
                           ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'

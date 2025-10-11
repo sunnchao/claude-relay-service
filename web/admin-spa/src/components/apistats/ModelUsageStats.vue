@@ -43,25 +43,25 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-xs md:grid-cols-4 md:gap-3 md:text-sm">
-          <div class="rounded bg-gray-50 p-2 dark:bg-gray-700">
+          <div class="rounded-none bg-gray-50 p-2 dark:bg-gray-700">
             <div class="text-gray-600 dark:text-gray-400">输入 Token</div>
             <div class="font-medium text-gray-900 dark:text-gray-100">
               {{ formatNumber(model.inputTokens) }}
             </div>
           </div>
-          <div class="rounded bg-gray-50 p-2 dark:bg-gray-700">
+          <div class="rounded-none bg-gray-50 p-2 dark:bg-gray-700">
             <div class="text-gray-600 dark:text-gray-400">输出 Token</div>
             <div class="font-medium text-gray-900 dark:text-gray-100">
               {{ formatNumber(model.outputTokens) }}
             </div>
           </div>
-          <div class="rounded bg-gray-50 p-2 dark:bg-gray-700">
+          <div class="rounded-none bg-gray-50 p-2 dark:bg-gray-700">
             <div class="text-gray-600 dark:text-gray-400">缓存创建</div>
             <div class="font-medium text-gray-900 dark:text-gray-100">
               {{ formatNumber(model.cacheCreateTokens) }}
             </div>
           </div>
-          <div class="rounded bg-gray-50 p-2 dark:bg-gray-700">
+          <div class="rounded-none bg-gray-50 p-2 dark:bg-gray-700">
             <div class="text-gray-600 dark:text-gray-400">缓存读取</div>
             <div class="font-medium text-gray-900 dark:text-gray-100">
               {{ formatNumber(model.cacheReadTokens) }}

@@ -1,9 +1,9 @@
 <template>
   <div class="mb-4 sm:mb-6">
     <!-- 移动端下拉选择器 -->
-    <div class="block rounded-xl bg-white/10 p-2 backdrop-blur-sm dark:bg-gray-800/20 sm:hidden">
+    <div class="block rounded-none bg-white/10 p-2 backdrop-blur-sm dark:bg-gray-800/20 sm:hidden">
       <select
-        class="focus:ring-primary-color w-full rounded-lg bg-white/90 px-4 py-3 font-semibold text-gray-700 focus:outline-none focus:ring-2 dark:bg-gray-800/90 dark:text-gray-200 dark:focus:ring-indigo-400"
+        class="focus:ring-primary-color w-full rounded-none bg-white/90 px-4 py-3 font-semibold text-gray-700 focus:outline-none focus:ring-2 dark:bg-gray-800/90 dark:text-gray-200 dark:focus:ring-indigo-400"
         :value="activeTab"
         @change="$emit('tab-change', $event.target.value)"
       >
@@ -15,7 +15,7 @@
 
     <!-- 桌面端标签栏 -->
     <div
-      class="hidden flex-wrap gap-2 rounded-2xl bg-white/10 p-2 backdrop-blur-sm dark:bg-gray-800/20 sm:flex"
+      class="hidden flex-wrap gap-2 rounded-none bg-white/10 p-2 backdrop-blur-sm dark:bg-gray-800/20 sm:flex"
     >
       <button
         v-for="tab in tabs"

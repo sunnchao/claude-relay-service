@@ -265,7 +265,7 @@
             </div>
             <p
               v-else
-              class="rounded-xl bg-slate-100 px-3 py-2 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-300"
+              class="rounded-none bg-slate-100 px-3 py-2 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-300"
             >
               暂无额度使用数据
             </p>
@@ -510,7 +510,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 
 <style scoped>
 .card-section {
-  @apply flex h-full flex-col gap-4 rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-md dark:border-slate-700/60 dark:bg-slate-900/70 md:p-6;
+  @apply flex h-full flex-col gap-4 rounded-none border border-slate-200/70 bg-white/90 p-4 shadow-md dark:border-slate-700/60 dark:bg-slate-900/70 md:p-6;
 }
 
 :global(.dark) .card-section {
@@ -530,7 +530,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .header-tag {
-  @apply ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-300;
+  @apply ml-auto rounded-none bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-300;
 }
 
 .info-grid {
@@ -551,7 +551,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .info-item {
-  @apply rounded-xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-900/60;
+  @apply rounded-none border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-900/60;
   min-height: 86px;
 }
 
@@ -564,7 +564,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .contributor-item {
-  @apply flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300;
+  @apply flex items-center justify-between rounded-none bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300;
 }
 
 .metric-grid {
@@ -572,7 +572,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .metric-card {
-  @apply rounded-xl border border-slate-200 bg-white/70 p-4 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/60;
+  @apply rounded-none border border-slate-200 bg-white/70 p-4 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/60;
 }
 
 .metric-value {
@@ -584,11 +584,11 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .account-card {
-  @apply rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-900/60;
+  @apply rounded-none border border-slate-200 bg-white/80 p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-900/60;
 }
 
 .account-icon {
-  @apply inline-flex h-10 w-10 items-center justify-center rounded-full text-white;
+  @apply inline-flex h-10 w-10 items-center justify-center rounded-none text-white;
 }
 
 .icon-claude {
@@ -608,7 +608,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .rate-badge {
-  @apply rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium dark:bg-slate-800;
+  @apply rounded-none bg-slate-100 px-2 py-0.5 text-xs font-medium dark:bg-slate-800;
 }
 
 .progress-row {
@@ -616,11 +616,11 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .progress-track {
-  @apply h-1.5 flex-1 rounded-full bg-slate-200 dark:bg-slate-700;
+  @apply h-1.5 flex-1 rounded-none bg-slate-200 dark:bg-slate-700;
 }
 
 .progress-bar {
-  @apply h-1.5 rounded-full transition-all duration-300;
+  @apply h-1.5 rounded-none transition-all duration-300;
 }
 
 .progress-value {
@@ -628,7 +628,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .quota-row {
-  @apply rounded-xl border border-slate-200 bg-white/60 p-3 dark:border-slate-700 dark:bg-slate-900/50;
+  @apply rounded-none border border-slate-200 bg-white/60 p-3 dark:border-slate-700 dark:bg-slate-900/50;
 }
 
 .quota-header {
@@ -636,7 +636,7 @@ const getCodexWindowLabel = (type) => (type === 'secondary' ? '周限' : '5h')
 }
 
 .quota-tag {
-  @apply inline-flex min-w-[34px] justify-center rounded-full px-2 py-0.5 text-[11px] font-semibold;
+  @apply inline-flex min-w-[34px] justify-center rounded-none px-2 py-0.5 text-[11px] font-semibold;
 }
 
 .tag-indigo {

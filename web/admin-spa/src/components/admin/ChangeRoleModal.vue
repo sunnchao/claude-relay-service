@@ -3,7 +3,7 @@
     v-if="show"
     class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50"
   >
-    <div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg">
+    <div class="relative top-20 mx-auto w-96 rounded-none border bg-white p-5 shadow-lg">
       <div class="mt-3">
         <div class="mb-4 flex items-center justify-between">
           <h3 class="text-lg font-medium text-gray-900">Change User Role</h3>
@@ -21,10 +21,10 @@
 
         <div v-if="user" class="space-y-4">
           <!-- User Info -->
-          <div class="rounded-md bg-gray-50 p-4">
+          <div class="rounded-none bg-gray-50 p-4">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300">
+                <div class="flex h-10 w-10 items-center justify-center rounded-none bg-gray-300">
                   <svg
                     class="h-6 w-6 text-gray-600"
                     fill="none"
@@ -48,7 +48,7 @@
                 <div class="mt-1">
                   <span
                     :class="[
-                      'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                      'inline-flex items-center rounded-none px-2.5 py-0.5 text-xs font-medium',
                       user.role === 'admin'
                         ? 'bg-purple-100 text-purple-800'
                         : 'bg-blue-100 text-blue-800'
@@ -98,7 +98,7 @@
             <!-- Warning for role changes -->
             <div
               v-if="selectedRole !== user.role"
-              class="rounded-md border border-yellow-200 bg-yellow-50 p-4"
+              class="rounded-none border border-yellow-200 bg-yellow-50 p-4"
             >
               <div class="flex">
                 <div class="flex-shrink-0">
@@ -126,7 +126,7 @@
               </div>
             </div>
 
-            <div v-if="error" class="rounded-md border border-red-200 bg-red-50 p-4">
+            <div v-if="error" class="rounded-none border border-red-200 bg-red-50 p-4">
               <div class="flex">
                 <div class="flex-shrink-0">
                   <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
@@ -145,7 +145,7 @@
 
             <div class="flex justify-end space-x-3 pt-4">
               <button
-                class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                class="rounded-none border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                 :disabled="loading"
                 type="button"
                 @click="$emit('close')"
@@ -153,7 +153,7 @@
                 Cancel
               </button>
               <button
-                class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                class="rounded-none border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 :disabled="loading || selectedRole === user.role"
                 type="submit"
               >
