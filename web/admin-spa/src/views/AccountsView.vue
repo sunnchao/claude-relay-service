@@ -207,6 +207,21 @@
                 <i v-else class="fas fa-sort ml-1 text-gray-400" />
               </th>
               <th
+                class="w-[12%] min-w-[110px] cursor-pointer px-3 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                @click="sortAccounts('expiresAt')"
+              >
+                到期时间
+                <i
+                  v-if="accountsSortBy === 'expiresAt'"
+                  :class="[
+                    'fas',
+                    accountsSortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down',
+                    'ml-1'
+                  ]"
+                />
+                <i v-else class="fas fa-sort ml-1 text-gray-400" />
+              </th>
+              <th
                 class="w-[12%] min-w-[100px] cursor-pointer px-3 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                 @click="sortAccounts('status')"
               >
@@ -549,6 +564,13 @@
                     <span class="text-xs font-medium text-cyan-700 dark:text-cyan-300">
                       {{ getDroidAuthType(account) }}
                     </span>
+                    <span
+                      v-if="isDroidApiKeyMode(account)"
+                      :class="getDroidApiKeyBadgeClasses(account)"
+                    >
+                      <i class="fas fa-key text-[9px]" />
+                      <span>x{{ getDroidApiKeyCount(account) }}</span>
+                    </span>
                   </div>
                   <div
                     v-else
@@ -557,6 +579,49 @@
                     <i class="fas fa-question text-xs text-gray-700" />
                     <span class="text-xs font-semibold text-gray-800">未知</span>
                   </div>
+                </div>
+              </td>
+              <td class="whitespace-nowrap px-3 py-4">
+                <div class="flex flex-col gap-1">
+                  <!-- 已设置过期时间 -->
+                  <span v-if="account.expiresAt">
+                    <span
+                      v-if="isExpired(account.expiresAt)"
+                      class="inline-flex cursor-pointer items-center text-red-600 hover:underline"
+                      style="font-size: 13px"
+                      @click.stop="startEditAccountExpiry(account)"
+                    >
+                      <i class="fas fa-exclamation-circle mr-1 text-xs" />
+                      已过期
+                    </span>
+                    <span
+                      v-else-if="isExpiringSoon(account.expiresAt)"
+                      class="inline-flex cursor-pointer items-center text-orange-600 hover:underline"
+                      style="font-size: 13px"
+                      @click.stop="startEditAccountExpiry(account)"
+                    >
+                      <i class="fas fa-clock mr-1 text-xs" />
+                      {{ formatExpireDate(account.expiresAt) }}
+                    </span>
+                    <span
+                      v-else
+                      class="cursor-pointer text-gray-600 hover:underline dark:text-gray-400"
+                      style="font-size: 13px"
+                      @click.stop="startEditAccountExpiry(account)"
+                    >
+                      {{ formatExpireDate(account.expiresAt) }}
+                    </span>
+                  </span>
+                  <!-- 永不过期 -->
+                  <span
+                    v-else
+                    class="inline-flex cursor-pointer items-center text-gray-400 hover:underline dark:text-gray-500"
+                    style="font-size: 13px"
+                    @click.stop="startEditAccountExpiry(account)"
+                  >
+                    <i class="fas fa-infinity mr-1 text-xs" />
+                    永不过期
+                  </span>
                 </div>
               </td>
               <td class="whitespace-nowrap px-3 py-4">
@@ -1646,6 +1711,15 @@
       :summary="accountUsageSummary"
       @close="closeAccountUsageModal"
     />
+
+    <!-- 账户过期时间编辑弹窗 -->
+    <AccountExpiryEditModal
+      ref="expiryEditModalRef"
+      :account="editingExpiryAccount || { id: null, expiresAt: null, name: '' }"
+      :show="!!editingExpiryAccount"
+      @close="closeAccountExpiryEdit"
+      @save="handleSaveAccountExpiry"
+    />
   </div>
 </template>
 
@@ -1657,6 +1731,7 @@ import { useConfirm } from '@/composables/useConfirm'
 import AccountForm from '@/components/accounts/AccountForm.vue'
 import CcrAccountForm from '@/components/accounts/CcrAccountForm.vue'
 import AccountUsageDetailModal from '@/components/accounts/AccountUsageDetailModal.vue'
+import AccountExpiryEditModal from '@/components/accounts/AccountExpiryEditModal.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import CustomDropdown from '@/components/common/CustomDropdown.vue'
 
@@ -1712,6 +1787,10 @@ const supportedUsagePlatforms = [
   'gemini',
   'droid'
 ]
+
+// 过期时间编辑弹窗状态
+const editingExpiryAccount = ref(null)
+const expiryEditModalRef = ref(null)
 
 // 缓存状态标志
 const apiKeysLoaded = ref(false)
@@ -3020,6 +3099,70 @@ const getDroidAuthType = (account) => {
   return 'OAuth'
 }
 
+// 判断是否为 API Key 模式的 Droid 账号
+const isDroidApiKeyMode = (account) => getDroidAuthType(account) === 'API Key'
+
+// 获取 Droid 账号的 API Key 数量
+const getDroidApiKeyCount = (account) => {
+  if (!account || typeof account !== 'object') {
+    return 0
+  }
+
+  // 优先使用 apiKeys 数组来计算正常状态的 API Keys
+  if (Array.isArray(account.apiKeys)) {
+    // 只计算状态不是 'error' 的 API Keys
+    return account.apiKeys.filter((apiKey) => apiKey.status !== 'error').length
+  }
+
+  // 如果是字符串格式的 apiKeys，尝试解析
+  if (typeof account.apiKeys === 'string' && account.apiKeys.trim()) {
+    try {
+      const parsed = JSON.parse(account.apiKeys)
+      if (Array.isArray(parsed)) {
+        // 只计算状态不是 'error' 的 API Keys
+        return parsed.filter((apiKey) => apiKey.status !== 'error').length
+      }
+    } catch (error) {
+      // 忽略解析错误，继续使用其他字段
+    }
+  }
+
+  const candidates = [
+    account.apiKeyCount,
+    account.api_key_count,
+    account.apiKeysCount,
+    account.api_keys_count
+  ]
+
+  for (const candidate of candidates) {
+    const value = Number(candidate)
+    if (Number.isFinite(value) && value >= 0) {
+      return value
+    }
+  }
+
+  return 0
+}
+
+// 根据数量返回徽标样式
+const getDroidApiKeyBadgeClasses = (account) => {
+  const count = getDroidApiKeyCount(account)
+  const baseClass =
+    'ml-1 inline-flex items-center gap-1 rounded-md border px-1.5 py-[1px] text-[10px] font-medium shadow-sm backdrop-blur-sm'
+
+  if (count > 0) {
+    return [
+      baseClass,
+      'border-cyan-200 bg-cyan-50/90 text-cyan-700 dark:border-cyan-500/40 dark:bg-cyan-900/40 dark:text-cyan-200'
+    ]
+  }
+
+  return [
+    baseClass,
+    'border-rose-200 bg-rose-50/90 text-rose-600 dark:border-rose-500/40 dark:bg-rose-900/40 dark:text-rose-200'
+  ]
+}
+
 // 获取 Claude 账号类型显示
 const getClaudeAccountType = (account) => {
   // 如果有订阅信息
@@ -3551,6 +3694,105 @@ watch(paginatedAccounts, () => {
 watch(accounts, () => {
   cleanupSelectedAccounts()
 })
+// 到期时间相关方法
+const formatExpireDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+}
+
+const isExpired = (expiresAt) => {
+  if (!expiresAt) return false
+  return new Date(expiresAt) < new Date()
+}
+
+const isExpiringSoon = (expiresAt) => {
+  if (!expiresAt) return false
+  const now = new Date()
+  const expireDate = new Date(expiresAt)
+  const daysUntilExpire = (expireDate - now) / (1000 * 60 * 60 * 24)
+  return daysUntilExpire > 0 && daysUntilExpire <= 7
+}
+
+// 开始编辑账户过期时间
+const startEditAccountExpiry = (account) => {
+  editingExpiryAccount.value = account
+}
+
+// 关闭账户过期时间编辑
+const closeAccountExpiryEdit = () => {
+  editingExpiryAccount.value = null
+}
+
+// 根据账户平台解析更新端点
+const resolveAccountUpdateEndpoint = (account) => {
+  switch (account.platform) {
+    case 'claude':
+      return `/admin/claude-accounts/${account.id}`
+    case 'claude-console':
+      return `/admin/claude-console-accounts/${account.id}`
+    case 'bedrock':
+      return `/admin/bedrock-accounts/${account.id}`
+    case 'openai':
+      return `/admin/openai-accounts/${account.id}`
+    case 'azure_openai':
+      return `/admin/azure-openai-accounts/${account.id}`
+    case 'openai-responses':
+      return `/admin/openai-responses-accounts/${account.id}`
+    case 'ccr':
+      return `/admin/ccr-accounts/${account.id}`
+    case 'gemini':
+      return `/admin/gemini-accounts/${account.id}`
+    case 'droid':
+      return `/admin/droid-accounts/${account.id}`
+    default:
+      throw new Error(`Unsupported platform: ${account.platform}`)
+  }
+}
+
+// 保存账户过期时间
+const handleSaveAccountExpiry = async ({ accountId, expiresAt }) => {
+  try {
+    // 找到对应的账户以获取平台信息
+    const account = accounts.value.find((acc) => acc.id === accountId)
+    if (!account) {
+      showToast('账户不存在', 'error')
+      if (expiryEditModalRef.value) {
+        expiryEditModalRef.value.resetSaving()
+      }
+      return
+    }
+
+    // 根据平台动态选择端点
+    const endpoint = resolveAccountUpdateEndpoint(account)
+    const data = await apiClient.put(endpoint, {
+      expiresAt: expiresAt || null
+    })
+
+    if (data.success) {
+      showToast('账户到期时间已更新', 'success')
+      // 更新本地数据
+      account.expiresAt = expiresAt || null
+      closeAccountExpiryEdit()
+    } else {
+      showToast(data.message || '更新失败', 'error')
+      // 重置保存状态
+      if (expiryEditModalRef.value) {
+        expiryEditModalRef.value.resetSaving()
+      }
+    }
+  } catch (error) {
+    showToast(error.message || '更新失败', 'error')
+    // 重置保存状态
+    if (expiryEditModalRef.value) {
+      expiryEditModalRef.value.resetSaving()
+    }
+  }
+}
 
 onMounted(() => {
   // 首次加载时强制刷新所有数据
@@ -3560,7 +3802,6 @@ onMounted(() => {
 
 <style scoped>
 .table-container {
-  overflow-x: auto;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
@@ -3592,12 +3833,6 @@ onMounted(() => {
 }
 .accounts-container {
   min-height: calc(100vh - 300px);
-}
-
-.table-container {
-  overflow-x: auto;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .table-row {

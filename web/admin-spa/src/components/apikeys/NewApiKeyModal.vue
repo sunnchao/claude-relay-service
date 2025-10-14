@@ -7,7 +7,7 @@
         <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div
-              class="flex h-12 w-12 items-center justify-center rounded-none bg-gradient-to-br from-green-500 to-green-600"
+              class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600"
             >
               <i class="fas fa-check text-lg text-white" />
             </div>
@@ -31,7 +31,7 @@
         >
           <div class="flex items-start">
             <div
-              class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-amber-400 dark:bg-amber-500"
+              class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-amber-400 dark:bg-amber-500"
             >
               <i class="fas fa-exclamation-triangle text-sm text-white" />
             </div>
@@ -52,7 +52,7 @@
               >API Key 名称</label
             >
             <div
-              class="rounded-none border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800"
+              class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800"
             >
               <span class="font-medium text-gray-900 dark:text-gray-100">{{ apiKey.name }}</span>
             </div>
@@ -63,7 +63,7 @@
               >备注</label
             >
             <div
-              class="rounded-none border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800"
+              class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800"
             >
               <span class="text-gray-700 dark:text-gray-300">{{
                 apiKey.description || '无描述'
@@ -77,7 +77,7 @@
             >
             <div class="relative">
               <div
-                class="flex min-h-[60px] items-center break-all rounded-none border border-gray-700 bg-gray-900 p-4 pr-14 font-mono text-sm text-white dark:border-gray-600 dark:bg-gray-900"
+                class="flex min-h-[60px] items-center break-all rounded-lg border border-gray-700 bg-gray-900 p-4 pr-14 font-mono text-sm text-white dark:border-gray-600 dark:bg-gray-900"
               >
                 {{ getDisplayedApiKey() }}
               </div>
@@ -99,18 +99,28 @@
         </div>
 
         <!-- 操作按钮 -->
-        <div class="flex gap-3">
+        <div class="flex flex-col gap-3 sm:gap-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <button
+              class="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100 dark:border-blue-500/50 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20 sm:flex-1 sm:text-base"
+              @click="copyKeyOnly"
+            >
+              <i class="fas fa-key" />
+              仅复制密钥
+            </button>
+            <button
+              class="btn btn-primary flex w-full items-center justify-center gap-2 px-5 py-3 text-sm font-semibold sm:flex-1 sm:text-base"
+              @click="copyFullConfig"
+            >
+              <i class="fas fa-copy" />
+              复制Claude配置
+            </button>
+          </div>
           <button
-            class="btn btn-primary flex flex-1 items-center justify-center gap-2 px-6 py-3 font-semibold"
-            @click="copyApiKey"
-          >
-            <i class="fas fa-copy" />
-            复制配置信息
-          </button>
-          <button
-            class="rounded-none border border-gray-300 bg-gray-200 px-6 py-3 font-semibold text-gray-800 transition-colors hover:bg-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            class="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-gray-200 px-5 py-3 text-sm font-semibold text-gray-800 transition-colors hover:border-gray-400 hover:bg-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:text-base"
             @click="handleClose"
           >
+            <i class="fas fa-check-circle" />
             我已保存
           </button>
         </div>
@@ -190,8 +200,29 @@ const getDisplayedApiKey = () => {
   }
 }
 
-// 复制配置信息（环境变量格式）
-const copyApiKey = async () => {
+// 通用复制工具，包含降级处理
+const copyTextWithFallback = async (text, successMessage) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    showToast(successMessage, 'success')
+  } catch (error) {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    document.body.appendChild(textArea)
+    textArea.select()
+    try {
+      document.execCommand('copy')
+      showToast(successMessage, 'success')
+    } catch (fallbackError) {
+      showToast('复制失败，请手动复制', 'error')
+    } finally {
+      document.body.removeChild(textArea)
+    }
+  }
+}
+
+// 复制完整配置（包含提示信息）
+const copyFullConfig = async () => {
   const key = props.apiKey.apiKey || props.apiKey.key || ''
   if (!key) {
     showToast('API Key 不存在', 'error')
@@ -202,25 +233,18 @@ const copyApiKey = async () => {
   const configText = `ANTHROPIC_BASE_URL="${currentBaseUrl.value}"
 ANTHROPIC_AUTH_TOKEN="${key}"`
 
-  try {
-    await navigator.clipboard.writeText(configText)
-    showToast('配置信息已复制到剪贴板', 'success')
-  } catch (error) {
-    // console.error('Failed to copy:', error)
-    // 降级方案：创建一个临时文本区域
-    const textArea = document.createElement('textarea')
-    textArea.value = configText
-    document.body.appendChild(textArea)
-    textArea.select()
-    try {
-      document.execCommand('copy')
-      showToast('配置信息已复制到剪贴板', 'success')
-    } catch (fallbackError) {
-      showToast('复制失败，请手动复制', 'error')
-    } finally {
-      document.body.removeChild(textArea)
-    }
+  await copyTextWithFallback(configText, '配置信息已复制到剪贴板')
+}
+
+// 仅复制密钥
+const copyKeyOnly = async () => {
+  const key = props.apiKey.apiKey || props.apiKey.key || ''
+  if (!key) {
+    showToast('API Key 不存在', 'error')
+    return
   }
+
+  await copyTextWithFallback(key, 'API Key 已复制')
 }
 
 // 关闭弹窗（带确认）

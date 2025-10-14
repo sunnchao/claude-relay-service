@@ -91,7 +91,7 @@ class ClaudeRelayService {
 
   // 🔍 判断是否是真实的 Claude Code 请求
   isRealClaudeCodeRequest(requestBody) {
-    return ClaudeCodeValidator.hasClaudeCodeSystemPrompt(requestBody)
+    return ClaudeCodeValidator.includesClaudeCodeSystemPrompt(requestBody, 1)
   }
 
   // 🚀 转发请求到Claude API
@@ -561,6 +561,8 @@ class ClaudeRelayService {
       }
     }
 
+    this._enforceCacheControlLimit(processedBody)
+
     // 处理原有的系统提示（如果配置了）
     if (this.systemPrompt && this.systemPrompt.trim()) {
       const systemPrompt = {
@@ -704,6 +706,107 @@ class ClaudeRelayService {
           processContentArray(message.content)
         }
       })
+    }
+  }
+
+  // ⚖️ 限制带缓存控制的内容数量
+  _enforceCacheControlLimit(body) {
+    const MAX_CACHE_CONTROL_BLOCKS = 4
+
+    if (!body || typeof body !== 'object') {
+      return
+    }
+
+    const countCacheControlBlocks = () => {
+      let total = 0
+
+      if (Array.isArray(body.messages)) {
+        body.messages.forEach((message) => {
+          if (!message || !Array.isArray(message.content)) {
+            return
+          }
+          message.content.forEach((item) => {
+            if (item && item.cache_control) {
+              total += 1
+            }
+          })
+        })
+      }
+
+      if (Array.isArray(body.system)) {
+        body.system.forEach((item) => {
+          if (item && item.cache_control) {
+            total += 1
+          }
+        })
+      }
+
+      return total
+    }
+
+    const removeFromMessages = () => {
+      if (!Array.isArray(body.messages)) {
+        return false
+      }
+
+      for (let messageIndex = 0; messageIndex < body.messages.length; messageIndex += 1) {
+        const message = body.messages[messageIndex]
+        if (!message || !Array.isArray(message.content)) {
+          continue
+        }
+
+        for (let contentIndex = 0; contentIndex < message.content.length; contentIndex += 1) {
+          const contentItem = message.content[contentIndex]
+          if (contentItem && contentItem.cache_control) {
+            message.content.splice(contentIndex, 1)
+
+            if (message.content.length === 0) {
+              body.messages.splice(messageIndex, 1)
+            }
+
+            return true
+          }
+        }
+      }
+
+      return false
+    }
+
+    const removeFromSystem = () => {
+      if (!Array.isArray(body.system)) {
+        return false
+      }
+
+      for (let index = 0; index < body.system.length; index += 1) {
+        const systemItem = body.system[index]
+        if (systemItem && systemItem.cache_control) {
+          body.system.splice(index, 1)
+
+          if (body.system.length === 0) {
+            delete body.system
+          }
+
+          return true
+        }
+      }
+
+      return false
+    }
+
+    let total = countCacheControlBlocks()
+
+    while (total > MAX_CACHE_CONTROL_BLOCKS) {
+      if (removeFromMessages()) {
+        total -= 1
+        continue
+      }
+
+      if (removeFromSystem()) {
+        total -= 1
+        continue
+      }
+
+      break
     }
   }
 
@@ -1384,9 +1487,12 @@ class ClaudeRelayService {
 
             for (const line of lines) {
               // 解析SSE数据寻找usage信息
-              if (line.startsWith('data: ') && line.length > 6) {
+              if (line.startsWith('data:')) {
+                const jsonStr = line.slice(5).trimStart()
+                if (!jsonStr || jsonStr === '[DONE]') {
+                  continue
+                }
                 try {
-                  const jsonStr = line.slice(6)
                   const data = JSON.parse(jsonStr)
 
                   // 收集来自不同事件的usage数据
