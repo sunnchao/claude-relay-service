@@ -18,7 +18,23 @@ const config = {
     encryptionKey: process.env.ENCRYPTION_KEY || 'CHANGE-THIS-32-CHARACTER-KEY-NOW'
   },
 
-  // 📊 Redis配置
+  // 🗄️ 数据库选择配置
+  database: {
+    // 数据库类型：'redis' 或 'mysql'
+    type: process.env.DATABASE_TYPE || 'redis',
+    
+    // MySQL配置（当type为'mysql'时使用）
+    host: process.env.MYSQL_HOST || 'localhost',
+    port: parseInt(process.env.MYSQL_PORT) || 3306,
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || '',
+    database: process.env.MYSQL_DATABASE || 'claude_relay_service',
+    connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT) || 10,
+    queueLimit: parseInt(process.env.MYSQL_QUEUE_LIMIT) || 0,
+    ssl: process.env.MYSQL_SSL === 'true' ? {} : false
+  },
+
+  // 📊 Redis配置（当database.type为'redis'时使用）
   redis: {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT) || 6379,
@@ -30,6 +46,18 @@ const config = {
     maxRetriesPerRequest: 3,
     lazyConnect: true,
     enableTLS: process.env.REDIS_ENABLE_TLS === 'true'
+  },
+
+  // 🗃️ MySQL配置（兼容旧配置方式）
+  mysql: {
+    host: process.env.MYSQL_HOST || 'localhost',
+    port: parseInt(process.env.MYSQL_PORT) || 3306,
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || '',
+    database: process.env.MYSQL_DATABASE || 'claude_relay_service',
+    connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT) || 10,
+    queueLimit: parseInt(process.env.MYSQL_QUEUE_LIMIT) || 0,
+    ssl: process.env.MYSQL_SSL === 'true' ? {} : false
   },
 
   // 🔗 会话管理配置

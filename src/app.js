@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs')
 
 const config = require('../config/config')
 const logger = require('./utils/logger')
-const redis = require('./models/redis')
+const database = require('./models/database')
 const pricingService = require('./services/pricingService')
 const cacheMonitor = require('./utils/cacheMonitor')
 
@@ -52,10 +52,10 @@ class Application {
 
   async initialize() {
     try {
-      // 🔗 连接Redis
-      logger.info('🔄 Connecting to Redis...')
-      await redis.connect()
-      logger.success('✅ Redis connected successfully')
+      // 🔗 连接数据库
+      logger.info(`🔄 Connecting to ${config.database?.type || 'redis'}...`)
+      await database.connect()
+      logger.success(`✅ Database ${config.database?.type || 'redis'} connected successfully`)
 
       // 💰 初始化价格服务
       logger.info('🔄 Initializing pricing service...')
@@ -352,7 +352,7 @@ class Application {
       // 📊 指标端点
       this.app.get('/metrics', async (req, res) => {
         try {
-          const stats = await redis.getSystemStats()
+          const stats = await database.getSystemStats()
           const metrics = {
             ...stats,
             uptime: process.uptime(),
@@ -412,7 +412,7 @@ class Application {
         updatedAt: initData.updatedAt || null
       }
 
-      await redis.setSession('admin_credentials', adminCredentials)
+      await database.setSession('admin_credentials', adminCredentials)
 
       logger.success('✅ Admin credentials loaded from init.json (single source of truth)')
       logger.info(`📋 Admin username: ${adminCredentials.username}`)
@@ -429,12 +429,17 @@ class Application {
   async checkRedisHealth() {
     try {
       const start = Date.now()
-      await redis.getClient().ping()
+      const client = database.getClient()
+      if (client?.ping) {
+        await client.ping()
+      } else if (client?.query) {
+        await client.query('SELECT 1')
+      }
       const latency = Date.now() - start
 
       return {
         status: 'healthy',
-        connected: redis.isConnected,
+        connected: database.client?.isConnected !== false,
         latency: `${latency}ms`
       }
     } catch (error) {
@@ -546,7 +551,7 @@ class Application {
           claudeAccountService.cleanupTempErrorAccounts() // 新增：清理临时错误账户
         ])
 
-        await redis.cleanup()
+        await database.cleanup()
 
         logger.success(
           `🧹 Cleanup completed: ${expiredKeys} expired keys, ${errorAccounts} error accounts reset`
@@ -573,7 +578,12 @@ class Application {
     // 每分钟主动清理所有过期的并发项，不依赖请求触发
     setInterval(async () => {
       try {
-        const keys = await redis.keys('concurrency:*')
+        // 对于MySQL，清理由数据库自动处理（过期时间）
+        if (config.database?.type === 'mysql') {
+          return
+        }
+        const client = database.getClient()
+        const keys = await client.keys('concurrency:*')
         if (keys.length === 0) {
           return
         }
@@ -584,7 +594,8 @@ class Application {
         // 使用 Lua 脚本批量清理所有过期项
         for (const key of keys) {
           try {
-            const cleaned = await redis.client.eval(
+            const client = database.getClient()
+            const cleaned = await client.eval(
               `
               local key = KEYS[1]
               local now = tonumber(ARGV[1])
@@ -654,9 +665,17 @@ class Application {
           // 🔢 清理所有并发计数（Phase 1 修复：防止重启泄漏）
           try {
             logger.info('🔢 Cleaning up all concurrency counters...')
-            const keys = await redis.keys('concurrency:*')
-            if (keys.length > 0) {
-              await redis.client.del(...keys)
+            if (config.database?.type === 'mysql') {
+              // MySQL清理
+              const pool = database.getClient()
+              await pool.query('DELETE FROM concurrency_leases WHERE expires_at < NOW()')
+              logger.info('✅ Cleaned MySQL concurrency leases')
+            } else {
+              // Redis清理
+              const client = database.getClient()
+              const keys = await client.keys('concurrency:*')
+              if (keys.length > 0) {
+                await client.del(...keys)
               logger.info(`✅ Cleaned ${keys.length} concurrency keys`)
             } else {
               logger.info('✅ No concurrency keys to clean')
@@ -667,7 +686,7 @@ class Application {
           }
 
           try {
-            await redis.disconnect()
+            await database.disconnect()
             logger.info('👋 Redis disconnected')
           } catch (error) {
             logger.error('❌ Error disconnecting Redis:', error)
