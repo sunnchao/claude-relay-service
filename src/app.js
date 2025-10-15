@@ -582,8 +582,8 @@ class Application {
         if (config.database?.type === 'mysql') {
           return
         }
-        const client = database.getClient()
-        const keys = await client.keys('concurrency:*')
+        const dbClient = database.getClient()
+        const keys = await dbClient.keys('concurrency:*')
         if (keys.length === 0) {
           return
         }
@@ -676,9 +676,10 @@ class Application {
               const keys = await client.keys('concurrency:*')
               if (keys.length > 0) {
                 await client.del(...keys)
-              logger.info(`✅ Cleaned ${keys.length} concurrency keys`)
-            } else {
-              logger.info('✅ No concurrency keys to clean')
+                logger.info(`✅ Cleaned ${keys.length} concurrency keys`)
+              } else {
+                logger.info('✅ No concurrency keys to clean')
+              }
             }
           } catch (error) {
             logger.error('❌ Error cleaning up concurrency counters:', error)

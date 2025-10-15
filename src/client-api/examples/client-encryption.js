@@ -1,7 +1,9 @@
+/* global window, localStorage */
+
 /**
  * 客户端密码加密示例
  * Client-side Password Encryption Example
- * 
+ *
  * 此文件展示如何在前端（浏览器或Node.js客户端）加密密码
  * This file demonstrates how to encrypt passwords on the frontend (browser or Node.js client)
  */
@@ -27,11 +29,11 @@ async function getPublicKey() {
 async function encryptPasswordBrowser(password, publicKeyPem) {
   // 将PEM格式转换为ArrayBuffer
   const publicKey = await importRSAPublicKey(publicKeyPem)
-  
+
   // 加密密码
   const encoder = new TextEncoder()
   const passwordBuffer = encoder.encode(password)
-  
+
   const encrypted = await window.crypto.subtle.encrypt(
     {
       name: 'RSA-OAEP',
@@ -40,7 +42,7 @@ async function encryptPasswordBrowser(password, publicKeyPem) {
     publicKey,
     passwordBuffer
   )
-  
+
   // 转换为Base64
   return btoa(String.fromCharCode(...new Uint8Array(encrypted)))
 }
@@ -52,18 +54,15 @@ async function importRSAPublicKey(pem) {
   // 移除PEM头尾
   const pemHeader = '-----BEGIN PUBLIC KEY-----'
   const pemFooter = '-----END PUBLIC KEY-----'
-  const pemContents = pem
-    .replace(pemHeader, '')
-    .replace(pemFooter, '')
-    .replace(/\s/g, '')
-  
+  const pemContents = pem.replace(pemHeader, '').replace(pemFooter, '').replace(/\s/g, '')
+
   // Base64解码
   const binaryString = atob(pemContents)
   const bytes = new Uint8Array(binaryString.length)
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i)
   }
-  
+
   // 导入密钥
   return await window.crypto.subtle.importKey(
     'spki',
@@ -84,11 +83,11 @@ async function registerUser(email, username, password, confirmPassword) {
   try {
     // 1. 获取公钥和nonce
     const { publicKey, nonce } = await getPublicKey()
-    
+
     // 2. 加密密码
     const encryptedPassword = await encryptPasswordBrowser(password, publicKey)
     const encryptedConfirmPassword = await encryptPasswordBrowser(confirmPassword, publicKey)
-    
+
     // 3. 发送注册请求
     const response = await fetch('/api/client/auth/register', {
       method: 'POST',
@@ -103,9 +102,9 @@ async function registerUser(email, username, password, confirmPassword) {
         nonce
       })
     })
-    
+
     const result = await response.json()
-    
+
     if (response.ok) {
       console.log('Registration successful:', result)
       // 保存token
@@ -114,7 +113,7 @@ async function registerUser(email, username, password, confirmPassword) {
     } else {
       console.error('Registration failed:', result)
     }
-    
+
     return result
   } catch (error) {
     console.error('Registration error:', error)
@@ -129,10 +128,10 @@ async function loginUser(email, password) {
   try {
     // 1. 获取公钥和nonce
     const { publicKey, nonce } = await getPublicKey()
-    
+
     // 2. 加密密码
     const encryptedPassword = await encryptPasswordBrowser(password, publicKey)
-    
+
     // 3. 发送登录请求
     const response = await fetch('/api/client/auth/login', {
       method: 'POST',
@@ -145,9 +144,9 @@ async function loginUser(email, password) {
         nonce
       })
     })
-    
+
     const result = await response.json()
-    
+
     if (response.ok) {
       console.log('Login successful:', result)
       // 保存token
@@ -156,7 +155,7 @@ async function loginUser(email, password) {
     } else {
       console.error('Login failed:', result)
     }
-    
+
     return result
   } catch (error) {
     console.error('Login error:', error)
@@ -182,7 +181,7 @@ function encryptPasswordNode(password, publicKeyPem) {
     },
     Buffer.from(password)
   )
-  
+
   return encrypted.toString('base64')
 }
 
@@ -194,11 +193,11 @@ async function registerUserNode(baseURL, email, username, password, confirmPassw
     // 1. 获取公钥和nonce
     const keyResponse = await axios.get(`${baseURL}/api/client/auth/public-key`)
     const { publicKey, nonce } = keyResponse.data
-    
+
     // 2. 加密密码
     const encryptedPassword = encryptPasswordNode(password, publicKey)
     const encryptedConfirmPassword = encryptPasswordNode(confirmPassword, publicKey)
-    
+
     // 3. 发送注册请求
     const response = await axios.post(`${baseURL}/api/client/auth/register`, {
       email,
@@ -207,7 +206,7 @@ async function registerUserNode(baseURL, email, username, password, confirmPassw
       encryptedConfirmPassword,
       nonce
     })
-    
+
     console.log('Registration successful:', response.data)
     return response.data
   } catch (error) {
@@ -224,17 +223,17 @@ async function loginUserNode(baseURL, email, password) {
     // 1. 获取公钥和nonce
     const keyResponse = await axios.get(`${baseURL}/api/client/auth/public-key`)
     const { publicKey, nonce } = keyResponse.data
-    
+
     // 2. 加密密码
     const encryptedPassword = encryptPasswordNode(password, publicKey)
-    
+
     // 3. 发送登录请求
     const response = await axios.post(`${baseURL}/api/client/auth/login`, {
       email,
       encryptedPassword,
       nonce
     })
-    
+
     console.log('Login successful:', response.data)
     return response.data
   } catch (error) {

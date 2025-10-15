@@ -47,7 +47,12 @@
     "data:debug": "node scripts/debug-redis-keys.js",
     "test:pricing-fallback": "node scripts/test-pricing-fallback.js",
     "migrate:redis-to-mysql": "node scripts/migrate-redis-to-mysql.js",
-    "db:init": "node scripts/init-mysql-db.js"
+    "db:init": "node scripts/init-mysql-db.js",
+    "init:hybrid": "node scripts/init-hybrid-db.js",
+    "migrate:to-hybrid": "node scripts/migrate-to-hybrid.js",
+    "test:hybrid": "DATABASE_TYPE=hybrid npm test",
+    "test:hybrid-mode": "node scripts/test-hybrid-mode.js",
+    "rebuild:cache": "node scripts/rebuild-cache.js"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.861.0",

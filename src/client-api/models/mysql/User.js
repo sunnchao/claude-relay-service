@@ -34,7 +34,7 @@ class User extends Model {
   /**
    * 更新使用量
    */
-  async updateUsage(tokens, requests = 1) {
+  async updateUsage(tokens, _requests = 1) {
     this.usageMonthly = (this.usageMonthly || 0) + tokens
     this.usageTotal = (this.usageTotal || 0) + tokens
     await this.save()

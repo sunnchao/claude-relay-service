@@ -14,17 +14,22 @@ class DatabaseAdapter {
 
   async connect() {
     logger.info(`🔄 Initializing database: ${this.type}`)
-    
+
     if (this.type === 'mysql') {
       const mysqlClient = require('./mysql')
       await mysqlClient.connect()
       this.client = mysqlClient
+    } else if (this.type === 'hybrid') {
+      // 混合模式：同时使用Redis和MySQL
+      const hybridClient = require('./hybrid')
+      await hybridClient.connect()
+      this.client = hybridClient
     } else {
       const redisClient = require('./redis')
       await redisClient.connect()
       this.client = redisClient
     }
-    
+
     logger.info(`✅ Database ${this.type} initialized successfully`)
     return this.client
   }

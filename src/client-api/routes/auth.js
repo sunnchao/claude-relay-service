@@ -29,10 +29,10 @@ router.post('/register', async (req, res, next) => {
     const { email, username, password, confirmPassword } = req.body
 
     // 验证输入
-    if (!email || !username || !password) {
+    if (!email || !username || !password || !confirmPassword) {
       return res.status(400).json({
         error: 'ValidationError',
-        message: 'Email, username and password are required'
+        message: 'Email, username, password and confirmPassword are required'
       })
     }
 
@@ -40,6 +40,13 @@ router.post('/register', async (req, res, next) => {
       return res.status(400).json({
         error: 'ValidationError',
         message: 'Password must be at least 8 characters long'
+      })
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        error: 'ValidationError',
+        message: 'Passwords do not match'
       })
     }
 
@@ -284,7 +291,7 @@ router.post('/verify-email', async (req, res, next) => {
 })
 
 // 请求重置密码
-router.post('/forgot-password', async (req, res, next) => {
+router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body
 
@@ -295,7 +302,7 @@ router.post('/forgot-password', async (req, res, next) => {
       })
     }
 
-    const result = await userService.requestPasswordReset(email)
+    await userService.requestPasswordReset(email)
 
     // 为了安全，总是返回成功
     res.json({

@@ -110,7 +110,7 @@ class UserService {
 
       // 更新最后登录时间
       user.lastLoginAt = new Date()
-      await user.save ? await user.save() : await user.update({ lastLoginAt: user.lastLoginAt })
+      ;(await user.save) ? await user.save() : await user.update({ lastLoginAt: user.lastLoginAt })
 
       return { success: true, user }
     } catch (error) {
@@ -189,7 +189,7 @@ class UserService {
       }
 
       const resetToken = crypto.randomBytes(32).toString('hex')
-      
+
       if (this.useMySQL) {
         user.resetPasswordToken = resetToken
         await user.save()
@@ -293,12 +293,13 @@ class UserService {
       }
 
       if (this.useMySQL) {
-        const apiKeys = await user.getApiKeys ? await user.getApiKeys() : []
-        const usageLogs = await user.getUsageLogs ? 
-          await user.getUsageLogs({
-            limit: 100,
-            order: [['created_at', 'DESC']]
-          }) : []
+        const apiKeys = (await user.getApiKeys) ? await user.getApiKeys() : []
+        const usageLogs = (await user.getUsageLogs)
+          ? await user.getUsageLogs({
+              limit: 100,
+              order: [['created_at', 'DESC']]
+            })
+          : []
 
         return {
           user: user.toJSON(),

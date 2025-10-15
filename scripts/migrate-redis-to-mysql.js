@@ -38,7 +38,7 @@ class RedisMySQLMigration {
         password: config.redis.password,
         db: config.redis.db
       })
-      
+
       await this.redis.ping()
       spinner.succeed('Redis连接成功')
       return true
@@ -62,11 +62,11 @@ class RedisMySQLMigration {
         connectionLimit: 10,
         waitForConnections: true
       })
-      
+
       const connection = await this.mysql.getConnection()
       await connection.ping()
       connection.release()
-      
+
       spinner.succeed('MySQL连接成功')
       return true
     } catch (error) {
@@ -83,8 +83,8 @@ class RedisMySQLMigration {
       const schemaPath = path.join(__dirname, '..', 'src', 'models', 'mysql', 'schema.sql')
       if (fs.existsSync(schemaPath)) {
         const schema = fs.readFileSync(schemaPath, 'utf8')
-        const statements = schema.split(';').filter(s => s.trim())
-        
+        const statements = schema.split(';').filter((s) => s.trim())
+
         for (const statement of statements) {
           if (statement.trim()) {
             try {
@@ -98,7 +98,7 @@ class RedisMySQLMigration {
           }
         }
       }
-      
+
       spinner.succeed('数据库结构初始化完成')
       return true
     } catch (error) {
@@ -114,15 +114,19 @@ class RedisMySQLMigration {
     try {
       const keys = await this.redis.keys('apikey:*')
       let migrated = 0
-      
+
       for (const key of keys) {
-        if (key === 'apikey:hash_map') continue
-        
+        if (key === 'apikey:hash_map') {
+          continue
+        }
+
         const keyData = await this.redis.hgetall(key)
-        if (!keyData || !Object.keys(keyData).length) continue
-        
+        if (!keyData || !Object.keys(keyData).length) {
+          continue
+        }
+
         const keyId = key.replace('apikey:', '')
-        
+
         // 准备数据
         const apiKeyRecord = {
           id: keyId,
@@ -164,12 +168,15 @@ class RedisMySQLMigration {
           created_at: keyData.createdAt ? new Date(keyData.createdAt) : new Date(),
           last_used_at: keyData.lastUsedAt ? new Date(keyData.lastUsedAt) : null
         }
-        
+
         // 插入到MySQL
-        await this.mysql.query('INSERT INTO api_keys SET ? ON DUPLICATE KEY UPDATE id = id', apiKeyRecord)
+        await this.mysql.query(
+          'INSERT INTO api_keys SET ? ON DUPLICATE KEY UPDATE id = id',
+          apiKeyRecord
+        )
         migrated++
       }
-      
+
       this.stats.apiKeys = migrated
       spinner.succeed(`API Keys迁移完成 (${migrated}条)`)
     } catch (error) {
@@ -185,33 +192,44 @@ class RedisMySQLMigration {
     try {
       const keys = await this.redis.keys('claude_account:*')
       let migrated = 0
-      
+
       for (const key of keys) {
         const accountData = await this.redis.hgetall(key)
-        if (!accountData || !Object.keys(accountData).length) continue
-        
+        if (!accountData || !Object.keys(accountData).length) {
+          continue
+        }
+
         const accountId = key.replace('claude_account:', '')
-        
+
         // 准备数据
         const accountRecord = {
           id: accountId,
           name: accountData.name || 'Unnamed',
           email: accountData.email || null,
-          claude_ai_oauth: accountData.claudeAiOauth ? this.encrypt(accountData.claudeAiOauth) : null,
-          proxy_config: accountData.proxy ? JSON.stringify(JSON.parse(accountData.proxy || '{}')) : '{}',
+          claude_ai_oauth: accountData.claudeAiOauth
+            ? this.encrypt(accountData.claudeAiOauth)
+            : null,
+          proxy_config: accountData.proxy
+            ? JSON.stringify(JSON.parse(accountData.proxy || '{}'))
+            : '{}',
           is_active: accountData.isActive === 'true',
           status: accountData.status || 'active',
           priority: parseInt(accountData.priority) || 1,
           expires_at: accountData.expiresAt ? new Date(accountData.expiresAt) : null,
-          last_refreshed_at: accountData.lastRefreshedAt ? new Date(accountData.lastRefreshedAt) : null,
+          last_refreshed_at: accountData.lastRefreshedAt
+            ? new Date(accountData.lastRefreshedAt)
+            : null,
           created_at: accountData.createdAt ? new Date(accountData.createdAt) : new Date()
         }
-        
+
         // 插入到MySQL
-        await this.mysql.query('INSERT INTO claude_accounts SET ? ON DUPLICATE KEY UPDATE id = id', accountRecord)
+        await this.mysql.query(
+          'INSERT INTO claude_accounts SET ? ON DUPLICATE KEY UPDATE id = id',
+          accountRecord
+        )
         migrated++
       }
-      
+
       this.stats.claudeAccounts = migrated
       spinner.succeed(`Claude账户迁移完成 (${migrated}条)`)
     } catch (error) {
@@ -227,21 +245,21 @@ class RedisMySQLMigration {
     try {
       // 迁移每日统计
       const dailyKeys = await this.redis.keys('usage:daily:*')
-      const monthlyKeys = await this.redis.keys('usage:monthly:*')
-      const hourlyKeys = await this.redis.keys('usage:hourly:*')
-      
+
       let migrated = 0
-      
+
       // 处理每日统计
       for (const key of dailyKeys) {
         const parts = key.split(':')
         if (parts.length >= 4) {
           const apiKeyId = parts[2]
           const statDate = parts[3]
-          
+
           const data = await this.redis.hgetall(key)
-          if (!data || !Object.keys(data).length) continue
-          
+          if (!data || !Object.keys(data).length) {
+            continue
+          }
+
           const statRecord = {
             api_key_id: apiKeyId,
             account_type: 'api_key',
@@ -261,19 +279,19 @@ class RedisMySQLMigration {
             long_context_requests: parseInt(data.longContextRequests) || 0,
             requests: parseInt(data.requests) || 0
           }
-          
+
           await this.mysql.query(
             'INSERT INTO usage_stats SET ? ON DUPLICATE KEY UPDATE ' +
-            'total_tokens = total_tokens + VALUES(total_tokens), ' +
-            'input_tokens = input_tokens + VALUES(input_tokens), ' +
-            'output_tokens = output_tokens + VALUES(output_tokens), ' +
-            'requests = requests + VALUES(requests)',
+              'total_tokens = total_tokens + VALUES(total_tokens), ' +
+              'input_tokens = input_tokens + VALUES(input_tokens), ' +
+              'output_tokens = output_tokens + VALUES(output_tokens), ' +
+              'requests = requests + VALUES(requests)',
             statRecord
           )
           migrated++
         }
       }
-      
+
       this.stats.usageStats = migrated
       spinner.succeed(`使用统计迁移完成 (${migrated}条)`)
     } catch (error) {
@@ -289,26 +307,28 @@ class RedisMySQLMigration {
     try {
       const costKeys = await this.redis.keys('usage:cost:*')
       let migrated = 0
-      
+
       for (const key of costKeys) {
         const parts = key.split(':')
         if (parts.length >= 5) {
           const costType = parts[2] // daily, monthly, hourly, total
           const apiKeyId = parts[3]
           const costDate = parts[4] || 'all'
-          
+
           const amount = await this.redis.get(key)
-          if (!amount) continue
-          
+          if (!amount) {
+            continue
+          }
+
           await this.mysql.query(
             'INSERT INTO cost_stats (api_key_id, cost_type, cost_date, amount) ' +
-            'VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE amount = VALUES(amount)',
+              'VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE amount = VALUES(amount)',
             [apiKeyId, costType, costDate, parseFloat(amount) || 0]
           )
           migrated++
         }
       }
-      
+
       this.stats.costStats = migrated
       spinner.succeed(`费用统计迁移完成 (${migrated}条)`)
     } catch (error) {
@@ -320,17 +340,22 @@ class RedisMySQLMigration {
 
   // 加密函数
   encrypt(text) {
-    if (!text) return null
+    if (!text) {
+      return null
+    }
     const crypto = require('crypto')
     const algorithm = 'aes-256-gcm'
-    const key = Buffer.from(config.security.encryptionKey || 'default-key-32-chars-for-testing', 'utf8').slice(0, 32)
+    const key = Buffer.from(
+      config.security.encryptionKey || 'default-key-32-chars-for-testing',
+      'utf8'
+    ).slice(0, 32)
     const iv = crypto.randomBytes(16)
     const cipher = crypto.createCipheriv(algorithm, key, iv)
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex')
     encrypted += cipher.final('hex')
     const authTag = cipher.getAuthTag()
-    
+
     return JSON.stringify({
       encrypted,
       authTag: authTag.toString('hex'),
@@ -340,22 +365,28 @@ class RedisMySQLMigration {
 
   async run() {
     console.log(chalk.blue.bold('\n🚀 Redis到MySQL数据迁移工具\n'))
-    
+
     // 连接数据库
-    if (!await this.connectRedis()) return
-    if (!await this.connectMySQL()) return
-    
+    if (!(await this.connectRedis())) {
+      return
+    }
+    if (!(await this.connectMySQL())) {
+      return
+    }
+
     // 初始化数据库结构
-    if (!await this.initializeDatabase()) return
-    
+    if (!(await this.initializeDatabase())) {
+      return
+    }
+
     console.log(chalk.yellow('\n开始数据迁移...\n'))
-    
+
     // 执行各项迁移任务
     await this.migrateApiKeys()
     await this.migrateClaudeAccounts()
     await this.migrateUsageStats()
     await this.migrateCostStats()
-    
+
     // 显示迁移结果
     console.log(chalk.green.bold('\n✅ 数据迁移完成！\n'))
     console.log(chalk.cyan('迁移统计：'))
@@ -363,23 +394,27 @@ class RedisMySQLMigration {
     console.log(`  Claude账户: ${this.stats.claudeAccounts}条`)
     console.log(`  使用统计: ${this.stats.usageStats}条`)
     console.log(`  费用统计: ${this.stats.costStats}条`)
-    
+
     if (this.stats.errors.length > 0) {
       console.log(chalk.red('\n错误列表：'))
-      this.stats.errors.forEach(err => console.log(`  - ${err}`))
+      this.stats.errors.forEach((err) => console.log(`  - ${err}`))
     }
-    
+
     // 关闭连接
-    if (this.redis) this.redis.disconnect()
-    if (this.mysql) await this.mysql.end()
-    
+    if (this.redis) {
+      this.redis.disconnect()
+    }
+    if (this.mysql) {
+      await this.mysql.end()
+    }
+
     process.exit(0)
   }
 }
 
 // 执行迁移
 const migration = new RedisMySQLMigration()
-migration.run().catch(error => {
+migration.run().catch((error) => {
   console.error(chalk.red('迁移失败：'), error)
   process.exit(1)
 })

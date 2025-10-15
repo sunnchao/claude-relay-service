@@ -95,12 +95,12 @@ class ApiKey extends Model {
   async regenerate() {
     const newKey = ApiKey.generateKey()
     const newKeyHash = ApiKey.hashKey(newKey)
-    
+
     this.keyHash = newKeyHash
     this.keyPrefix = newKey.substring(0, 7)
     this.keySuffix = newKey.slice(-4)
     await this.save()
-    
+
     return {
       ...this.toJSON(),
       key: newKey

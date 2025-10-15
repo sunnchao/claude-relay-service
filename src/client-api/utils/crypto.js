@@ -23,7 +23,7 @@ const generateRSAKeyPair = () => {
       format: 'pem'
     }
   })
-  
+
   rsaKeyPair = { publicKey, privateKey }
   return rsaKeyPair
 }
@@ -72,12 +72,10 @@ const decryptPassword = (encryptedPassword) => {
 /**
  * 生成AES密钥和IV
  */
-const generateAESKey = () => {
-  return {
-    key: crypto.randomBytes(32), // 256-bit key
-    iv: crypto.randomBytes(16)   // 128-bit IV
-  }
-}
+const generateAESKey = () => ({
+  key: crypto.randomBytes(32), // 256-bit key
+  iv: crypto.randomBytes(16) // 128-bit IV
+})
 
 /**
  * 使用AES加密数据
@@ -107,10 +105,10 @@ const decryptWithAES = (encryptedData, key, iv) => {
  */
 const hybridEncrypt = (data, publicKeyPem) => {
   const { key, iv } = generateAESKey()
-  
+
   // AES加密数据
   const encryptedData = encryptWithAES(data, key, iv)
-  
+
   // RSA加密AES密钥
   const encryptedKey = crypto.publicEncrypt(
     {
@@ -120,7 +118,7 @@ const hybridEncrypt = (data, publicKeyPem) => {
     },
     key
   )
-  
+
   return {
     encryptedData,
     encryptedKey: encryptedKey.toString('base64'),
@@ -133,7 +131,7 @@ const hybridEncrypt = (data, publicKeyPem) => {
  */
 const hybridDecrypt = (encryptedData, encryptedKey, ivBase64) => {
   const privateKey = getPrivateKey()
-  
+
   // RSA解密AES密钥
   const key = crypto.privateDecrypt(
     {
@@ -143,9 +141,9 @@ const hybridDecrypt = (encryptedData, encryptedKey, ivBase64) => {
     },
     Buffer.from(encryptedKey, 'base64')
   )
-  
+
   const iv = Buffer.from(ivBase64, 'base64')
-  
+
   // AES解密数据
   return decryptWithAES(encryptedData, key, iv)
 }
@@ -158,13 +156,13 @@ const nonceStore = new Map()
 const generateNonce = () => {
   const nonce = crypto.randomBytes(32).toString('hex')
   const now = Date.now()
-  
+
   // 存储生成的nonce，标记为未使用
   nonceStore.set(nonce, {
     timestamp: now,
     used: false
   })
-  
+
   // 清理过期的nonce
   const maxAge = 5 * 60 * 1000 // 5分钟有效期
   for (const [key, data] of nonceStore.entries()) {
@@ -172,41 +170,44 @@ const generateNonce = () => {
       nonceStore.delete(key)
     }
   }
-  
+
   return nonce
 }
 
 /**
  * 验证一次性令牌
  */
-const verifyNonce = (nonce, maxAge = 5 * 60 * 1000) => { // 5分钟有效期
-  if (!nonce) return false
-  
+const verifyNonce = (nonce, maxAge = 5 * 60 * 1000) => {
+  // 5分钟有效期
+  if (!nonce) {
+    return false
+  }
+
   const now = Date.now()
-  
+
   // 清理过期的nonce
   for (const [key, data] of nonceStore.entries()) {
     if (now - data.timestamp > maxAge) {
       nonceStore.delete(key)
     }
   }
-  
+
   // 检查nonce是否存在且未使用
   const nonceData = nonceStore.get(nonce)
   if (!nonceData) {
     return false // nonce不存在
   }
-  
+
   if (nonceData.used) {
     return false // nonce已被使用
   }
-  
+
   // 检查是否过期
   if (now - nonceData.timestamp > maxAge) {
     nonceStore.delete(nonce)
     return false // nonce已过期
   }
-  
+
   // 标记为已使用
   nonceData.used = true
   nonceStore.set(nonce, nonceData)

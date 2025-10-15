@@ -39,10 +39,10 @@ class MySQLClient {
 
       this.isConnected = true
       logger.info('🔗 MySQL connected successfully')
-      
+
       // 初始化表结构（如果需要）
       await this.initializeTables()
-      
+
       return this.pool
     } catch (error) {
       logger.error('💥 Failed to connect to MySQL:', error)
@@ -82,16 +82,21 @@ class MySQLClient {
 
   // 辅助函数：加密敏感数据
   encrypt(text) {
-    if (!text) return null
+    if (!text) {
+      return null
+    }
     const algorithm = 'aes-256-gcm'
-    const key = Buffer.from(config.security.encryptionKey || 'default-key-32-chars-for-testing', 'utf8').slice(0, 32)
+    const key = Buffer.from(
+      config.security.encryptionKey || 'default-key-32-chars-for-testing',
+      'utf8'
+    ).slice(0, 32)
     const iv = crypto.randomBytes(16)
     const cipher = crypto.createCipheriv(algorithm, key, iv)
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex')
     encrypted += cipher.final('hex')
     const authTag = cipher.getAuthTag()
-    
+
     return JSON.stringify({
       encrypted,
       authTag: authTag.toString('hex'),
@@ -101,20 +106,25 @@ class MySQLClient {
 
   // 辅助函数：解密敏感数据
   decrypt(encryptedData) {
-    if (!encryptedData) return null
+    if (!encryptedData) {
+      return null
+    }
     try {
       const data = typeof encryptedData === 'string' ? JSON.parse(encryptedData) : encryptedData
       const algorithm = 'aes-256-gcm'
-      const key = Buffer.from(config.security.encryptionKey || 'default-key-32-chars-for-testing', 'utf8').slice(0, 32)
+      const key = Buffer.from(
+        config.security.encryptionKey || 'default-key-32-chars-for-testing',
+        'utf8'
+      ).slice(0, 32)
       const iv = Buffer.from(data.iv, 'hex')
       const authTag = Buffer.from(data.authTag, 'hex')
-      
+
       const decipher = crypto.createDecipheriv(algorithm, key, iv)
       decipher.setAuthTag(authTag)
-      
+
       let decrypted = decipher.update(data.encrypted, 'hex', 'utf8')
       decrypted += decipher.final('utf8')
-      
+
       return decrypted
     } catch (error) {
       logger.error('Failed to decrypt data:', error)
@@ -181,9 +191,13 @@ class MySQLClient {
         bedrock_account_id: keyData.bedrockAccountId || null,
         droid_account_id: keyData.droidAccountId || null,
         permissions: keyData.permissions || 'all',
-        enable_model_restriction: keyData.enableModelRestriction === 'true' || keyData.enableModelRestriction === true,
-        restricted_models: keyData.restrictedModels ? JSON.stringify(keyData.restrictedModels) : '[]',
-        enable_client_restriction: keyData.enableClientRestriction === 'true' || keyData.enableClientRestriction === true,
+        enable_model_restriction:
+          keyData.enableModelRestriction === 'true' || keyData.enableModelRestriction === true,
+        restricted_models: keyData.restrictedModels
+          ? JSON.stringify(keyData.restrictedModels)
+          : '[]',
+        enable_client_restriction:
+          keyData.enableClientRestriction === 'true' || keyData.enableClientRestriction === true,
         allowed_clients: keyData.allowedClients ? JSON.stringify(keyData.allowedClients) : '[]',
         daily_cost_limit: parseFloat(keyData.dailyCostLimit) || 0,
         total_cost_limit: parseFloat(keyData.totalCostLimit) || 0,
@@ -244,7 +258,6 @@ class MySQLClient {
 
       await connection.query(query, apiKeyRecord)
       await connection.commit()
-
     } catch (error) {
       await connection.rollback()
       throw error
@@ -256,7 +269,7 @@ class MySQLClient {
   async getApiKey(keyId) {
     const pool = this.getPoolSafe()
     const [rows] = await pool.query('SELECT * FROM api_keys WHERE id = ?', [keyId])
-    
+
     if (rows.length === 0) {
       return {}
     }
@@ -314,8 +327,8 @@ class MySQLClient {
   async getAllApiKeys() {
     const pool = this.getPoolSafe()
     const [rows] = await pool.query('SELECT * FROM api_keys ORDER BY created_at DESC')
-    
-    return rows.map(row => ({
+
+    return rows.map((row) => ({
       id: row.id,
       name: row.name,
       description: row.description || '',
@@ -360,7 +373,7 @@ class MySQLClient {
   async findApiKeyByHash(hashedKey) {
     const pool = this.getPoolSafe()
     const [rows] = await pool.query('SELECT * FROM api_keys WHERE api_key_hash = ?', [hashedKey])
-    
+
     if (rows.length === 0) {
       return null
     }
@@ -437,7 +450,8 @@ class MySQLClient {
     const finalCacheCreateTokens = cacheCreateTokens || 0
     const finalCacheReadTokens = cacheReadTokens || 0
 
-    const totalTokens = finalInputTokens + finalOutputTokens + finalCacheCreateTokens + finalCacheReadTokens
+    const totalTokens =
+      finalInputTokens + finalOutputTokens + finalCacheCreateTokens + finalCacheReadTokens
 
     const query = `
       INSERT INTO usage_stats (
@@ -511,25 +525,25 @@ class MySQLClient {
     // 获取总计、今日、本月的统计
     const [totalRows] = await pool.query(
       'SELECT SUM(total_tokens) as totalTokens, SUM(input_tokens) as totalInputTokens, ' +
-      'SUM(output_tokens) as totalOutputTokens, SUM(cache_create_tokens) as totalCacheCreateTokens, ' +
-      'SUM(cache_read_tokens) as totalCacheReadTokens, SUM(requests) as totalRequests ' +
-      'FROM usage_stats WHERE api_key_id = ?',
+        'SUM(output_tokens) as totalOutputTokens, SUM(cache_create_tokens) as totalCacheCreateTokens, ' +
+        'SUM(cache_read_tokens) as totalCacheReadTokens, SUM(requests) as totalRequests ' +
+        'FROM usage_stats WHERE api_key_id = ?',
       [keyId]
     )
 
     const [dailyRows] = await pool.query(
       'SELECT SUM(total_tokens) as tokens, SUM(input_tokens) as inputTokens, ' +
-      'SUM(output_tokens) as outputTokens, SUM(cache_create_tokens) as cacheCreateTokens, ' +
-      'SUM(cache_read_tokens) as cacheReadTokens, SUM(requests) as requests ' +
-      'FROM usage_stats WHERE api_key_id = ? AND stat_date = ?',
+        'SUM(output_tokens) as outputTokens, SUM(cache_create_tokens) as cacheCreateTokens, ' +
+        'SUM(cache_read_tokens) as cacheReadTokens, SUM(requests) as requests ' +
+        'FROM usage_stats WHERE api_key_id = ? AND stat_date = ?',
       [keyId, today]
     )
 
     const [monthlyRows] = await pool.query(
       'SELECT SUM(total_tokens) as tokens, SUM(input_tokens) as inputTokens, ' +
-      'SUM(output_tokens) as outputTokens, SUM(cache_create_tokens) as cacheCreateTokens, ' +
-      'SUM(cache_read_tokens) as cacheReadTokens, SUM(requests) as requests ' +
-      'FROM usage_stats WHERE api_key_id = ? AND stat_month = ?',
+        'SUM(output_tokens) as outputTokens, SUM(cache_create_tokens) as cacheCreateTokens, ' +
+        'SUM(cache_read_tokens) as cacheReadTokens, SUM(requests) as requests ' +
+        'FROM usage_stats WHERE api_key_id = ? AND stat_month = ?',
       [keyId, currentMonth]
     )
 
@@ -589,7 +603,7 @@ class MySQLClient {
   // 添加使用记录
   async addUsageRecord(keyId, record, maxRecords = 200) {
     const pool = this.getPoolSafe()
-    
+
     const query = `
       INSERT INTO usage_records (
         api_key_id, model, endpoint, input_tokens, output_tokens, 
@@ -597,7 +611,7 @@ class MySQLClient {
         error_message, metadata
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
-    
+
     await pool.query(query, [
       keyId,
       record.model || 'unknown',
@@ -621,14 +635,16 @@ class MySQLClient {
 
   async getUsageRecords(keyId, limit = 50) {
     const pool = this.getPool()
-    if (!pool) return []
+    if (!pool) {
+      return []
+    }
 
     const [rows] = await pool.query(
       'SELECT * FROM usage_records WHERE api_key_id = ? ORDER BY created_at DESC LIMIT ?',
       [keyId, limit]
     )
 
-    return rows.map(row => ({
+    return rows.map((row) => ({
       model: row.model,
       endpoint: row.endpoint,
       inputTokens: row.input_tokens,
@@ -647,12 +663,12 @@ class MySQLClient {
   async getDailyCost(keyId) {
     const pool = this.getPoolSafe()
     const today = this.getDateStringInTimezone()
-    
+
     const [rows] = await pool.query(
       'SELECT amount FROM cost_stats WHERE api_key_id = ? AND cost_type = ? AND cost_date = ?',
       [keyId, 'daily', today]
     )
-    
+
     return rows[0]?.amount || 0
   }
 
@@ -699,11 +715,19 @@ class MySQLClient {
       total: 0
     }
 
-    rows.forEach(row => {
-      if (row.cost_type === 'daily') costs.daily = parseFloat(row.amount)
-      if (row.cost_type === 'monthly') costs.monthly = parseFloat(row.amount)
-      if (row.cost_type === 'hourly') costs.hourly = parseFloat(row.amount)
-      if (row.cost_type === 'total') costs.total = parseFloat(row.amount)
+    rows.forEach((row) => {
+      if (row.cost_type === 'daily') {
+        costs.daily = parseFloat(row.amount)
+      }
+      if (row.cost_type === 'monthly') {
+        costs.monthly = parseFloat(row.amount)
+      }
+      if (row.cost_type === 'hourly') {
+        costs.hourly = parseFloat(row.amount)
+      }
+      if (row.cost_type === 'total') {
+        costs.total = parseFloat(row.amount)
+      }
     })
 
     return costs
@@ -712,12 +736,12 @@ class MySQLClient {
   async getWeeklyOpusCost(keyId) {
     const pool = this.getPoolSafe()
     const currentWeek = this.getWeekStringInTimezone()
-    
+
     const [rows] = await pool.query(
       'SELECT amount FROM cost_stats WHERE api_key_id = ? AND cost_type = ? AND cost_date = ?',
       [keyId, 'opus_weekly', currentWeek]
     )
-    
+
     return rows[0]?.amount || 0
   }
 
@@ -736,10 +760,11 @@ class MySQLClient {
   // 🏢 Claude 账户管理
   async setClaudeAccount(accountId, accountData) {
     const pool = this.getPoolSafe()
-    
+
     // 加密OAuth数据
-    const claudeAiOauth = accountData.claudeAiOauth ? 
-      this.encrypt(JSON.stringify(accountData.claudeAiOauth)) : null
+    const claudeAiOauth = accountData.claudeAiOauth
+      ? this.encrypt(JSON.stringify(accountData.claudeAiOauth))
+      : null
 
     const query = `
       INSERT INTO claude_accounts (
@@ -776,13 +801,13 @@ class MySQLClient {
   async getClaudeAccount(accountId) {
     const pool = this.getPoolSafe()
     const [rows] = await pool.query('SELECT * FROM claude_accounts WHERE id = ?', [accountId])
-    
+
     if (rows.length === 0) {
       return {}
     }
 
     const row = rows[0]
-    
+
     // 解密OAuth数据
     let claudeAiOauth = null
     if (row.claude_ai_oauth) {
@@ -796,7 +821,7 @@ class MySQLClient {
       id: row.id,
       name: row.name,
       email: row.email || '',
-      claudeAiOauth: claudeAiOauth,
+      claudeAiOauth,
       proxy: row.proxy_config || {},
       isActive: String(row.is_active),
       status: row.status,
@@ -809,9 +834,11 @@ class MySQLClient {
 
   async getAllClaudeAccounts() {
     const pool = this.getPoolSafe()
-    const [rows] = await pool.query('SELECT * FROM claude_accounts ORDER BY priority DESC, created_at DESC')
-    
-    return rows.map(row => {
+    const [rows] = await pool.query(
+      'SELECT * FROM claude_accounts ORDER BY priority DESC, created_at DESC'
+    )
+
+    return rows.map((row) => {
       // 解密OAuth数据
       let claudeAiOauth = null
       if (row.claude_ai_oauth) {
@@ -825,7 +852,7 @@ class MySQLClient {
         id: row.id,
         name: row.name,
         email: row.email || '',
-        claudeAiOauth: claudeAiOauth,
+        claudeAiOauth,
         proxy: row.proxy_config || {},
         isActive: String(row.is_active),
         status: row.status,
@@ -850,25 +877,29 @@ class MySQLClient {
   async setSession(sessionId, sessionData, ttl = 86400) {
     const pool = this.getPoolSafe()
     const expiresAt = new Date(Date.now() + ttl * 1000)
-    
+
     await pool.query(
       `INSERT INTO sessions (id, user_id, user_type, data, expires_at) 
        VALUES (?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE 
          data = VALUES(data), 
          expires_at = VALUES(expires_at)`,
-      [sessionId, sessionData.userId || null, sessionData.userType || 'admin', 
-       JSON.stringify(sessionData), expiresAt]
+      [
+        sessionId,
+        sessionData.userId || null,
+        sessionData.userType || 'admin',
+        JSON.stringify(sessionData),
+        expiresAt
+      ]
     )
   }
 
   async getSession(sessionId) {
     const pool = this.getPoolSafe()
-    const [rows] = await pool.query(
-      'SELECT * FROM sessions WHERE id = ? AND expires_at > NOW()',
-      [sessionId]
-    )
-    
+    const [rows] = await pool.query('SELECT * FROM sessions WHERE id = ? AND expires_at > NOW()', [
+      sessionId
+    ])
+
     if (rows.length === 0) {
       return {}
     }
@@ -886,7 +917,7 @@ class MySQLClient {
   async setOAuthSession(sessionId, sessionData, ttl = 600) {
     const pool = this.getPoolSafe()
     const expiresAt = new Date(Date.now() + ttl * 1000)
-    
+
     await pool.query(
       `INSERT INTO oauth_sessions (id, state, code_verifier, proxy_config, account_name, description, expires_at) 
        VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -895,9 +926,15 @@ class MySQLClient {
          code_verifier = VALUES(code_verifier),
          proxy_config = VALUES(proxy_config),
          expires_at = VALUES(expires_at)`,
-      [sessionId, sessionData.state || null, sessionData.codeVerifier || null,
-       JSON.stringify(sessionData.proxy || {}), sessionData.accountName || null,
-       sessionData.description || null, expiresAt]
+      [
+        sessionId,
+        sessionData.state || null,
+        sessionData.codeVerifier || null,
+        JSON.stringify(sessionData.proxy || {}),
+        sessionData.accountName || null,
+        sessionData.description || null,
+        expiresAt
+      ]
     )
   }
 
@@ -907,7 +944,7 @@ class MySQLClient {
       'SELECT * FROM oauth_sessions WHERE id = ? AND expires_at > NOW()',
       [sessionId]
     )
-    
+
     if (rows.length === 0) {
       return {}
     }
@@ -938,10 +975,9 @@ class MySQLClient {
     const expiresAt = new Date(Date.now() + leaseSeconds * 1000)
 
     // 清理过期的租约
-    await pool.query(
-      'DELETE FROM concurrency_leases WHERE api_key_id = ? AND expires_at < NOW()',
-      [apiKeyId]
-    )
+    await pool.query('DELETE FROM concurrency_leases WHERE api_key_id = ? AND expires_at < NOW()', [
+      apiKeyId
+    ])
 
     // 插入新租约
     await pool.query(
@@ -961,7 +997,9 @@ class MySQLClient {
   }
 
   async refreshConcurrencyLease(apiKeyId, requestId, leaseSeconds = 300) {
-    if (!requestId) return 0
+    if (!requestId) {
+      return 0
+    }
 
     const pool = this.getPoolSafe()
     const expiresAt = new Date(Date.now() + leaseSeconds * 1000)
@@ -980,14 +1018,16 @@ class MySQLClient {
   }
 
   async decrConcurrency(apiKeyId, requestId) {
-    if (!requestId) return 0
+    if (!requestId) {
+      return 0
+    }
 
     const pool = this.getPoolSafe()
-    
-    await pool.query(
-      'DELETE FROM concurrency_leases WHERE api_key_id = ? AND request_id = ?',
-      [apiKeyId, requestId]
-    )
+
+    await pool.query('DELETE FROM concurrency_leases WHERE api_key_id = ? AND request_id = ?', [
+      apiKeyId,
+      requestId
+    ])
 
     const [rows] = await pool.query(
       'SELECT COUNT(*) as count FROM concurrency_leases WHERE api_key_id = ? AND expires_at > NOW()',
@@ -999,11 +1039,9 @@ class MySQLClient {
 
   async getConcurrency(apiKeyId) {
     const pool = this.getPoolSafe()
-    
+
     // 清理过期的租约
-    await pool.query(
-      'DELETE FROM concurrency_leases WHERE expires_at < NOW()'
-    )
+    await pool.query('DELETE FROM concurrency_leases WHERE expires_at < NOW()')
 
     const [rows] = await pool.query(
       'SELECT COUNT(*) as count FROM concurrency_leases WHERE api_key_id = ? AND expires_at > NOW()',
@@ -1017,17 +1055,17 @@ class MySQLClient {
   async cleanup() {
     try {
       const pool = this.getPoolSafe()
-      
+
       // 清理过期会话
       await pool.query('DELETE FROM sessions WHERE expires_at < NOW()')
       await pool.query('DELETE FROM oauth_sessions WHERE expires_at < NOW()')
       await pool.query('DELETE FROM sticky_sessions WHERE expires_at < NOW()')
       await pool.query('DELETE FROM concurrency_leases WHERE expires_at < NOW()')
-      
+
       // 清理30天前的使用记录
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       await pool.query('DELETE FROM usage_records WHERE created_at < ?', [thirtyDaysAgo])
-      
+
       logger.info('🧹 MySQL cleanup completed')
     } catch (error) {
       logger.error('❌ MySQL cleanup failed:', error)

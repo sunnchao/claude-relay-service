@@ -32,7 +32,9 @@ class ApiKeyService {
 
         const plan = clientConfig.plans[user.plan]
         if (existingKeys.length >= plan.limits.maxKeys) {
-          throw new Error(`Maximum number of API keys (${plan.limits.maxKeys}) reached for your plan`)
+          throw new Error(
+            `Maximum number of API keys (${plan.limits.maxKeys}) reached for your plan`
+          )
         }
 
         // 生成新的API Key
@@ -262,7 +264,7 @@ class ApiKeyService {
           order: [[UsageLog.sequelize.fn('DATE', UsageLog.sequelize.col('created_at')), 'ASC']]
         })
 
-        const dailyStats = usageLogs.map(log => ({
+        const dailyStats = usageLogs.map((log) => ({
           date: log.get('date'),
           requests: parseInt(log.get('requests') || 0),
           tokens: parseInt(log.get('tokens') || 0)

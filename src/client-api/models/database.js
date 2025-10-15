@@ -28,7 +28,7 @@ const dbConfig = {
     supportBigNumbers: true,
     bigNumberStrings: false,
     dateStrings: true,
-    typeCast: function (field, next) {
+    typeCast(field, next) {
       if (field.type === 'DATETIME') {
         return field.string()
       }
@@ -47,12 +47,7 @@ const dbConfig = {
 }
 
 // 创建Sequelize实例
-const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
-  dbConfig
-)
+const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
 
 // 测试数据库连接
 const testConnection = async () => {

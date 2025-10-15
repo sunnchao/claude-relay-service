@@ -3,8 +3,8 @@
  * Client Request Relay Routes
  */
 
-const express = require('express');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 
 // Claude消息接口
 router.post('/messages', async (req, res, next) => {
@@ -12,11 +12,11 @@ router.post('/messages', async (req, res, next) => {
     // TODO: 实现Claude消息转发逻辑
     res.status(501).json({
       message: 'Claude messages relay endpoint coming soon'
-    });
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
 // Codex补全接口
 router.post('/completions', async (req, res, next) => {
@@ -24,11 +24,11 @@ router.post('/completions', async (req, res, next) => {
     // TODO: 实现Codex补全转发逻辑
     res.status(501).json({
       message: 'Codex completions relay endpoint coming soon'
-    });
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
 // 获取可用模型
 router.get('/models', async (req, res, next) => {
@@ -55,10 +55,10 @@ router.get('/models', async (req, res, next) => {
           available: true
         }
       ]
-    });
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
-module.exports = router;
+module.exports = router
