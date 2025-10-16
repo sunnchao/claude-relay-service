@@ -251,9 +251,16 @@
                     class="flex-1 break-all font-mono text-xs font-medium text-gray-900 dark:text-gray-100"
                     :title="apiKey.key"
                   >
-                    {{ maskApiKey(apiKey.key) }}
+                    {{ isKeyRevealed(apiKey) ? apiKey.key : maskApiKey(apiKey.key) }}
                   </span>
                   <div class="flex items-center gap-1">
+                    <button
+                      class="text-xs text-purple-500 transition-colors hover:text-purple-700 dark:text-purple-300 dark:hover:text-purple-100"
+                      :title="isKeyRevealed(apiKey) ? '隐藏完整 Key' : '显示完整 Key'"
+                      @click="toggleKeyVisibility(apiKey)"
+                    >
+                      <i :class="isKeyRevealed(apiKey) ? 'fas fa-eye-slash' : 'fas fa-eye'" />
+                    </button>
                     <button
                       class="text-xs text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       title="复制 API Key"
@@ -410,6 +417,7 @@ const apiKeys = ref([])
 const currentPage = ref(1)
 const pageSize = ref(15)
 const copyingAll = ref(false)
+const revealedKeys = ref(new Set())
 
 // 新增：筛选和搜索相关状态
 const statusFilter = ref('all') // 'all' | 'active' | 'error'
@@ -423,6 +431,26 @@ const maskApiKey = (key) => {
     return key
   }
   return `${key.substring(0, 8)}...${key.substring(key.length - 4)}`
+}
+
+const isKeyRevealed = (apiKey) => {
+  if (!apiKey || !apiKey.key) {
+    return false
+  }
+  return revealedKeys.value.has(apiKey.key)
+}
+
+const toggleKeyVisibility = (apiKey) => {
+  if (!apiKey || !apiKey.key) {
+    return
+  }
+  const updated = new Set(revealedKeys.value)
+  if (updated.has(apiKey.key)) {
+    updated.delete(apiKey.key)
+  } else {
+    updated.add(apiKey.key)
+  }
+  revealedKeys.value = updated
 }
 
 // 计算属性：筛选后的 API Keys
@@ -537,6 +565,15 @@ const loadApiKeys = async () => {
       // 如果都没有时间，按使用次数降序排序
       return (b.usageCount || 0) - (a.usageCount || 0)
     })
+
+    const existingKeys = new Set(formattedKeys.map((item) => item.key).filter(Boolean))
+    if (existingKeys.size === 0) {
+      revealedKeys.value = new Set()
+    } else {
+      revealedKeys.value = new Set(
+        [...revealedKeys.value].filter((key) => existingKeys.has(key))
+      )
+    }
   } catch (error) {
     console.error('Failed to load API keys:', error)
     showToast('加载 API Key 失败', 'error')

@@ -273,7 +273,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'success'])
 
 const show = ref(true)
-const isEdit = computed(() => !!props.account)
+const isEdit = computed(() => !!props.account?.id)
 const loading = ref(false)
 
 const form = ref({
@@ -407,13 +407,13 @@ const populateFromAccount = () => {
 }
 
 onMounted(() => {
-  if (isEdit.value) populateFromAccount()
+  if (props.account) populateFromAccount()
 })
 
 watch(
   () => props.account,
   () => {
-    if (isEdit.value) populateFromAccount()
+    if (props.account) populateFromAccount()
   }
 )
 </script>

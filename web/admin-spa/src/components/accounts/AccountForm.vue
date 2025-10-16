@@ -3233,7 +3233,7 @@ const accountsStore = useAccountsStore()
 const { showConfirmModal, confirmOptions, showConfirm, handleConfirm, handleCancel } = useConfirm()
 
 // 是否为编辑模式
-const isEdit = computed(() => !!props.account)
+const isEdit = computed(() => !!(props.account && props.account.id))
 const show = ref(true)
 
 // OAuth步骤

@@ -1124,6 +1124,14 @@
                     <span class="ml-1">详情</span>
                   </button>
                   <button
+                    class="rounded-none bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-200"
+                    :title="'复制账户配置'"
+                    @click="copyAccountConfig(account)"
+                  >
+                    <i class="fas fa-copy" />
+                    <span class="ml-1">复制</span>
+                  </button>
+                  <button
                     class="rounded-none bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-200"
                     :title="'编辑账户'"
                     @click="editAccount(account)"
@@ -1556,6 +1564,14 @@
             </button>
 
             <button
+              class="flex flex-1 items-center justify-center gap-1 rounded-none bg-purple-50 px-3 py-2 text-xs text-purple-600 transition-colors hover:bg-purple-100"
+              @click="copyAccountConfig(account)"
+            >
+              <i class="fas fa-copy" />
+              复制
+            </button>
+
+            <button
               class="flex-1 rounded-none bg-gray-50 px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-100"
               @click="editAccount(account)"
             >
@@ -1665,12 +1681,14 @@
     <!-- 添加账户模态框 -->
     <AccountForm
       v-if="showCreateAccountModal && (!newAccountPlatform || newAccountPlatform !== 'ccr')"
+      :account="copyingAccount"
       @close="closeCreateAccountModal"
       @platform-changed="newAccountPlatform = $event"
       @success="handleCreateSuccess"
     />
     <CcrAccountForm
       v-else-if="showCreateAccountModal && newAccountPlatform === 'ccr'"
+      :account="copyingAccount"
       @close="closeCreateAccountModal"
       @success="handleCreateSuccess"
     />
@@ -1849,6 +1867,7 @@ const showCreateAccountModal = ref(false)
 const newAccountPlatform = ref(null) // 跟踪新建账户选择的平台
 const showEditAccountModal = ref(false)
 const editingAccount = ref(null)
+const copyingAccount = ref(null) // 存储用于复制的账户模板数据
 
 const collectAccountSearchableStrings = (account) => {
   const values = new Set()
@@ -2716,6 +2735,7 @@ const formatRateLimitTime = (minutes) => {
 // 打开创建账户模态框
 const openCreateAccountModal = () => {
   newAccountPlatform.value = null // 重置选择的平台
+  copyingAccount.value = null // 清空复制的账户数据
   showCreateAccountModal.value = true
 }
 
@@ -2723,12 +2743,146 @@ const openCreateAccountModal = () => {
 const closeCreateAccountModal = () => {
   showCreateAccountModal.value = false
   newAccountPlatform.value = null
+  copyingAccount.value = null // 清空复制的账户数据
 }
 
 // 编辑账户
 const editAccount = (account) => {
   editingAccount.value = account
   showEditAccountModal.value = true
+}
+
+// 复制账户配置 - 打开创建账户弹窗并预填充数据
+const copyAccountConfig = (account) => {
+  try {
+    const deepClone = (value) => {
+      if (value === null || value === undefined) return value
+      try {
+        return JSON.parse(JSON.stringify(value))
+      } catch (error) {
+        return value
+      }
+    }
+
+    const baseName = account.name || '未命名账户'
+    const nameWithSuffix = baseName.endsWith(' - 副本') ? baseName : `${baseName} - 副本`
+
+    let resolvedGroupIds = []
+    if (Array.isArray(account.groupIds) && account.groupIds.length > 0) {
+      resolvedGroupIds = [...account.groupIds]
+    } else if (Array.isArray(account.groupInfos) && account.groupInfos.some((group) => group?.id)) {
+      resolvedGroupIds = account.groupInfos.map((group) => group.id).filter(Boolean)
+    } else if (account.groupId) {
+      resolvedGroupIds = [account.groupId]
+    } else if (account.groupInfo?.id) {
+      resolvedGroupIds = [account.groupInfo.id]
+    }
+
+    const baseGroupId =
+      account.groupId ||
+      account.groupInfo?.id ||
+      (resolvedGroupIds.length > 0 ? resolvedGroupIds[0] : '')
+
+    const accountCopy = {
+      id: null,
+      platform: account.platform,
+      name: nameWithSuffix,
+      description: account.description || '',
+      accountType: account.accountType || 'shared',
+      priority: account.priority ?? 50,
+      schedulable: account.schedulable !== false,
+      proxy: deepClone(account.proxy || account.proxyConfig || null),
+      groupInfo: account.groupInfo ? { ...account.groupInfo } : null,
+      groupInfos: Array.isArray(account.groupInfos)
+        ? account.groupInfos.map((group) => ({ ...group }))
+        : [],
+      groupId: baseGroupId,
+      groupIds: resolvedGroupIds,
+      expiresAt: account.expiresAt || null,
+      subscriptionInfo: deepClone(account.subscriptionInfo) || null,
+      // 根据平台复制特定字段
+      ...(account.platform === 'claude'
+        ? {
+            subscriptionType: account.subscriptionType || 'claude_max',
+            autoStopOnWarning: account.autoStopOnWarning || false,
+            useUnifiedUserAgent: account.useUnifiedUserAgent || false,
+            useUnifiedClientId: account.useUnifiedClientId || false,
+            unifiedClientId: account.unifiedClientId || ''
+          }
+        : {}),
+      ...(account.platform === 'gemini'
+        ? {
+            projectId: account.projectId || ''
+          }
+        : {}),
+      ...(account.platform === 'claude-console' || account.platform === 'ccr'
+        ? {
+            apiUrl: account.apiUrl || '',
+            apiKey: account.apiKey || '',
+            dailyQuota: account.dailyQuota ?? 0,
+            quotaResetTime: account.quotaResetTime || '00:00',
+            supportedModels: deepClone(account.supportedModels) || {},
+            userAgent: account.userAgent || '',
+            rateLimitDuration: account.rateLimitDuration === 0 ? 0 : account.rateLimitDuration || 60
+          }
+        : {}),
+      ...(account.platform === 'bedrock'
+        ? {
+            region: account.region || '',
+            defaultModel: account.defaultModel || '',
+            smallFastModel: account.smallFastModel || '',
+            accessKeyId: account.accessKeyId || '',
+            secretAccessKey: account.secretAccessKey || '',
+            sessionToken: account.sessionToken || '',
+            rateLimitDuration: account.rateLimitDuration === 0 ? 0 : account.rateLimitDuration || 60
+          }
+        : {}),
+      ...(account.platform === 'azure_openai'
+        ? {
+            azureEndpoint: account.azureEndpoint || '',
+            apiVersion: account.apiVersion || '2024-02-01',
+            deploymentName: account.deploymentName || '',
+            supportedModels: deepClone(account.supportedModels) || []
+          }
+        : {}),
+      ...(account.platform === 'openai-responses'
+        ? {
+            baseApi: account.baseApi || '',
+            apiKey: account.apiKey || '',
+            userAgent: account.userAgent || '',
+            dailyQuota: account.dailyQuota ?? 0,
+            quotaResetTime: account.quotaResetTime || '00:00'
+          }
+        : {}),
+      ...(account.platform === 'droid'
+        ? {
+            authenticationMethod: account.authenticationMethod || '',
+            endpointType: account.endpointType || 'anthropic',
+            apiKeys: deepClone(account.apiKeys) || undefined
+          }
+        : {}),
+      ...(account.platform === 'openai'
+        ? {
+            priority: account.priority ?? 50,
+            authenticationMethod: account.authenticationMethod || ''
+          }
+        : {})
+    }
+
+    // 不设置 newAccountPlatform，让 AccountForm 自己处理平台选择流程
+    // newAccountPlatform.value = account.platform
+
+    // 存储用于预填充的账户数据
+    copyingAccount.value = accountCopy
+
+    // 打开创建账户模态框
+    showCreateAccountModal.value = true
+
+    showToast('已打开创建账户弹窗，配置已预填充', 'info')
+  } catch (error) {
+    showToast('复制配置失败', 'error')
+    console.error('复制配置失败:', error)
+  }
 }
 
 const getBoundApiKeysForAccount = (account) => {
