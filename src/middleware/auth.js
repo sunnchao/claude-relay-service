@@ -3,7 +3,7 @@ const config = require('../../config/config')
 const apiKeyService = require('../services/apiKeyService')
 const userService = require('../services/userService')
 const logger = require('../utils/logger')
-const redis = require('../models/redis')
+const database = require('../models/database')
 // const { RateLimiterRedis } = require('rate-limiter-flexible') // 暂时未使用
 const ClientValidator = require('../validators/clientValidator')
 
@@ -14,10 +14,6 @@ const FALLBACK_CONCURRENCY_CONFIG = {
 }
 
 const resolveConcurrencyConfig = () => {
-  if (typeof redis._getConcurrencyConfig === 'function') {
-    return redis._getConcurrencyConfig()
-  }
-
   const raw = {
     ...FALLBACK_CONCURRENCY_CONFIG,
     ...(config.concurrency || {})
@@ -216,7 +212,7 @@ const authenticateApiKey = async (req, res, next) => {
       }
       const requestId = uuidv4()
 
-      const currentConcurrency = await redis.incrConcurrency(
+      const currentConcurrency = await database.incrConcurrency(
         validation.keyData.id,
         requestId,
         leaseSeconds
@@ -227,7 +223,7 @@ const authenticateApiKey = async (req, res, next) => {
 
       if (currentConcurrency > concurrencyLimit) {
         // 如果超过限制，立即减少计数
-        await redis.decrConcurrency(validation.keyData.id, requestId)
+        await database.decrConcurrency(validation.keyData.id, requestId)
         logger.security(
           `🚦 Concurrency limit exceeded for key: ${validation.keyData.id} (${
             validation.keyData.name
@@ -250,7 +246,7 @@ const authenticateApiKey = async (req, res, next) => {
 
       if (renewIntervalMs > 0) {
         leaseRenewInterval = setInterval(() => {
-          redis
+          database
             .refreshConcurrencyLease(validation.keyData.id, requestId, leaseSeconds)
             .catch((error) => {
               logger.error(
@@ -273,7 +269,7 @@ const authenticateApiKey = async (req, res, next) => {
             leaseRenewInterval = null
           }
           try {
-            const newCount = await redis.decrConcurrency(validation.keyData.id, requestId)
+            const newCount = await database.decrConcurrency(validation.keyData.id, requestId)
             logger.api(
               `📉 Decremented concurrency for key: ${validation.keyData.id} (${validation.keyData.name}), new count: ${newCount}`
             )
@@ -360,14 +356,14 @@ const authenticateApiKey = async (req, res, next) => {
       const windowDuration = rateLimitWindow * 60 * 1000 // 转换为毫秒
 
       // 获取窗口开始时间
-      let windowStart = await redis.getClient().get(windowStartKey)
+      let windowStart = await database.get(windowStartKey)
 
       if (!windowStart) {
         // 第一次请求，设置窗口开始时间
-        await redis.getClient().set(windowStartKey, now, 'PX', windowDuration)
-        await redis.getClient().set(requestCountKey, 0, 'PX', windowDuration)
-        await redis.getClient().set(tokenCountKey, 0, 'PX', windowDuration)
-        await redis.getClient().set(costCountKey, 0, 'PX', windowDuration) // 新增：重置费用
+        await database.set(windowStartKey, now, 'PX', windowDuration)
+        await database.set(requestCountKey, 0, 'PX', windowDuration)
+        await database.set(tokenCountKey, 0, 'PX', windowDuration)
+        await database.set(costCountKey, 0, 'PX', windowDuration) // 新增：重置费用
         windowStart = now
       } else {
         windowStart = parseInt(windowStart)
@@ -375,18 +371,18 @@ const authenticateApiKey = async (req, res, next) => {
         // 检查窗口是否已过期
         if (now - windowStart >= windowDuration) {
           // 窗口已过期，重置
-          await redis.getClient().set(windowStartKey, now, 'PX', windowDuration)
-          await redis.getClient().set(requestCountKey, 0, 'PX', windowDuration)
-          await redis.getClient().set(tokenCountKey, 0, 'PX', windowDuration)
-          await redis.getClient().set(costCountKey, 0, 'PX', windowDuration) // 新增：重置费用
+          await database.set(windowStartKey, now, 'PX', windowDuration)
+          await database.set(requestCountKey, 0, 'PX', windowDuration)
+          await database.set(tokenCountKey, 0, 'PX', windowDuration)
+          await database.set(costCountKey, 0, 'PX', windowDuration) // 新增：重置费用
           windowStart = now
         }
       }
 
       // 获取当前计数
-      const currentRequests = parseInt((await redis.getClient().get(requestCountKey)) || '0')
-      const currentTokens = parseInt((await redis.getClient().get(tokenCountKey)) || '0')
-      const currentCost = parseFloat((await redis.getClient().get(costCountKey)) || '0') // 新增：当前费用
+      const currentRequests = parseInt((await database.get(requestCountKey)) || '0')
+      const currentTokens = parseInt((await database.get(tokenCountKey)) || '0')
+      const currentCost = parseFloat((await database.get(costCountKey)) || '0') // 新增：当前费用
 
       // 检查请求次数限制
       if (rateLimitRequests > 0 && currentRequests >= rateLimitRequests) {
@@ -452,7 +448,7 @@ const authenticateApiKey = async (req, res, next) => {
       }
 
       // 增加请求计数
-      await redis.getClient().incr(requestCountKey)
+      await database.incr(requestCountKey)
 
       // 存储限流信息到请求对象
       req.rateLimitInfo = {
@@ -653,7 +649,7 @@ const authenticateAdmin = async (req, res, next) => {
 
     // 获取管理员会话（带超时处理）
     const adminSession = await Promise.race([
-      redis.getSession(token),
+      database.getSession(token),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Session lookup timeout')), 5000)
       )
@@ -677,7 +673,7 @@ const authenticateAdmin = async (req, res, next) => {
       logger.security(
         `🔒 Expired admin session for ${adminSession.username} from ${req.ip || 'unknown'}`
       )
-      await redis.deleteSession(token) // 清理过期会话
+      await database.deleteSession(token) // 清理过期会话
       return res.status(401).json({
         error: 'Session expired',
         message: 'Admin session has expired due to inactivity'
@@ -685,7 +681,7 @@ const authenticateAdmin = async (req, res, next) => {
     }
 
     // 更新最后活动时间（异步，不阻塞请求）
-    redis
+    database
       .setSession(
         token,
         {
@@ -831,7 +827,7 @@ const authenticateUserOrAdmin = async (req, res, next) => {
     // 优先尝试管理员认证
     if (adminToken) {
       try {
-        const adminSession = await redis.getSession(adminToken)
+        const adminSession = await database.getSession(adminToken)
         if (adminSession && Object.keys(adminSession).length > 0) {
           req.admin = {
             id: adminSession.adminId || 'admin',
@@ -1230,7 +1226,7 @@ const errorHandler = (error, req, res, _next) => {
 // const getRateLimiter = () => {
 //   if (!rateLimiter) {
 //     try {
-//       const client = redis.getClient()
+//       const client = database.getClient()
 //       if (!client) {
 //         logger.warn('⚠️ Redis client not available for rate limiter')
 //         return null

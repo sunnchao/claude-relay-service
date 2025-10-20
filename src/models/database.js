@@ -70,6 +70,20 @@ class DatabaseAdapter {
     return this.client.findApiKeyByHash(hashedKey)
   }
 
+  async clearApiKeyDeletionMetadata(keyId) {
+    if (typeof this.client.clearApiKeyDeletionMetadata === 'function') {
+      return this.client.clearApiKeyDeletionMetadata(keyId)
+    }
+    return null
+  }
+
+  async deleteUsageDataForKey(keyId) {
+    if (typeof this.client.deleteUsageDataForKey === 'function') {
+      return this.client.deleteUsageDataForKey(keyId)
+    }
+    return null
+  }
+
   // 使用统计相关操作
   async incrementTokenUsage(...args) {
     return this.client.incrementTokenUsage(...args)
@@ -347,6 +361,62 @@ class DatabaseAdapter {
       return this.client.deleteApiKeyHash(hashedKey)
     }
     // MySQL不需要此方法
+    return null
+  }
+
+  async get(key) {
+    if (typeof this.client.get === 'function') {
+      return this.client.get(key)
+    }
+    return null
+  }
+
+  async set(key, value, ...args) {
+    if (typeof this.client.set === 'function') {
+      return this.client.set(key, value, ...args)
+    }
+    return null
+  }
+
+  async setex(key, ttl, value) {
+    if (typeof this.client.setex === 'function') {
+      return this.client.setex(key, ttl, value)
+    }
+    return null
+  }
+
+  async del(...keys) {
+    if (typeof this.client.del === 'function') {
+      return this.client.del(...keys)
+    }
+    return 0
+  }
+
+  async keys(pattern) {
+    if (typeof this.client.keys === 'function') {
+      return this.client.keys(pattern)
+    }
+    return []
+  }
+
+  async incr(key) {
+    if (typeof this.client.incr === 'function') {
+      return this.client.incr(key)
+    }
+    return null
+  }
+
+  async incrby(key, amount) {
+    if (typeof this.client.incrby === 'function') {
+      return this.client.incrby(key, amount)
+    }
+    return null
+  }
+
+  async incrbyfloat(key, amount) {
+    if (typeof this.client.incrbyfloat === 'function') {
+      return this.client.incrbyfloat(key, amount)
+    }
     return null
   }
 }

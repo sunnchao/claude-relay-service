@@ -194,7 +194,7 @@ router.get('/api-keys/:keyId/cost-debug', authenticateAdmin, async (req, res) =>
 router.get('/api-keys', authenticateAdmin, async (req, res) => {
   try {
     const { timeRange = 'all', startDate, endDate } = req.query // all, 7days, monthly, custom
-    const apiKeys = await apiKeyService.getAllApiKeys()
+    const apiKeys = await apiKeyService.getAllApiKeys(false, { includePlainKey: true })
 
     // 获取用户服务来补充owner信息
     const userService = require('../services/userService')

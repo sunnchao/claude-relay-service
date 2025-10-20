@@ -239,6 +239,179 @@ class RedisMySQLMigration {
     }
   }
 
+  async migrateGeminiAccounts() {
+    const spinner = ora('迁移Gemini账户...').start()
+    try {
+      const keys = await this.redis.keys('gemini_account:*')
+      let migrated = 0
+
+      for (const key of keys) {
+        const accountData = await this.redis.hgetall(key)
+        if (!accountData || !Object.keys(accountData).length) {
+          continue
+        }
+
+        const accountId = key.replace('gemini_account:', '')
+        const record = {
+          id: accountId,
+          name: accountData.name || 'Unnamed',
+          email: accountData.email || null,
+          status: accountData.status || 'active',
+          account_type: accountData.accountType || 'shared',
+          schedulable: accountData.schedulable !== 'false',
+          expires_at: accountData.expiresAt ? new Date(accountData.expiresAt) : null,
+          last_refreshed_at: accountData.lastRefresh ? new Date(accountData.lastRefresh) : null,
+          data: JSON.stringify(accountData)
+        }
+
+        await this.mysql.query(
+          `INSERT INTO gemini_accounts (id, name, email, status, account_type, schedulable, expires_at, last_refreshed_at, data)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE
+             name = VALUES(name),
+             email = VALUES(email),
+             status = VALUES(status),
+             account_type = VALUES(account_type),
+             schedulable = VALUES(schedulable),
+             expires_at = VALUES(expires_at),
+             last_refreshed_at = VALUES(last_refreshed_at),
+             data = VALUES(data)`,
+          [
+            record.id,
+            record.name,
+            record.email,
+            record.status,
+            record.account_type,
+            record.schedulable,
+            record.expires_at,
+            record.last_refreshed_at,
+            record.data
+          ]
+        )
+        migrated++
+      }
+
+      this.stats.geminiAccounts = migrated
+      spinner.succeed(`Gemini账户迁移完成 (${migrated}条)`)
+    } catch (error) {
+      spinner.fail('Gemini账户迁移失败')
+      this.stats.errors.push(`Gemini账户: ${error.message}`)
+      console.error(chalk.red(error.message))
+    }
+  }
+
+  async migrateOpenAiAccounts() {
+    const spinner = ora('迁移OpenAI账户...').start()
+    try {
+      const keys = await this.redis.keys('openai:account:*')
+      let migrated = 0
+
+      for (const key of keys) {
+        const accountData = await this.redis.hgetall(key)
+        if (!accountData || !Object.keys(accountData).length) {
+          continue
+        }
+
+        const accountId = key.replace('openai:account:', '')
+        const record = {
+          id: accountId,
+          name: accountData.name || 'Unnamed',
+          account_type: accountData.accountType || 'shared',
+          status: accountData.status || 'active',
+          is_active: accountData.isActive !== 'false',
+          schedulable: accountData.schedulable !== 'false',
+          priority: parseInt(accountData.priority) || 50,
+          group_id: accountData.groupId || null,
+          subscription_expires_at: accountData.subscriptionExpiresAt
+            ? new Date(accountData.subscriptionExpiresAt)
+            : null,
+          last_refresh: accountData.lastRefresh ? new Date(accountData.lastRefresh) : null,
+          data: JSON.stringify(accountData)
+        }
+
+        await this.mysql.query(
+          `INSERT INTO openai_accounts (id, name, account_type, status, is_active, schedulable, priority, group_id, subscription_expires_at, last_refresh, data)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE
+             name = VALUES(name),
+             account_type = VALUES(account_type),
+             status = VALUES(status),
+             is_active = VALUES(is_active),
+             schedulable = VALUES(schedulable),
+             priority = VALUES(priority),
+             group_id = VALUES(group_id),
+             subscription_expires_at = VALUES(subscription_expires_at),
+             last_refresh = VALUES(last_refresh),
+             data = VALUES(data)`,
+          [
+            record.id,
+            record.name,
+            record.account_type,
+            record.status,
+            record.is_active,
+            record.schedulable,
+            record.priority,
+            record.group_id,
+            record.subscription_expires_at,
+            record.last_refresh,
+            record.data
+          ]
+        )
+        migrated++
+      }
+
+      this.stats.openaiAccounts = migrated
+      spinner.succeed(`OpenAI账户迁移完成 (${migrated}条)`)
+    } catch (error) {
+      spinner.fail('OpenAI账户迁移失败')
+      this.stats.errors.push(`OpenAI账户: ${error.message}`)
+      console.error(chalk.red(error.message))
+    }
+  }
+
+  async migrateDroidAccounts() {
+    const spinner = ora('迁移Droid账户...').start()
+    try {
+      const keys = await this.redis.keys('droid:account:*')
+      let migrated = 0
+
+      for (const key of keys) {
+        const accountData = await this.redis.hgetall(key)
+        if (!accountData || !Object.keys(accountData).length) {
+          continue
+        }
+
+        const accountId = key.replace('droid:account:', '')
+        const record = {
+          id: accountId,
+          name: accountData.name || 'Unnamed',
+          status: accountData.status || 'active',
+          is_active: accountData.isActive !== 'false',
+          data: JSON.stringify(accountData)
+        }
+
+        await this.mysql.query(
+          `INSERT INTO droid_accounts (id, name, status, is_active, data)
+           VALUES (?, ?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE
+             name = VALUES(name),
+             status = VALUES(status),
+             is_active = VALUES(is_active),
+             data = VALUES(data)`,
+          [record.id, record.name, record.status, record.is_active, record.data]
+        )
+        migrated++
+      }
+
+      this.stats.droidAccounts = migrated
+      spinner.succeed(`Droid账户迁移完成 (${migrated}条)`)
+    } catch (error) {
+      spinner.fail('Droid账户迁移失败')
+      this.stats.errors.push(`Droid账户: ${error.message}`)
+      console.error(chalk.red(error.message))
+    }
+  }
+
   // 迁移使用统计
   async migrateUsageStats() {
     const spinner = ora('迁移使用统计...').start()
@@ -384,6 +557,9 @@ class RedisMySQLMigration {
     // 执行各项迁移任务
     await this.migrateApiKeys()
     await this.migrateClaudeAccounts()
+    await this.migrateGeminiAccounts()
+    await this.migrateOpenAiAccounts()
+    await this.migrateDroidAccounts()
     await this.migrateUsageStats()
     await this.migrateCostStats()
 
@@ -392,6 +568,9 @@ class RedisMySQLMigration {
     console.log(chalk.cyan('迁移统计：'))
     console.log(`  API Keys: ${this.stats.apiKeys}条`)
     console.log(`  Claude账户: ${this.stats.claudeAccounts}条`)
+    console.log(`  Gemini账户: ${this.stats.geminiAccounts}条`)
+    console.log(`  OpenAI账户: ${this.stats.openaiAccounts}条`)
+    console.log(`  Droid账户: ${this.stats.droidAccounts}条`)
     console.log(`  使用统计: ${this.stats.usageStats}条`)
     console.log(`  费用统计: ${this.stats.costStats}条`)
 

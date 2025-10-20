@@ -570,9 +570,7 @@ const loadApiKeys = async () => {
     if (existingKeys.size === 0) {
       revealedKeys.value = new Set()
     } else {
-      revealedKeys.value = new Set(
-        [...revealedKeys.value].filter((key) => existingKeys.has(key))
-      )
+      revealedKeys.value = new Set([...revealedKeys.value].filter((key) => existingKeys.has(key)))
     }
   } catch (error) {
     console.error('Failed to load API keys:', error)

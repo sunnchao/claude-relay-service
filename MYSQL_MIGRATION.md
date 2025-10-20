@@ -97,6 +97,8 @@ npm run db:init
 - 创建所有必要的表结构
 - 创建默认管理员账户
 
+> 表结构定义位于 `src/models/mysql/schema.sql`，可根据业务需要进行扩展。
+
 ### 4. 数据迁移
 
 #### 备份现有Redis数据（推荐）
@@ -170,11 +172,16 @@ DATABASE_TYPE=redis
 |------|------|----------|
 | api_keys | API密钥管理 | id, name, api_key_hash, limits, permissions |
 | claude_accounts | Claude账户 | id, name, oauth_data, proxy_config |
-| gemini_accounts | Gemini账户 | id, name, api_key, oauth_data |
+| gemini_accounts | Gemini账户 | id, name, status, data(JSON) |
+| openai_accounts | OpenAI账户 | id, name, status, data(JSON) |
+| droid_accounts | Droid账户 | id, name, status, data(JSON) |
 | usage_stats | 使用统计 | api_key_id, model, tokens, requests |
+| account_usage_stats | 账户统计 | account_id, model, tokens |
 | cost_stats | 费用统计 | api_key_id, cost_type, amount |
 | sessions | 会话管理 | id, user_id, expires_at |
 | concurrency_leases | 并发控制 | api_key_id, request_id, expires_at |
+| key_value_store | 键值缓存 | cache_key, cache_value, expires_at |
+| system_metrics | 实时指标 | minute_timestamp, requests, tokens |
 
 ### 索引优化
 所有表都已创建必要的索引：

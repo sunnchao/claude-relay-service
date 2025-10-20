@@ -2,11 +2,67 @@ const mysql = require('mysql2/promise')
 const crypto = require('crypto')
 const config = require('../../config/config')
 const logger = require('../utils/logger')
+const CostCalculator = require('../utils/costCalculator')
 
 class MySQLClient {
   constructor() {
     this.pool = null
     this.isConnected = false
+  }
+
+  _parseJson(value, fallback = null) {
+    if (value === null || value === undefined) {
+      return fallback
+    }
+
+    if (typeof value === 'object') {
+      return value
+    }
+
+    try {
+      return JSON.parse(value)
+    } catch (error) {
+      logger.debug('Failed to parse JSON payload:', error)
+      return fallback
+    }
+  }
+
+  _stringifyJson(value) {
+    if (value === null || value === undefined) {
+      return null
+    }
+
+    if (typeof value === 'string') {
+      return value
+    }
+
+    try {
+      return JSON.stringify(value)
+    } catch (error) {
+      logger.debug('Failed to stringify JSON payload:', error)
+      return null
+    }
+  }
+
+  _boolFromMixed(value, defaultValue = false) {
+    if (value === null || value === undefined) {
+      return defaultValue
+    }
+
+    if (typeof value === 'boolean') {
+      return value
+    }
+
+    if (typeof value === 'number') {
+      return value !== 0
+    }
+
+    if (typeof value === 'string') {
+      const lower = value.toLowerCase()
+      return lower === '1' || lower === 'true' || lower === 'yes'
+    }
+
+    return defaultValue
   }
 
   async connect() {
@@ -71,6 +127,32 @@ class MySQLClient {
       throw new Error('MySQL pool is not connected')
     }
     return this.pool
+  }
+
+  getClient() {
+    if (!this.pool || !this.isConnected) {
+      logger.warn('⚠️ MySQL client is not connected')
+      return null
+    }
+
+    return {
+      get: (key) => this.get(key),
+      set: (key, value, ...args) => this.set(key, value, ...args),
+      setex: (key, ttl, value) => this.setex(key, ttl, value),
+      del: (...keys) => this.del(...keys),
+      keys: (pattern) => this.keys(pattern),
+      incr: (key) => this.incr(key),
+      incrby: (key, amount) => this.incrby(key, amount),
+      incrbyfloat: (key, amount) => this.incrbyfloat(key, amount)
+    }
+  }
+
+  getClientSafe() {
+    const client = this.getClient()
+    if (!client) {
+      throw new Error('MySQL client is not connected')
+    }
+    return client
   }
 
   // 初始化表结构
@@ -421,6 +503,39 @@ class MySQLClient {
     }
   }
 
+  async setApiKeyHash() {
+    // MySQL存储已包含哈希，不需要单独的映射表
+    return null
+  }
+
+  async getApiKeyHash(hashedKey) {
+    const record = await this.findApiKeyByHash(hashedKey)
+    if (!record) {
+      return null
+    }
+    return { id: record.id }
+  }
+
+  async deleteApiKeyHash() {
+    // 无需操作
+    return null
+  }
+
+  async clearApiKeyDeletionMetadata() {
+    // MySQL使用列存储，不需要额外清理
+    return null
+  }
+
+  async deleteUsageDataForKey(keyId) {
+    const pool = this.getPoolSafe()
+    await Promise.all([
+      pool.query('DELETE FROM usage_stats WHERE api_key_id = ?', [keyId]),
+      pool.query('DELETE FROM usage_records WHERE api_key_id = ?', [keyId]),
+      pool.query('DELETE FROM cost_stats WHERE api_key_id = ?', [keyId]),
+      pool.query('DELETE FROM concurrency_leases WHERE api_key_id = ?', [keyId])
+    ])
+  }
+
   // 📊 使用统计相关操作
   async incrementTokenUsage(
     keyId,
@@ -757,6 +872,40 @@ class MySQLClient {
     )
   }
 
+  async getAccountDailyCost(accountId) {
+    const pool = this.getPoolSafe()
+    const today = this.getDateStringInTimezone()
+
+    const [rows] = await pool.query(
+      'SELECT model, input_tokens, output_tokens, cache_create_tokens, cache_read_tokens FROM account_usage_stats WHERE account_id = ? AND stat_date = ? AND model <> ?',
+      [accountId, today, 'all']
+    )
+
+    if (!rows.length) {
+      return 0
+    }
+
+    let totalCost = 0
+
+    for (const row of rows) {
+      const usage = {
+        input_tokens: parseInt(row.input_tokens) || 0,
+        output_tokens: parseInt(row.output_tokens) || 0,
+        cache_creation_input_tokens: parseInt(row.cache_create_tokens) || 0,
+        cache_read_input_tokens: parseInt(row.cache_read_tokens) || 0
+      }
+
+      try {
+        const costResult = CostCalculator.calculateCost(usage, row.model)
+        totalCost += costResult.costs.total || 0
+      } catch (error) {
+        logger.debug('Failed to calculate account daily cost:', error)
+      }
+    }
+
+    return Number(totalCost.toFixed(6))
+  }
+
   // 🏢 Claude 账户管理
   async setClaudeAccount(accountId, accountData) {
     const pool = this.getPoolSafe()
@@ -870,8 +1019,571 @@ class MySQLClient {
     return result.affectedRows
   }
 
+  // Gemini账户管理
+  async setGeminiAccount(accountId, accountData) {
+    const pool = this.getPoolSafe()
+
+    const payload = {
+      id: accountId,
+      name: accountData.name || accountId,
+      email: accountData.email || null,
+      status: accountData.status || 'active',
+      account_type: accountData.accountType || accountData.account_type || 'shared',
+      schedulable: this._boolFromMixed(accountData.schedulable, true) ? 1 : 0,
+      expires_at: accountData.expiresAt ? new Date(accountData.expiresAt) : null,
+      last_refreshed_at: accountData.lastRefreshedAt ? new Date(accountData.lastRefreshedAt) : null,
+      data: this._stringifyJson({ ...accountData, id: accountId })
+    }
+
+    await pool.query(
+      `INSERT INTO gemini_accounts (id, name, email, status, account_type, schedulable, expires_at, last_refreshed_at, data)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         name = VALUES(name),
+         email = VALUES(email),
+         status = VALUES(status),
+         account_type = VALUES(account_type),
+         schedulable = VALUES(schedulable),
+         expires_at = VALUES(expires_at),
+         last_refreshed_at = VALUES(last_refreshed_at),
+         data = VALUES(data),
+         updated_at = CURRENT_TIMESTAMP`,
+      [
+        payload.id,
+        payload.name,
+        payload.email,
+        payload.status,
+        payload.account_type,
+        payload.schedulable,
+        payload.expires_at,
+        payload.last_refreshed_at,
+        payload.data
+      ]
+    )
+  }
+
+  async getGeminiAccount(accountId) {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query('SELECT * FROM gemini_accounts WHERE id = ?', [accountId])
+
+    if (rows.length === 0) {
+      return {}
+    }
+
+    const row = rows[0]
+    const data = this._parseJson(row.data, {})
+
+    return {
+      ...data,
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      status: row.status,
+      accountType: row.account_type,
+      schedulable: row.schedulable ? 'true' : 'false',
+      expiresAt: row.expires_at ? row.expires_at.toISOString() : undefined,
+      lastRefreshedAt: row.last_refreshed_at ? row.last_refreshed_at.toISOString() : undefined
+    }
+  }
+
+  async getAllGeminiAccounts() {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query('SELECT * FROM gemini_accounts ORDER BY created_at DESC')
+
+    return rows.map((row) => {
+      const data = this._parseJson(row.data, {})
+      return {
+        ...data,
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        status: row.status,
+        accountType: row.account_type,
+        schedulable: row.schedulable ? 'true' : 'false',
+        expiresAt: row.expires_at ? row.expires_at.toISOString() : undefined,
+        lastRefreshedAt: row.last_refreshed_at ? row.last_refreshed_at.toISOString() : undefined
+      }
+    })
+  }
+
+  async deleteGeminiAccount(accountId) {
+    const pool = this.getPoolSafe()
+    const [result] = await pool.query('DELETE FROM gemini_accounts WHERE id = ?', [accountId])
+    return result.affectedRows
+  }
+
+  // OpenAI账户管理
+  async setOpenAiAccount(accountId, accountData) {
+    const pool = this.getPoolSafe()
+
+    const payload = {
+      id: accountId,
+      name: accountData.name || accountId,
+      account_type: accountData.accountType || accountData.account_type || 'shared',
+      status: accountData.status || 'active',
+      is_active: this._boolFromMixed(accountData.isActive, true) ? 1 : 0,
+      schedulable: this._boolFromMixed(accountData.schedulable, true) ? 1 : 0,
+      priority: accountData.priority ? parseInt(accountData.priority, 10) || 50 : 50,
+      group_id: accountData.groupId || null,
+      subscription_expires_at: accountData.subscriptionExpiresAt
+        ? new Date(accountData.subscriptionExpiresAt)
+        : null,
+      last_refresh: accountData.lastRefresh ? new Date(accountData.lastRefresh) : null,
+      data: this._stringifyJson({ ...accountData, id: accountId })
+    }
+
+    await pool.query(
+      `INSERT INTO openai_accounts (id, name, account_type, status, is_active, schedulable, priority, group_id, subscription_expires_at, last_refresh, data)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         name = VALUES(name),
+         account_type = VALUES(account_type),
+         status = VALUES(status),
+         is_active = VALUES(is_active),
+         schedulable = VALUES(schedulable),
+         priority = VALUES(priority),
+         group_id = VALUES(group_id),
+         subscription_expires_at = VALUES(subscription_expires_at),
+         last_refresh = VALUES(last_refresh),
+         data = VALUES(data),
+         updated_at = CURRENT_TIMESTAMP`,
+      [
+        payload.id,
+        payload.name,
+        payload.account_type,
+        payload.status,
+        payload.is_active,
+        payload.schedulable,
+        payload.priority,
+        payload.group_id,
+        payload.subscription_expires_at,
+        payload.last_refresh,
+        payload.data
+      ]
+    )
+  }
+
+  async getOpenAiAccount(accountId) {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query('SELECT * FROM openai_accounts WHERE id = ?', [accountId])
+
+    if (rows.length === 0) {
+      return {}
+    }
+
+    const row = rows[0]
+    const data = this._parseJson(row.data, {})
+
+    return {
+      ...data,
+      id: row.id,
+      name: row.name,
+      accountType: row.account_type,
+      status: row.status,
+      isActive: row.is_active ? 'true' : 'false',
+      schedulable: row.schedulable ? 'true' : 'false',
+      priority: row.priority,
+      groupId: row.group_id,
+      subscriptionExpiresAt: row.subscription_expires_at
+        ? row.subscription_expires_at.toISOString()
+        : undefined,
+      lastRefresh: row.last_refresh ? row.last_refresh.toISOString() : undefined
+    }
+  }
+
+  async getAllOpenAIAccounts() {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query('SELECT * FROM openai_accounts ORDER BY created_at DESC')
+
+    return rows.map((row) => {
+      const data = this._parseJson(row.data, {})
+      return {
+        ...data,
+        id: row.id,
+        name: row.name,
+        accountType: row.account_type,
+        status: row.status,
+        isActive: row.is_active ? 'true' : 'false',
+        schedulable: row.schedulable ? 'true' : 'false',
+        priority: row.priority,
+        groupId: row.group_id,
+        subscriptionExpiresAt: row.subscription_expires_at
+          ? row.subscription_expires_at.toISOString()
+          : undefined,
+        lastRefresh: row.last_refresh ? row.last_refresh.toISOString() : undefined
+      }
+    })
+  }
+
+  async deleteOpenAiAccount(accountId) {
+    const pool = this.getPoolSafe()
+    const [result] = await pool.query('DELETE FROM openai_accounts WHERE id = ?', [accountId])
+    return result.affectedRows
+  }
+
+  // Droid账户管理
+  async setDroidAccount(accountId, accountData) {
+    const pool = this.getPoolSafe()
+
+    const payload = {
+      id: accountId,
+      name: accountData.name || accountId,
+      status: accountData.status || 'active',
+      is_active: this._boolFromMixed(accountData.isActive, true) ? 1 : 0,
+      data: this._stringifyJson({ ...accountData, id: accountId })
+    }
+
+    await pool.query(
+      `INSERT INTO droid_accounts (id, name, status, is_active, data)
+       VALUES (?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         name = VALUES(name),
+         status = VALUES(status),
+         is_active = VALUES(is_active),
+         data = VALUES(data),
+         updated_at = CURRENT_TIMESTAMP`,
+      [payload.id, payload.name, payload.status, payload.is_active, payload.data]
+    )
+  }
+
+  async getDroidAccount(accountId) {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query('SELECT * FROM droid_accounts WHERE id = ?', [accountId])
+
+    if (rows.length === 0) {
+      return {}
+    }
+
+    const row = rows[0]
+    const data = this._parseJson(row.data, {})
+
+    return {
+      ...data,
+      id: row.id,
+      name: row.name,
+      status: row.status,
+      isActive: row.is_active ? 'true' : 'false'
+    }
+  }
+
+  async getAllDroidAccounts() {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query('SELECT * FROM droid_accounts ORDER BY created_at DESC')
+
+    return rows.map((row) => {
+      const data = this._parseJson(row.data, {})
+      return {
+        ...data,
+        id: row.id,
+        name: row.name,
+        status: row.status,
+        isActive: row.is_active ? 'true' : 'false'
+      }
+    })
+  }
+
+  async deleteDroidAccount(accountId) {
+    const pool = this.getPoolSafe()
+    const [result] = await pool.query('DELETE FROM droid_accounts WHERE id = ?', [accountId])
+    return result.affectedRows
+  }
+
   // 类似地实现其他账户类型的方法...
   // Gemini, OpenAI, Droid等账户管理方法的实现模式相同
+
+  // 📊 账户使用统计
+  async incrementAccountUsage(
+    accountId,
+    totalTokens,
+    inputTokens = 0,
+    outputTokens = 0,
+    cacheCreateTokens = 0,
+    cacheReadTokens = 0,
+    model = 'unknown',
+    isLongContextRequest = false,
+    accountType = 'claude'
+  ) {
+    const pool = this.getPoolSafe()
+    const now = new Date()
+    const today = this.getDateStringInTimezone(now)
+    const tzDate = this.getDateInTimezone(now)
+    const currentMonth = `${tzDate.getUTCFullYear()}-${String(tzDate.getUTCMonth() + 1).padStart(
+      2,
+      '0'
+    )}`
+    const currentHour = `${today}:${String(this.getHourInTimezone(now)).padStart(2, '0')}`
+
+    const normalizedModel = this._normalizeModelName(model)
+    const coreTokens = (inputTokens || 0) + (outputTokens || 0)
+    // Total tokens including cache tokens (not used in current implementation but kept for future use)
+    const _totalAllTokens =
+      (inputTokens || 0) + (outputTokens || 0) + (cacheCreateTokens || 0) + (cacheReadTokens || 0)
+
+    const rows = [
+      {
+        account_id: accountId,
+        account_type: accountType,
+        model: 'all',
+        stat_date: today,
+        stat_hour: null,
+        stat_month: currentMonth,
+        total_tokens: coreTokens,
+        input_tokens: inputTokens || 0,
+        output_tokens: outputTokens || 0,
+        cache_create_tokens: cacheCreateTokens || 0,
+        cache_read_tokens: cacheReadTokens || 0,
+        long_context_input_tokens: isLongContextRequest ? inputTokens || 0 : 0,
+        long_context_output_tokens: isLongContextRequest ? outputTokens || 0 : 0,
+        long_context_requests: isLongContextRequest ? 1 : 0,
+        requests: 1
+      },
+      {
+        account_id: accountId,
+        account_type: accountType,
+        model: normalizedModel,
+        stat_date: today,
+        stat_hour: currentHour,
+        stat_month: currentMonth,
+        total_tokens: coreTokens,
+        input_tokens: inputTokens || 0,
+        output_tokens: outputTokens || 0,
+        cache_create_tokens: cacheCreateTokens || 0,
+        cache_read_tokens: cacheReadTokens || 0,
+        long_context_input_tokens: isLongContextRequest ? inputTokens || 0 : 0,
+        long_context_output_tokens: isLongContextRequest ? outputTokens || 0 : 0,
+        long_context_requests: isLongContextRequest ? 1 : 0,
+        requests: 1
+      }
+    ]
+
+    const query = `
+      INSERT INTO account_usage_stats (
+        account_id, account_type, model, stat_date, stat_hour, stat_month,
+        total_tokens, input_tokens, output_tokens,
+        cache_create_tokens, cache_read_tokens,
+        long_context_input_tokens, long_context_output_tokens, long_context_requests,
+        requests
+      ) VALUES ?
+      ON DUPLICATE KEY UPDATE
+        total_tokens = total_tokens + VALUES(total_tokens),
+        input_tokens = input_tokens + VALUES(input_tokens),
+        output_tokens = output_tokens + VALUES(output_tokens),
+        cache_create_tokens = cache_create_tokens + VALUES(cache_create_tokens),
+        cache_read_tokens = cache_read_tokens + VALUES(cache_read_tokens),
+        long_context_input_tokens = long_context_input_tokens + VALUES(long_context_input_tokens),
+        long_context_output_tokens = long_context_output_tokens + VALUES(long_context_output_tokens),
+        long_context_requests = long_context_requests + VALUES(long_context_requests),
+        requests = requests + VALUES(requests),
+        updated_at = CURRENT_TIMESTAMP
+    `
+
+    const values = rows.map((row) => [
+      row.account_id,
+      row.account_type,
+      row.model,
+      row.stat_date,
+      row.stat_hour,
+      row.stat_month,
+      row.total_tokens,
+      row.input_tokens,
+      row.output_tokens,
+      row.cache_create_tokens,
+      row.cache_read_tokens,
+      row.long_context_input_tokens,
+      row.long_context_output_tokens,
+      row.long_context_requests,
+      row.requests
+    ])
+
+    await pool.query(query, [values])
+  }
+
+  async getAccountUsageStats(accountId, accountType = 'claude') {
+    const pool = this.getPoolSafe()
+    const today = this.getDateStringInTimezone()
+    const tzDate = this.getDateInTimezone()
+    const currentMonth = `${tzDate.getUTCFullYear()}-${String(tzDate.getUTCMonth() + 1).padStart(
+      2,
+      '0'
+    )}`
+
+    const [totalRows] = await pool.query(
+      'SELECT SUM(total_tokens) AS totalTokens, SUM(input_tokens) AS inputTokens, SUM(output_tokens) AS outputTokens, SUM(cache_create_tokens) AS cacheCreateTokens, SUM(cache_read_tokens) AS cacheReadTokens, SUM(requests) AS requests FROM account_usage_stats WHERE account_id = ? AND account_type = ?',
+      [accountId, accountType]
+    )
+
+    const [dailyRows] = await pool.query(
+      'SELECT SUM(total_tokens) AS totalTokens, SUM(input_tokens) AS inputTokens, SUM(output_tokens) AS outputTokens, SUM(cache_create_tokens) AS cacheCreateTokens, SUM(cache_read_tokens) AS cacheReadTokens, SUM(requests) AS requests FROM account_usage_stats WHERE account_id = ? AND account_type = ? AND stat_date = ?',
+      [accountId, accountType, today]
+    )
+
+    const [monthlyRows] = await pool.query(
+      'SELECT SUM(total_tokens) AS totalTokens, SUM(input_tokens) AS inputTokens, SUM(output_tokens) AS outputTokens, SUM(cache_create_tokens) AS cacheCreateTokens, SUM(cache_read_tokens) AS cacheReadTokens, SUM(requests) AS requests FROM account_usage_stats WHERE account_id = ? AND account_type = ? AND stat_month = ?',
+      [accountId, accountType, currentMonth]
+    )
+
+    const total = totalRows[0] || {}
+    const daily = dailyRows[0] || {}
+    const monthly = monthlyRows[0] || {}
+
+    const totalRequests = parseInt(total.requests) || 0
+    const totalTokens = parseInt(total.totalTokens) || 0
+    const createdAt = new Date(0)
+    const now = new Date()
+    const days = Math.max(1, Math.ceil((now - createdAt) / (1000 * 60 * 60 * 24)))
+    const totalMinutes = days * 24 * 60
+
+    return {
+      accountId,
+      total: {
+        tokens: totalTokens,
+        inputTokens: parseInt(total.inputTokens) || 0,
+        outputTokens: parseInt(total.outputTokens) || 0,
+        cacheCreateTokens: parseInt(total.cacheCreateTokens) || 0,
+        cacheReadTokens: parseInt(total.cacheReadTokens) || 0,
+        allTokens: totalTokens,
+        requests: totalRequests
+      },
+      daily: {
+        tokens: parseInt(daily.totalTokens) || 0,
+        inputTokens: parseInt(daily.inputTokens) || 0,
+        outputTokens: parseInt(daily.outputTokens) || 0,
+        cacheCreateTokens: parseInt(daily.cacheCreateTokens) || 0,
+        cacheReadTokens: parseInt(daily.cacheReadTokens) || 0,
+        allTokens: parseInt(daily.totalTokens) || 0,
+        requests: parseInt(daily.requests) || 0,
+        cost: await this.getAccountDailyCost(accountId)
+      },
+      monthly: {
+        tokens: parseInt(monthly.totalTokens) || 0,
+        inputTokens: parseInt(monthly.inputTokens) || 0,
+        outputTokens: parseInt(monthly.outputTokens) || 0,
+        cacheCreateTokens: parseInt(monthly.cacheCreateTokens) || 0,
+        cacheReadTokens: parseInt(monthly.cacheReadTokens) || 0,
+        allTokens: parseInt(monthly.totalTokens) || 0,
+        requests: parseInt(monthly.requests) || 0
+      },
+      averages: {
+        rpm: totalRequests / totalMinutes,
+        tpm: totalTokens / totalMinutes,
+        dailyRequests: totalRequests / days,
+        dailyTokens: totalTokens / days
+      }
+    }
+  }
+
+  async getAllAccountsUsageStats() {
+    try {
+      const pool = this.getPoolSafe()
+      const [accounts] = await pool.query(
+        'SELECT id, name, email, status, is_active FROM claude_accounts'
+      )
+
+      const stats = []
+      for (const account of accounts) {
+        const usage = await this.getAccountUsageStats(account.id)
+        stats.push({
+          id: account.id,
+          name: account.name,
+          email: account.email,
+          status: account.status,
+          isActive: account.is_active ? true : false,
+          ...usage
+        })
+      }
+
+      stats.sort((a, b) => (b.daily?.allTokens || 0) - (a.daily?.allTokens || 0))
+      return stats
+    } catch (error) {
+      logger.error('Failed to fetch all account usage stats:', error)
+      return []
+    }
+  }
+
+  async getAccountSessionWindowUsage(accountId, windowStart, windowEnd) {
+    if (!windowStart || !windowEnd) {
+      return {
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalCacheCreateTokens: 0,
+        totalCacheReadTokens: 0,
+        totalAllTokens: 0,
+        totalRequests: 0,
+        modelUsage: {}
+      }
+    }
+
+    const pool = this.getPoolSafe()
+    const startKey = windowStart.substring(0, 13)
+    const endKey = windowEnd.substring(0, 13)
+
+    const [rows] = await pool.query(
+      'SELECT stat_hour, model, input_tokens, output_tokens, cache_create_tokens, cache_read_tokens, requests FROM account_usage_stats WHERE account_id = ? AND stat_hour IS NOT NULL AND stat_hour BETWEEN ? AND ?',
+      [accountId, startKey, endKey]
+    )
+
+    const summary = {
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCacheCreateTokens: 0,
+      totalCacheReadTokens: 0,
+      totalAllTokens: 0,
+      totalRequests: 0,
+      modelUsage: {}
+    }
+
+    for (const row of rows) {
+      const inputTokens = parseInt(row.input_tokens) || 0
+      const outputTokens = parseInt(row.output_tokens) || 0
+      const cacheCreateTokens = parseInt(row.cache_create_tokens) || 0
+      const cacheReadTokens = parseInt(row.cache_read_tokens) || 0
+      const allTokens = inputTokens + outputTokens + cacheCreateTokens + cacheReadTokens
+      const requests = parseInt(row.requests) || 0
+
+      summary.totalInputTokens += inputTokens
+      summary.totalOutputTokens += outputTokens
+      summary.totalCacheCreateTokens += cacheCreateTokens
+      summary.totalCacheReadTokens += cacheReadTokens
+      summary.totalAllTokens += allTokens
+      summary.totalRequests += requests
+
+      const modelKey = row.model || 'unknown'
+      if (!summary.modelUsage[modelKey]) {
+        summary.modelUsage[modelKey] = {
+          inputTokens: 0,
+          outputTokens: 0,
+          cacheCreateTokens: 0,
+          cacheReadTokens: 0,
+          allTokens: 0,
+          requests: 0
+        }
+      }
+
+      const modelStats = summary.modelUsage[modelKey]
+      modelStats.inputTokens += inputTokens
+      modelStats.outputTokens += outputTokens
+      modelStats.cacheCreateTokens += cacheCreateTokens
+      modelStats.cacheReadTokens += cacheReadTokens
+      modelStats.allTokens += allTokens
+      modelStats.requests += requests
+    }
+
+    return summary
+  }
+
+  async resetAllUsageStats() {
+    const pool = this.getPoolSafe()
+    await Promise.all([
+      pool.query('TRUNCATE TABLE usage_stats'),
+      pool.query('TRUNCATE TABLE account_usage_stats'),
+      pool.query('TRUNCATE TABLE cost_stats'),
+      pool.query('TRUNCATE TABLE usage_records')
+    ])
+
+    return {
+      usageStatsCleared: true
+    }
+  }
 
   // 🔐 会话管理
   async setSession(sessionId, sessionData, ttl = 86400) {
@@ -904,12 +1616,72 @@ class MySQLClient {
       return {}
     }
 
-    return rows[0].data || {}
+    const row = rows[0]
+    return this._parseJson(row.data, {})
   }
 
   async deleteSession(sessionId) {
     const pool = this.getPoolSafe()
     const [result] = await pool.query('DELETE FROM sessions WHERE id = ?', [sessionId])
+    return result.affectedRows
+  }
+
+  // Sticky会话映射
+  async setSessionAccountMapping(sessionHash, accountId, ttl = null, accountType = 'claude') {
+    const pool = this.getPoolSafe()
+    const expiresAt = ttl ? new Date(Date.now() + ttl * 1000) : new Date(Date.now() + 3600 * 1000)
+
+    await pool.query(
+      `INSERT INTO sticky_sessions (session_hash, account_id, account_type, expires_at)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         account_id = VALUES(account_id),
+         account_type = VALUES(account_type),
+         expires_at = VALUES(expires_at),
+         updated_at = CURRENT_TIMESTAMP`,
+      [sessionHash, accountId, accountType, expiresAt]
+    )
+  }
+
+  async getSessionAccountMapping(sessionHash) {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query(
+      'SELECT account_id, account_type, expires_at FROM sticky_sessions WHERE session_hash = ?',
+      [sessionHash]
+    )
+
+    if (rows.length === 0) {
+      return null
+    }
+
+    const row = rows[0]
+    if (row.expires_at && row.expires_at < new Date()) {
+      await this.deleteSessionAccountMapping(sessionHash)
+      return null
+    }
+
+    return {
+      accountId: row.account_id,
+      accountType: row.account_type,
+      expiresAt: row.expires_at ? row.expires_at.toISOString() : null
+    }
+  }
+
+  async extendSessionAccountMappingTTL(sessionHash, ttlSeconds = 3600) {
+    const pool = this.getPoolSafe()
+    const expiresAt = new Date(Date.now() + ttlSeconds * 1000)
+    const [result] = await pool.query(
+      'UPDATE sticky_sessions SET expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE session_hash = ?',
+      [expiresAt, sessionHash]
+    )
+    return result.affectedRows
+  }
+
+  async deleteSessionAccountMapping(sessionHash) {
+    const pool = this.getPoolSafe()
+    const [result] = await pool.query('DELETE FROM sticky_sessions WHERE session_hash = ?', [
+      sessionHash
+    ])
     return result.affectedRows
   }
 
@@ -953,7 +1725,7 @@ class MySQLClient {
     return {
       state: row.state,
       codeVerifier: row.code_verifier,
-      proxy: row.proxy_config || null,
+      proxy: this._parseJson(row.proxy_config, null),
       accountName: row.account_name,
       description: row.description
     }
@@ -1049,6 +1821,326 @@ class MySQLClient {
     )
 
     return rows[0].count
+  }
+
+  // 系统统计
+  async getSystemStats() {
+    const pool = this.getPoolSafe()
+    const [[apiKeys]] = await pool.query('SELECT COUNT(*) AS count FROM api_keys')
+    const [[claudeAccounts]] = await pool.query('SELECT COUNT(*) AS count FROM claude_accounts')
+    const [[usage]] = await pool.query('SELECT COUNT(*) AS count FROM usage_stats')
+
+    return {
+      totalApiKeys: apiKeys.count || 0,
+      totalClaudeAccounts: claudeAccounts.count || 0,
+      totalUsageRecords: usage.count || 0
+    }
+  }
+
+  async getTodayStats() {
+    try {
+      const pool = this.getPoolSafe()
+      const today = this.getDateStringInTimezone()
+
+      const [[daily]] = await pool.query(
+        'SELECT SUM(requests) AS requests, SUM(total_tokens) AS tokens, SUM(input_tokens) AS inputTokens, SUM(output_tokens) AS outputTokens, SUM(cache_create_tokens) AS cacheCreateTokens, SUM(cache_read_tokens) AS cacheReadTokens FROM usage_stats WHERE stat_date = ?',
+        [today]
+      )
+
+      const [[apiKeysToday]] = await pool.query(
+        'SELECT COUNT(*) AS count FROM api_keys WHERE DATE(created_at) = ?',
+        [today]
+      )
+
+      return {
+        requestsToday: parseInt(daily.requests) || 0,
+        tokensToday: parseInt(daily.tokens) || 0,
+        inputTokensToday: parseInt(daily.inputTokens) || 0,
+        outputTokensToday: parseInt(daily.outputTokens) || 0,
+        cacheCreateTokensToday: parseInt(daily.cacheCreateTokens) || 0,
+        cacheReadTokensToday: parseInt(daily.cacheReadTokens) || 0,
+        apiKeysCreatedToday: parseInt(apiKeysToday.count) || 0
+      }
+    } catch (error) {
+      logger.error('Failed to compute today stats:', error)
+      return {
+        requestsToday: 0,
+        tokensToday: 0,
+        inputTokensToday: 0,
+        outputTokensToday: 0,
+        cacheCreateTokensToday: 0,
+        cacheReadTokensToday: 0,
+        apiKeysCreatedToday: 0
+      }
+    }
+  }
+
+  async getSystemAverages() {
+    try {
+      const pool = this.getPoolSafe()
+      const [[aggregated]] = await pool.query(
+        'SELECT SUM(requests) AS requests, SUM(total_tokens) AS tokens, SUM(input_tokens) AS inputTokens, SUM(output_tokens) AS outputTokens, MIN(created_at) AS firstRecord FROM usage_stats'
+      )
+
+      const totalRequests = parseInt(aggregated.requests) || 0
+      const totalTokens = parseInt(aggregated.tokens) || 0
+      const totalInputTokens = parseInt(aggregated.inputTokens) || 0
+      const totalOutputTokens = parseInt(aggregated.outputTokens) || 0
+
+      if (!aggregated.firstRecord) {
+        return {
+          systemRPM: 0,
+          systemTPM: 0,
+          totalInputTokens,
+          totalOutputTokens,
+          totalTokens
+        }
+      }
+
+      const firstRecord = new Date(aggregated.firstRecord)
+      const minutes = Math.max(1, (Date.now() - firstRecord.getTime()) / 60000)
+
+      return {
+        systemRPM: totalRequests / minutes,
+        systemTPM: totalTokens / minutes,
+        totalInputTokens,
+        totalOutputTokens,
+        totalTokens
+      }
+    } catch (error) {
+      logger.error('Failed to compute system averages:', error)
+      return {
+        systemRPM: 0,
+        systemTPM: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalTokens: 0
+      }
+    }
+  }
+
+  async getRealtimeSystemMetrics() {
+    try {
+      const pool = this.getPoolSafe()
+      const windowMinutes = config.system?.metricsWindow || 5
+      const currentMinute = Math.floor(Date.now() / 60000)
+      const fromMinute = currentMinute - windowMinutes + 1
+
+      const [rows] = await pool.query(
+        'SELECT * FROM system_metrics WHERE minute_timestamp BETWEEN ? AND ?',
+        [fromMinute, currentMinute]
+      )
+
+      const summary = {
+        totalRequests: 0,
+        totalTokens: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalCacheCreateTokens: 0,
+        totalCacheReadTokens: 0
+      }
+
+      for (const row of rows) {
+        summary.totalRequests += parseInt(row.requests) || 0
+        summary.totalTokens += parseInt(row.total_tokens) || 0
+        summary.totalInputTokens += parseInt(row.input_tokens) || 0
+        summary.totalOutputTokens += parseInt(row.output_tokens) || 0
+        summary.totalCacheCreateTokens += parseInt(row.cache_create_tokens) || 0
+        summary.totalCacheReadTokens += parseInt(row.cache_read_tokens) || 0
+      }
+
+      return summary
+    } catch (error) {
+      logger.error('Failed to compute realtime metrics:', error)
+      return {
+        totalRequests: 0,
+        totalTokens: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalCacheCreateTokens: 0,
+        totalCacheReadTokens: 0
+      }
+    }
+  }
+
+  // 基础KV操作（用于兼容依赖Redis的调用）
+  async get(key) {
+    const pool = this.getPoolSafe()
+    const [rows] = await pool.query(
+      'SELECT cache_value, expires_at FROM key_value_store WHERE cache_key = ?',
+      [key]
+    )
+
+    if (rows.length === 0) {
+      return null
+    }
+
+    const row = rows[0]
+    if (row.expires_at && row.expires_at < new Date()) {
+      await pool.query('DELETE FROM key_value_store WHERE cache_key = ?', [key])
+      return null
+    }
+
+    return row.cache_value
+  }
+
+  async set(key, value, ...args) {
+    const pool = this.getPoolSafe()
+    let ttlMs = null
+
+    if (args && args.length >= 2) {
+      const option = String(args[0] || '').toUpperCase()
+      const amount = parseInt(args[1], 10)
+      if (!Number.isNaN(amount)) {
+        if (option === 'EX') {
+          ttlMs = amount * 1000
+        } else if (option === 'PX') {
+          ttlMs = amount
+        }
+      }
+    }
+
+    const expiresAt = ttlMs ? new Date(Date.now() + ttlMs) : null
+
+    await pool.query(
+      `INSERT INTO key_value_store (cache_key, cache_value, expires_at)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE cache_value = VALUES(cache_value), expires_at = VALUES(expires_at), updated_at = CURRENT_TIMESTAMP`,
+      [key, value, expiresAt]
+    )
+
+    return 'OK'
+  }
+
+  async setex(key, ttlSeconds, value) {
+    return this.set(key, value, 'EX', ttlSeconds)
+  }
+
+  async del(...keys) {
+    if (!keys || keys.length === 0) {
+      return 0
+    }
+
+    const pool = this.getPoolSafe()
+    const [result] = await pool.query(
+      `DELETE FROM key_value_store WHERE cache_key IN (${keys.map(() => '?').join(',')})`,
+      keys
+    )
+
+    return result.affectedRows || 0
+  }
+
+  async keys(pattern) {
+    const pool = this.getPoolSafe()
+    const results = []
+
+    const appendWithPrefix = (rows, prefix) => {
+      for (const row of rows) {
+        results.push(`${prefix}${row.id}`)
+      }
+    }
+
+    if (pattern === 'apikey:*') {
+      const [rows] = await pool.query('SELECT id FROM api_keys')
+      appendWithPrefix(rows, 'apikey:')
+    } else if (pattern === 'claude:account:*') {
+      const [rows] = await pool.query('SELECT id FROM claude_accounts')
+      appendWithPrefix(rows, 'claude:account:')
+    } else if (pattern === 'gemini_account:*') {
+      const [rows] = await pool.query('SELECT id FROM gemini_accounts')
+      appendWithPrefix(rows, 'gemini_account:')
+    } else if (pattern === 'openai:account:*') {
+      const [rows] = await pool.query('SELECT id FROM openai_accounts')
+      appendWithPrefix(rows, 'openai:account:')
+    } else if (pattern === 'droid:account:*') {
+      const [rows] = await pool.query('SELECT id FROM droid_accounts')
+      appendWithPrefix(rows, 'droid:account:')
+    } else if (pattern === 'sticky_session:*') {
+      const [rows] = await pool.query('SELECT session_hash AS id FROM sticky_sessions')
+      appendWithPrefix(rows, 'sticky_session:')
+    } else if (pattern === 'oauth:*') {
+      const [rows] = await pool.query('SELECT id FROM oauth_sessions')
+      appendWithPrefix(rows, 'oauth:')
+    } else if (pattern === 'concurrency:*') {
+      const [rows] = await pool.query('SELECT DISTINCT api_key_id AS id FROM concurrency_leases')
+      appendWithPrefix(rows, 'concurrency:')
+    } else if (pattern === 'usage:cost:*') {
+      const [rows] = await pool.query('SELECT api_key_id, cost_type, cost_date FROM cost_stats')
+      rows.forEach((row) => {
+        results.push(`usage:cost:${row.cost_type}:${row.api_key_id}:${row.cost_date}`)
+      })
+    } else if (pattern === 'system:metrics:minute:*') {
+      const [rows] = await pool.query('SELECT minute_timestamp FROM system_metrics')
+      rows.forEach((row) => {
+        results.push(`system:metrics:minute:${row.minute_timestamp}`)
+      })
+    } else {
+      const sqlPattern = pattern
+        .replace(/[%_]/g, (match) => `\\${match}`)
+        .replace(/\*/g, '%')
+        .replace(/\?/g, '_')
+      const [rows] = await pool.query(
+        'SELECT cache_key FROM key_value_store WHERE cache_key LIKE ?',
+        [sqlPattern]
+      )
+      rows.forEach((row) => results.push(row.cache_key))
+    }
+
+    return results
+  }
+
+  async incr(key) {
+    const pool = this.getPoolSafe()
+    await pool.query(
+      `INSERT INTO key_value_store (cache_key, cache_value, expires_at)
+       VALUES (?, '1', NULL)
+       ON DUPLICATE KEY UPDATE cache_value = CAST(cache_value AS SIGNED) + 1, updated_at = CURRENT_TIMESTAMP`,
+      [key]
+    )
+
+    const [rows] = await pool.query('SELECT cache_value FROM key_value_store WHERE cache_key = ?', [
+      key
+    ])
+
+    return parseInt(rows[0]?.cache_value) || 0
+  }
+
+  async incrby(key, amount) {
+    const pool = this.getPoolSafe()
+    const delta = Number(amount)
+    const increment = Number.isFinite(delta) ? delta : 0
+
+    await pool.query(
+      `INSERT INTO key_value_store (cache_key, cache_value, expires_at)
+       VALUES (?, ?, NULL)
+       ON DUPLICATE KEY UPDATE cache_value = CAST(IFNULL(cache_value, '0') AS SIGNED) + ?, updated_at = CURRENT_TIMESTAMP`,
+      [key, String(Math.trunc(increment)), Math.trunc(increment)]
+    )
+
+    const [rows] = await pool.query('SELECT cache_value FROM key_value_store WHERE cache_key = ?', [
+      key
+    ])
+
+    return parseInt(rows[0]?.cache_value) || 0
+  }
+
+  async incrbyfloat(key, amount) {
+    const pool = this.getPoolSafe()
+    const delta = Number(amount)
+    const increment = Number.isFinite(delta) ? delta : 0
+
+    await pool.query(
+      `INSERT INTO key_value_store (cache_key, cache_value, expires_at)
+       VALUES (?, ?, NULL)
+       ON DUPLICATE KEY UPDATE cache_value = CAST(IFNULL(cache_value, '0') AS DECIMAL(30, 12)) + ?, updated_at = CURRENT_TIMESTAMP`,
+      [key, String(increment), increment]
+    )
+
+    const [rows] = await pool.query('SELECT cache_value FROM key_value_store WHERE cache_key = ?', [
+      key
+    ])
+
+    return parseFloat(rows[0]?.cache_value) || 0
   }
 
   // 清理过期数据
