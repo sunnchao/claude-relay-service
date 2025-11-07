@@ -1,9 +1,8 @@
 const crypto = require('crypto')
 const { v4: uuidv4 } = require('uuid')
 const config = require('../../config/config')
-const database = require('../models/database')
+const redis = require('../models/redis')
 const logger = require('../utils/logger')
-const LRUCache = require('../utils/lruCache')
 
 const ACCOUNT_TYPE_CONFIG = {
   claude: { prefix: 'claude:account:' },
@@ -65,25 +64,6 @@ function sanitizeAccountIdForType(accountId, accountType) {
 class ApiKeyService {
   constructor() {
     this.prefix = config.security.apiKeyPrefix
-    this.ENCRYPTION_ALGORITHM = 'aes-256-cbc'
-    this.ENCRYPTION_SALT = 'api-key-service-salt'
-    this._encryptionKeyCache = null
-    this._decryptCache = new LRUCache(500)
-
-    const cleanupTimer = setInterval(
-      () => {
-        try {
-          this._decryptCache.cleanup()
-        } catch (error) {
-          logger.warn('⚠️ API key decrypt cache cleanup failed:', error)
-        }
-      },
-      10 * 60 * 1000
-    )
-
-    if (cleanupTimer && typeof cleanupTimer.unref === 'function') {
-      cleanupTimer.unref()
-    }
   }
 
   // 🔑 生成新的API Key
@@ -124,14 +104,12 @@ class ApiKeyService {
     const apiKey = `${this.prefix}${this._generateSecretKey()}`
     const keyId = uuidv4()
     const hashedKey = this._hashApiKey(apiKey)
-    const encryptedKey = this._encryptSensitiveData(apiKey)
 
     const keyData = {
       id: keyId,
       name,
       description,
       apiKey: hashedKey,
-      encryptedKey,
       tokenLimit: String(tokenLimit ?? 0),
       concurrencyLimit: String(concurrencyLimit ?? 0),
       rateLimitWindow: String(rateLimitWindow ?? 0),
@@ -169,7 +147,7 @@ class ApiKeyService {
     }
 
     // 保存API Key数据并建立哈希映射
-    await database.setApiKey(keyId, keyData, hashedKey)
+    await redis.setApiKey(keyId, keyData, hashedKey)
 
     logger.success(`🔑 Generated new API key: ${name} (${keyId})`)
 
@@ -222,7 +200,7 @@ class ApiKeyService {
       const hashedKey = this._hashApiKey(apiKey)
 
       // 通过哈希值直接查找API Key（性能优化）
-      const keyData = await database.findApiKeyByHash(hashedKey)
+      const keyData = await redis.findApiKeyByHash(hashedKey)
 
       if (!keyData) {
         return { valid: false, error: 'API key not found' }
@@ -257,7 +235,7 @@ class ApiKeyService {
         keyData.lastUsedAt = now.toISOString()
 
         // 保存到Redis
-        await database.setApiKey(keyData.id, keyData)
+        await redis.setApiKey(keyData.id, keyData)
 
         logger.success(
           `🔓 API key activated: ${keyData.id} (${
@@ -286,12 +264,12 @@ class ApiKeyService {
       }
 
       // 获取使用统计（供返回数据使用）
-      const usage = await database.getUsageStats(keyData.id)
+      const usage = await redis.getUsageStats(keyData.id)
 
       // 获取费用统计
       const [dailyCost, costStats] = await Promise.all([
-        database.getDailyCost(keyData.id),
-        database.getCostStats(keyData.id)
+        redis.getDailyCost(keyData.id),
+        redis.getCostStats(keyData.id)
       ])
       const totalCost = costStats?.total || 0
 
@@ -354,7 +332,7 @@ class ApiKeyService {
           weeklyOpusCostLimit: parseFloat(keyData.weeklyOpusCostLimit || 0),
           dailyCost: dailyCost || 0,
           totalCost,
-          weeklyOpusCost: (await database.getWeeklyOpusCost(keyData.id)) || 0,
+          weeklyOpusCost: (await redis.getWeeklyOpusCost(keyData.id)) || 0,
           tags,
           usage
         }
@@ -376,7 +354,7 @@ class ApiKeyService {
       const hashedKey = this._hashApiKey(apiKey)
 
       // 通过哈希值直接查找API Key（性能优化）
-      const keyData = await database.findApiKeyByHash(hashedKey)
+      const keyData = await redis.findApiKeyByHash(hashedKey)
 
       if (!keyData) {
         return { valid: false, error: 'API key not found' }
@@ -414,12 +392,12 @@ class ApiKeyService {
 
       // 获取当日费用
       const [dailyCost, costStats] = await Promise.all([
-        database.getDailyCost(keyData.id),
-        database.getCostStats(keyData.id)
+        redis.getDailyCost(keyData.id),
+        redis.getCostStats(keyData.id)
       ])
 
       // 获取使用统计
-      const usage = await database.getUsageStats(keyData.id)
+      const usage = await redis.getUsageStats(keyData.id)
 
       // 解析限制模型数据
       let restrictedModels = []
@@ -481,7 +459,7 @@ class ApiKeyService {
           weeklyOpusCostLimit: parseFloat(keyData.weeklyOpusCostLimit || 0),
           dailyCost: dailyCost || 0,
           totalCost: costStats?.total || 0,
-          weeklyOpusCost: (await database.getWeeklyOpusCost(keyData.id)) || 0,
+          weeklyOpusCost: (await redis.getWeeklyOpusCost(keyData.id)) || 0,
           tags,
           usage
         }
@@ -493,38 +471,21 @@ class ApiKeyService {
   }
 
   // 📋 获取所有API Keys
-  async getAllApiKeys(includeDeleted = false, options = {}) {
+  async getAllApiKeys(includeDeleted = false) {
     try {
-      let actualIncludeDeleted = includeDeleted
-      let actualOptions = options
-
-      if (
-        typeof includeDeleted === 'object' &&
-        includeDeleted !== null &&
-        !Array.isArray(includeDeleted)
-      ) {
-        actualOptions = includeDeleted
-        actualIncludeDeleted = includeDeleted.includeDeleted === true
-      }
-
-      if (typeof actualOptions !== 'object' || Array.isArray(actualOptions)) {
-        actualOptions = {}
-      }
-
-      const includePlainKey = actualOptions.includePlainKey === true
-
-      let apiKeys = await database.getAllApiKeys()
+      let apiKeys = await redis.getAllApiKeys()
+      const client = redis.getClientSafe()
       const accountInfoCache = new Map()
 
       // 默认过滤掉已删除的API Keys
-      if (!actualIncludeDeleted) {
+      if (!includeDeleted) {
         apiKeys = apiKeys.filter((key) => key.isDeleted !== 'true')
       }
 
       // 为每个key添加使用统计和当前并发数
       for (const key of apiKeys) {
-        key.usage = await database.getUsageStats(key.id)
-        const costStats = await database.getCostStats(key.id)
+        key.usage = await redis.getUsageStats(key.id)
+        const costStats = await redis.getCostStats(key.id)
         // Add cost information to usage object for frontend compatibility
         if (key.usage && costStats) {
           key.usage.total = key.usage.total || {}
@@ -537,7 +498,7 @@ class ApiKeyService {
         key.rateLimitWindow = parseInt(key.rateLimitWindow || 0)
         key.rateLimitRequests = parseInt(key.rateLimitRequests || 0)
         key.rateLimitCost = parseFloat(key.rateLimitCost || 0) // 新增：速率限制费用字段
-        key.currentConcurrency = await database.getConcurrency(key.id)
+        key.currentConcurrency = await redis.getConcurrency(key.id)
         key.isActive = key.isActive === 'true'
         key.enableModelRestriction = key.enableModelRestriction === 'true'
         key.enableClientRestriction = key.enableClientRestriction === 'true'
@@ -545,8 +506,8 @@ class ApiKeyService {
         key.dailyCostLimit = parseFloat(key.dailyCostLimit || 0)
         key.totalCostLimit = parseFloat(key.totalCostLimit || 0)
         key.weeklyOpusCostLimit = parseFloat(key.weeklyOpusCostLimit || 0)
-        key.dailyCost = (await database.getDailyCost(key.id)) || 0
-        key.weeklyOpusCost = (await database.getWeeklyOpusCost(key.id)) || 0
+        key.dailyCost = (await redis.getDailyCost(key.id)) || 0
+        key.weeklyOpusCost = (await redis.getWeeklyOpusCost(key.id)) || 0
         key.activationDays = parseInt(key.activationDays || 0)
         key.activationUnit = key.activationUnit || 'days'
         key.expirationMode = key.expirationMode || 'fixed'
@@ -560,12 +521,12 @@ class ApiKeyService {
           const costCountKey = `rate_limit:cost:${key.id}` // 新增：费用计数器
           const windowStartKey = `rate_limit:window_start:${key.id}`
 
-          key.currentWindowRequests = parseInt((await database.get(requestCountKey)) || '0')
-          key.currentWindowTokens = parseInt((await database.get(tokenCountKey)) || '0')
-          key.currentWindowCost = parseFloat((await database.get(costCountKey)) || '0') // 新增：当前窗口费用
+          key.currentWindowRequests = parseInt((await client.get(requestCountKey)) || '0')
+          key.currentWindowTokens = parseInt((await client.get(tokenCountKey)) || '0')
+          key.currentWindowCost = parseFloat((await client.get(costCountKey)) || '0') // 新增：当前窗口费用
 
           // 获取窗口开始时间和计算剩余时间
-          const windowStart = await database.get(windowStartKey)
+          const windowStart = await client.get(windowStartKey)
           if (windowStart) {
             const now = Date.now()
             const windowStartTime = parseInt(windowStart)
@@ -617,11 +578,6 @@ class ApiKeyService {
         } catch (e) {
           key.tags = []
         }
-
-        if (includePlainKey) {
-          const fullKey = this._decryptSensitiveData(key.encryptedKey)
-          key.fullKey = fullKey || null
-        }
         // 不暴露已弃用字段
         if (Object.prototype.hasOwnProperty.call(key, 'ccrAccountId')) {
           delete key.ccrAccountId
@@ -629,7 +585,7 @@ class ApiKeyService {
 
         let lastUsageRecord = null
         try {
-          const usageRecords = await database.getUsageRecords(key.id, 1)
+          const usageRecords = await redis.getUsageRecords(key.id, 1)
           if (Array.isArray(usageRecords) && usageRecords.length > 0) {
             lastUsageRecord = usageRecords[0]
           }
@@ -641,7 +597,8 @@ class ApiKeyService {
           const resolvedAccount = await this._resolveLastUsageAccount(
             key,
             lastUsageRecord,
-            accountInfoCache
+            accountInfoCache,
+            client
           )
 
           if (resolvedAccount) {
@@ -680,7 +637,7 @@ class ApiKeyService {
   // 📝 更新API Key
   async updateApiKey(keyId, updates) {
     try {
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (!keyData || Object.keys(keyData).length === 0) {
         throw new Error('API key not found')
       }
@@ -747,7 +704,7 @@ class ApiKeyService {
       updatedData.updatedAt = new Date().toISOString()
 
       // 更新时不需要重新建立哈希映射，因为API Key本身没有变化
-      await database.setApiKey(keyId, updatedData)
+      await redis.setApiKey(keyId, updatedData)
 
       logger.success(`📝 Updated API key: ${keyId}`)
 
@@ -761,7 +718,7 @@ class ApiKeyService {
   // 🗑️ 软删除API Key (保留使用统计)
   async deleteApiKey(keyId, deletedBy = 'system', deletedByType = 'system') {
     try {
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (!keyData || Object.keys(keyData).length === 0) {
         throw new Error('API key not found')
       }
@@ -776,11 +733,11 @@ class ApiKeyService {
         isActive: 'false' // 同时禁用
       }
 
-      await database.setApiKey(keyId, updatedData)
+      await redis.setApiKey(keyId, updatedData)
 
       // 从哈希映射中移除（这样就不能再使用这个key进行API调用）
       if (keyData.apiKey) {
-        await database.deleteApiKeyHash(keyData.apiKey)
+        await redis.deleteApiKeyHash(keyData.apiKey)
       }
 
       logger.success(`🗑️ Soft deleted API key: ${keyId} by ${deletedBy} (${deletedByType})`)
@@ -795,7 +752,7 @@ class ApiKeyService {
   // 🔄 恢复已删除的API Key
   async restoreApiKey(keyId, restoredBy = 'system', restoredByType = 'system') {
     try {
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (!keyData || Object.keys(keyData).length === 0) {
         throw new Error('API key not found')
       }
@@ -819,14 +776,15 @@ class ApiKeyService {
       delete updatedData.deletedByType
 
       // 保存更新后的数据
-      await database.setApiKey(keyId, updatedData)
+      await redis.setApiKey(keyId, updatedData)
 
-      // 清理旧的删除标记
-      await database.clearApiKeyDeletionMetadata(keyId)
+      // 使用Redis的hdel命令删除不需要的字段
+      const keyName = `apikey:${keyId}`
+      await redis.client.hdel(keyName, 'isDeleted', 'deletedAt', 'deletedBy', 'deletedByType')
 
       // 重新建立哈希映射（恢复API Key的使用能力）
       if (keyData.apiKey) {
-        await database.setApiKeyHash(keyData.apiKey, {
+        await redis.setApiKeyHash(keyData.apiKey, {
           id: keyId,
           name: keyData.name,
           isActive: 'true'
@@ -845,7 +803,7 @@ class ApiKeyService {
   // 🗑️ 彻底删除API Key（物理删除）
   async permanentDeleteApiKey(keyId) {
     try {
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (!keyData || Object.keys(keyData).length === 0) {
         throw new Error('API key not found')
       }
@@ -856,10 +814,25 @@ class ApiKeyService {
       }
 
       // 删除所有相关的使用统计数据
-      await database.deleteUsageDataForKey(keyId)
+      const today = new Date().toISOString().split('T')[0]
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+
+      // 删除每日统计
+      await redis.client.del(`usage:daily:${today}:${keyId}`)
+      await redis.client.del(`usage:daily:${yesterday}:${keyId}`)
+
+      // 删除月度统计
+      const currentMonth = today.substring(0, 7)
+      await redis.client.del(`usage:monthly:${currentMonth}:${keyId}`)
+
+      // 删除所有相关的统计键（通过模式匹配）
+      const usageKeys = await redis.client.keys(`usage:*:${keyId}*`)
+      if (usageKeys.length > 0) {
+        await redis.client.del(...usageKeys)
+      }
 
       // 删除API Key本身
-      await database.deleteApiKey(keyId)
+      await redis.deleteApiKey(keyId)
 
       logger.success(`🗑️ Permanently deleted API key: ${keyId}`)
 
@@ -942,7 +915,7 @@ class ApiKeyService {
       }
 
       // 记录API Key级别的使用统计
-      await database.incrementTokenUsage(
+      await redis.incrementTokenUsage(
         keyId,
         totalTokens,
         inputTokens,
@@ -957,7 +930,7 @@ class ApiKeyService {
 
       // 记录费用统计
       if (costInfo.costs.total > 0) {
-        await database.incrementDailyCost(keyId, costInfo.costs.total)
+        await redis.incrementDailyCost(keyId, costInfo.costs.total)
         logger.database(
           `💰 Recorded cost for ${keyId}: $${costInfo.costs.total.toFixed(6)}, model: ${model}`
         )
@@ -966,15 +939,15 @@ class ApiKeyService {
       }
 
       // 获取API Key数据以确定关联的账户
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (keyData && Object.keys(keyData).length > 0) {
         // 更新最后使用时间
         keyData.lastUsedAt = new Date().toISOString()
-        await database.setApiKey(keyId, keyData)
+        await redis.setApiKey(keyId, keyData)
 
         // 记录账户级别的使用统计（只统计实际处理请求的账户）
         if (accountId) {
-          await database.incrementAccountUsage(
+          await redis.incrementAccountUsage(
             accountId,
             totalTokens,
             inputTokens,
@@ -996,7 +969,7 @@ class ApiKeyService {
 
       // 记录单次请求的使用详情
       const usageCost = costInfo && costInfo.costs ? costInfo.costs.total || 0 : 0
-      await database.addUsageRecord(keyId, {
+      await redis.addUsageRecord(keyId, {
         timestamp: new Date().toISOString(),
         model,
         accountId: accountId || null,
@@ -1042,7 +1015,7 @@ class ApiKeyService {
       }
 
       // 记录 Opus 周费用
-      await database.incrementWeeklyOpusCost(keyId, cost)
+      await redis.incrementWeeklyOpusCost(keyId, cost)
       logger.database(
         `💰 Recorded Opus weekly cost for ${keyId}: $${cost.toFixed(
           6
@@ -1132,7 +1105,7 @@ class ApiKeyService {
       }
 
       // 记录API Key级别的使用统计 - 这个必须执行
-      await database.incrementTokenUsage(
+      await redis.incrementTokenUsage(
         keyId,
         totalTokens,
         inputTokens,
@@ -1147,7 +1120,7 @@ class ApiKeyService {
 
       // 记录费用统计
       if (costInfo.totalCost > 0) {
-        await database.incrementDailyCost(keyId, costInfo.totalCost)
+        await redis.incrementDailyCost(keyId, costInfo.totalCost)
         logger.database(
           `💰 Recorded cost for ${keyId}: $${costInfo.totalCost.toFixed(6)}, model: ${model}`
         )
@@ -1176,15 +1149,15 @@ class ApiKeyService {
       }
 
       // 获取API Key数据以确定关联的账户
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (keyData && Object.keys(keyData).length > 0) {
         // 更新最后使用时间
         keyData.lastUsedAt = new Date().toISOString()
-        await database.setApiKey(keyId, keyData)
+        await redis.setApiKey(keyId, keyData)
 
         // 记录账户级别的使用统计（只统计实际处理请求的账户）
         if (accountId) {
-          await database.incrementAccountUsage(
+          await redis.incrementAccountUsage(
             accountId,
             totalTokens,
             inputTokens,
@@ -1228,7 +1201,7 @@ class ApiKeyService {
         isLongContext: costInfo.isLongContextRequest || false
       }
 
-      await database.addUsageRecord(keyId, usageRecord)
+      await redis.addUsageRecord(keyId, usageRecord)
 
       const logParts = [`Model: ${model}`, `Input: ${inputTokens}`, `Output: ${outputTokens}`]
       if (cacheCreateTokens > 0) {
@@ -1288,8 +1261,8 @@ class ApiKeyService {
     }
   }
 
-  async _fetchAccountInfo(accountId, accountType, cache) {
-    if (!accountId || !accountType) {
+  async _fetchAccountInfo(accountId, accountType, cache, client) {
+    if (!client || !accountId || !accountType) {
       return null
     }
 
@@ -1298,25 +1271,18 @@ class ApiKeyService {
       return cache.get(cacheKey)
     }
 
+    const accountConfig = ACCOUNT_TYPE_CONFIG[accountType]
+    if (!accountConfig) {
+      cache.set(cacheKey, null)
+      return null
+    }
+
+    const redisKey = `${accountConfig.prefix}${accountId}`
     let accountData = null
     try {
-      if (accountType === 'claude' || accountType === 'claude-console') {
-        accountData = await database.getClaudeAccount(accountId)
-      } else if (accountType === 'gemini') {
-        accountData = await database.getGeminiAccount(accountId)
-      } else if (
-        accountType === 'openai' ||
-        accountType === 'openai-responses' ||
-        accountType === 'azure-openai'
-      ) {
-        accountData = await database.getOpenAiAccount(accountId)
-      } else if (accountType === 'droid') {
-        accountData = await database.getDroidAccount(accountId)
-      } else {
-        accountData = null
-      }
+      accountData = await client.hgetall(redisKey)
     } catch (error) {
-      logger.debug(`加载账号信息失败 ${accountType}:${accountId}:`, error)
+      logger.debug(`加载账号信息失败 ${redisKey}:`, error)
     }
 
     if (accountData && Object.keys(accountData).length > 0) {
@@ -1337,8 +1303,8 @@ class ApiKeyService {
     return null
   }
 
-  async _resolveAccountByUsageRecord(usageRecord, cache) {
-    if (!usageRecord) {
+  async _resolveAccountByUsageRecord(usageRecord, cache, client) {
+    if (!usageRecord || !client) {
       return null
     }
 
@@ -1398,7 +1364,7 @@ class ApiKeyService {
 
       for (const candidateId of candidateIds) {
         const normalizedId = sanitizeAccountIdForType(candidateId, type)
-        const accountInfo = await this._fetchAccountInfo(normalizedId, type, cache)
+        const accountInfo = await this._fetchAccountInfo(normalizedId, type, cache, client)
         if (accountInfo) {
           return {
             accountId: normalizedId,
@@ -1414,8 +1380,8 @@ class ApiKeyService {
     return null
   }
 
-  async _resolveLastUsageAccount(apiKey, usageRecord, cache) {
-    return await this._resolveAccountByUsageRecord(usageRecord, cache)
+  async _resolveLastUsageAccount(apiKey, usageRecord, cache, client) {
+    return await this._resolveAccountByUsageRecord(usageRecord, cache, client)
   }
 
   // 🔔 发布计费事件（内部方法）
@@ -1442,70 +1408,9 @@ class ApiKeyService {
       .digest('hex')
   }
 
-  _generateEncryptionKey() {
-    if (!this._encryptionKeyCache) {
-      this._encryptionKeyCache = crypto.scryptSync(
-        config.security.encryptionKey,
-        this.ENCRYPTION_SALT,
-        32
-      )
-    }
-
-    return this._encryptionKeyCache
-  }
-
-  _encryptSensitiveData(text) {
-    if (!text) {
-      return ''
-    }
-
-    const key = this._generateEncryptionKey()
-    const iv = crypto.randomBytes(16)
-    const cipher = crypto.createCipheriv(this.ENCRYPTION_ALGORITHM, key, iv)
-
-    let encrypted = cipher.update(text, 'utf8', 'hex')
-    encrypted += cipher.final('hex')
-
-    return `${iv.toString('hex')}:${encrypted}`
-  }
-
-  _decryptSensitiveData(encryptedText) {
-    if (!encryptedText) {
-      return ''
-    }
-
-    const cacheKey = crypto.createHash('sha256').update(encryptedText).digest('hex')
-    const cached = this._decryptCache.get(cacheKey)
-    if (cached !== undefined) {
-      return cached
-    }
-
-    try {
-      const key = this._generateEncryptionKey()
-      const parts = encryptedText.split(':')
-      if (parts.length !== 2) {
-        return ''
-      }
-
-      const iv = Buffer.from(parts[0], 'hex')
-      const encrypted = parts[1]
-
-      const decipher = crypto.createDecipheriv(this.ENCRYPTION_ALGORITHM, key, iv)
-      let decrypted = decipher.update(encrypted, 'hex', 'utf8')
-      decrypted += decipher.final('utf8')
-
-      this._decryptCache.set(cacheKey, decrypted, 5 * 60 * 1000)
-
-      return decrypted
-    } catch (error) {
-      logger.error('❌ Failed to decrypt API key:', error)
-      return ''
-    }
-  }
-
   // 📈 获取使用统计
   async getUsageStats(keyId, options = {}) {
-    const usageStats = await database.getUsageStats(keyId)
+    const usageStats = await redis.getUsageStats(keyId)
 
     // options 可能是字符串（兼容旧接口），仅当为对象时才解析
     const optionObject =
@@ -1516,7 +1421,7 @@ class ApiKeyService {
     }
 
     const recordLimit = optionObject.recordLimit || 20
-    const recentRecords = await database.getUsageRecords(keyId, recordLimit)
+    const recentRecords = await redis.getUsageRecords(keyId, recordLimit)
 
     return {
       ...usageStats,
@@ -1526,12 +1431,12 @@ class ApiKeyService {
 
   // 📊 获取账户使用统计
   async getAccountUsageStats(accountId) {
-    return await database.getAccountUsageStats(accountId)
+    return await redis.getAccountUsageStats(accountId)
   }
 
   // 📈 获取所有账户使用统计
   async getAllAccountsUsageStats() {
-    return await database.getAllAccountsUsageStats()
+    return await redis.getAllAccountsUsageStats()
   }
 
   // === 用户相关方法 ===
@@ -1544,7 +1449,7 @@ class ApiKeyService {
   // 👤 获取用户的API Keys
   async getUserApiKeys(userId, includeDeleted = false) {
     try {
-      const allKeys = await database.getAllApiKeys()
+      const allKeys = await redis.getAllApiKeys()
       let userKeys = allKeys.filter((key) => key.userId === userId)
 
       // 默认过滤掉已删除的API Keys
@@ -1555,9 +1460,9 @@ class ApiKeyService {
       // Populate usage stats for each user's API key (same as getAllApiKeys does)
       const userKeysWithUsage = []
       for (const key of userKeys) {
-        const usage = await database.getUsageStats(key.id)
-        const dailyCost = (await database.getDailyCost(key.id)) || 0
-        const costStats = await database.getCostStats(key.id)
+        const usage = await redis.getUsageStats(key.id)
+        const dailyCost = (await redis.getDailyCost(key.id)) || 0
+        const costStats = await redis.getCostStats(key.id)
 
         userKeysWithUsage.push({
           id: key.id,
@@ -1596,7 +1501,7 @@ class ApiKeyService {
   // 🔍 通过ID获取API Key（检查权限）
   async getApiKeyById(keyId, userId = null) {
     try {
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (!keyData) {
         return null
       }
@@ -1633,7 +1538,7 @@ class ApiKeyService {
   // 🔄 重新生成API Key
   async regenerateApiKey(keyId) {
     try {
-      const existingKey = await database.getApiKey(keyId)
+      const existingKey = await redis.getApiKey(keyId)
       if (!existingKey) {
         throw new Error('API key not found')
       }
@@ -1641,22 +1546,20 @@ class ApiKeyService {
       // 生成新的key
       const newApiKey = `${this.prefix}${this._generateSecretKey()}`
       const newHashedKey = this._hashApiKey(newApiKey)
-      const newEncryptedKey = this._encryptSensitiveData(newApiKey)
 
       // 删除旧的哈希映射
       const oldHashedKey = existingKey.apiKey
-      await database.deleteApiKeyHash(oldHashedKey)
+      await redis.deleteApiKeyHash(oldHashedKey)
 
       // 更新key数据
       const updatedKeyData = {
         ...existingKey,
         apiKey: newHashedKey,
-        encryptedKey: newEncryptedKey,
         updatedAt: new Date().toISOString()
       }
 
       // 保存新数据并建立新的哈希映射
-      await database.setApiKey(keyId, updatedKeyData, newHashedKey)
+      await redis.setApiKey(keyId, updatedKeyData, newHashedKey)
 
       logger.info(`🔄 Regenerated API key: ${existingKey.name} (${keyId})`)
 
@@ -1675,14 +1578,14 @@ class ApiKeyService {
   // 🗑️ 硬删除API Key (完全移除)
   async hardDeleteApiKey(keyId) {
     try {
-      const keyData = await database.getApiKey(keyId)
+      const keyData = await redis.getApiKey(keyId)
       if (!keyData) {
         throw new Error('API key not found')
       }
 
       // 删除key数据和哈希映射
-      await database.deleteApiKey(keyId)
-      await database.deleteApiKeyHash(keyData.apiKey)
+      await redis.deleteApiKey(keyId)
+      await redis.deleteApiKeyHash(keyData.apiKey)
 
       logger.info(`🗑️ Deleted API key: ${keyData.name} (${keyId})`)
       return true
@@ -1732,8 +1635,8 @@ class ApiKeyService {
 
       // 汇总所有API Key的统计数据
       for (const keyId of keyIds) {
-        const keyStats = await database.getUsageStats(keyId)
-        const costStats = await database.getCostStats(keyId)
+        const keyStats = await redis.getUsageStats(keyId)
+        const costStats = await redis.getCostStats(keyId)
         if (keyStats && keyStats.total) {
           stats.totalRequests += keyStats.total.requests || 0
           stats.totalInputTokens += keyStats.total.inputTokens || 0
@@ -1827,7 +1730,7 @@ class ApiKeyService {
   // 🧹 清理过期的API Keys
   async cleanupExpiredKeys() {
     try {
-      const apiKeys = await database.getAllApiKeys()
+      const apiKeys = await redis.getAllApiKeys()
       const now = new Date()
       let cleanedCount = 0
 
