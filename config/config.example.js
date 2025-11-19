@@ -4,25 +4,10 @@ require('dotenv').config()
 const config = {
   // 🌐 服务器配置
   server: {
-    // HTTP 配置
-    httpEnabled: process.env.HTTP_ENABLED !== 'false', // 默认启用 HTTP（向后兼容）
     port: parseInt(process.env.PORT) || 3000,
     host: process.env.HOST || '0.0.0.0',
     nodeEnv: process.env.NODE_ENV || 'development',
-    trustProxy: process.env.TRUST_PROXY === 'true',
-
-    // 🔒 HTTPS 配置 (可选 - 独立 HTTPS 服务器)
-    // 注意：生产环境推荐使用反向代理（Nginx/Caddy）而非独立 HTTPS
-    // 支持的组合：
-    // 1. HTTP_ENABLED=true, HTTPS_ENABLED=false  - 仅 HTTP（默认）
-    // 2. HTTP_ENABLED=false, HTTPS_ENABLED=true  - 仅 HTTPS
-    // 3. HTTP_ENABLED=true, HTTPS_ENABLED=true   - HTTP + HTTPS 同时运行
-    https: {
-      enabled: process.env.HTTPS_ENABLED === 'true',
-      port: parseInt(process.env.HTTPS_PORT) || 3443,
-      certPath: process.env.HTTPS_CERT_PATH || '',
-      keyPath: process.env.HTTPS_KEY_PATH || ''
-    }
+    trustProxy: process.env.TRUST_PROXY === 'true'
   },
 
   // 🔐 安全配置
@@ -33,23 +18,7 @@ const config = {
     encryptionKey: process.env.ENCRYPTION_KEY || 'CHANGE-THIS-32-CHARACTER-KEY-NOW'
   },
 
-  // 🗄️ 数据库选择配置
-  database: {
-    // 数据库类型：'redis' 或 'mysql'
-    type: process.env.DATABASE_TYPE || 'redis',
-    
-    // MySQL配置（当type为'mysql'时使用）
-    host: process.env.MYSQL_HOST || 'localhost',
-    port: parseInt(process.env.MYSQL_PORT) || 3306,
-    user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || '',
-    database: process.env.MYSQL_DATABASE || 'claude_relay_service',
-    connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT) || 10,
-    queueLimit: parseInt(process.env.MYSQL_QUEUE_LIMIT) || 0,
-    ssl: process.env.MYSQL_SSL === 'true' ? {} : false
-  },
-
-  // 📊 Redis配置（当database.type为'redis'时使用）
+  // 📊 Redis配置
   redis: {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT) || 6379,
@@ -61,18 +30,6 @@ const config = {
     maxRetriesPerRequest: 3,
     lazyConnect: true,
     enableTLS: process.env.REDIS_ENABLE_TLS === 'true'
-  },
-
-  // 🗃️ MySQL配置（兼容旧配置方式）
-  mysql: {
-    host: process.env.MYSQL_HOST || 'localhost',
-    port: parseInt(process.env.MYSQL_PORT) || 3306,
-    user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || '',
-    database: process.env.MYSQL_DATABASE || 'claude_relay_service',
-    connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT) || 10,
-    queueLimit: parseInt(process.env.MYSQL_QUEUE_LIMIT) || 0,
-    ssl: process.env.MYSQL_SSL === 'true' ? {} : false
   },
 
   // 🔗 会话管理配置

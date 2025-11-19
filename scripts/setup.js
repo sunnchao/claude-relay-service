@@ -9,18 +9,6 @@ const config = require('../config/config')
 async function setup() {
   console.log(chalk.blue.bold('\n🚀 Claude Relay Service 初始化设置\n'))
 
-  // 检查数据库模式
-  const dbType = config.database?.type || 'redis'
-  console.log(chalk.cyan(`📊 Database mode: ${dbType}\n`))
-
-  // 如果是混合模式，执行混合初始化
-  if (dbType === 'hybrid') {
-    console.log(chalk.yellow('🔄 Hybrid mode detected, running hybrid initialization...\n'))
-    const { initHybridDatabase } = require('./init-hybrid-db')
-    await initHybridDatabase()
-    return
-  }
-
   const spinner = ora('正在进行初始化设置...').start()
 
   try {

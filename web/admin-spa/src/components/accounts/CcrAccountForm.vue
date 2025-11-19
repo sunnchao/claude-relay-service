@@ -7,7 +7,7 @@
         <div class="mb-4 flex items-center justify-between sm:mb-6">
           <div class="flex items-center gap-2 sm:gap-3">
             <div
-              class="flex h-8 w-8 items-center justify-center rounded-none bg-gradient-to-br from-teal-500 to-emerald-600 sm:h-10 sm:w-10 sm:rounded-none"
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 sm:h-10 sm:w-10 sm:rounded-xl"
             >
               <i class="fas fa-code-branch text-sm text-white sm:text-base" />
             </div>
@@ -122,7 +122,7 @@
               <label class="inline-flex cursor-pointer items-center">
                 <input
                   v-model="enableRateLimit"
-                  class="mr-2 rounded-none border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                  class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                   type="checkbox"
                 />
                 <span class="text-sm text-gray-700 dark:text-gray-300"
@@ -184,7 +184,7 @@
             <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
               >模型映射表 (可选)</label
             >
-            <div class="mb-3 rounded-none bg-blue-50 p-3 dark:bg-blue-900/30">
+            <div class="mb-3 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/30">
               <p class="text-xs text-blue-700 dark:text-blue-400">
                 <i class="fas fa-info-circle mr-1" />
                 留空表示支持所有模型且不修改请求。配置映射后，左侧模型会被识别为支持的模型，右侧是实际发送的模型。
@@ -210,7 +210,7 @@
                   type="text"
                 />
                 <button
-                  class="rounded-none p-2 text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                  class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                   type="button"
                   @click="removeModelMapping(index)"
                 >
@@ -219,7 +219,7 @@
               </div>
             </div>
             <button
-              class="w-full rounded-none border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-gray-600 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-300"
+              class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-gray-600 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-300"
               type="button"
               @click="addModelMapping"
             >
@@ -235,7 +235,7 @@
           <!-- 操作区 -->
           <div class="mt-2 flex gap-3">
             <button
-              class="flex-1 rounded-none bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               type="button"
               @click="$emit('close')"
             >
@@ -273,7 +273,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'success'])
 
 const show = ref(true)
-const isEdit = computed(() => !!props.account?.id)
+const isEdit = computed(() => !!props.account)
 const loading = ref(false)
 
 const form = ref({
@@ -407,13 +407,13 @@ const populateFromAccount = () => {
 }
 
 onMounted(() => {
-  if (props.account) populateFromAccount()
+  if (isEdit.value) populateFromAccount()
 })
 
 watch(
   () => props.account,
   () => {
-    if (props.account) populateFromAccount()
+    if (isEdit.value) populateFromAccount()
   }
 )
 </script>

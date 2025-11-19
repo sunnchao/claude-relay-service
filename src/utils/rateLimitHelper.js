@@ -1,4 +1,4 @@
-const database = require('../models/database')
+const redis = require('../models/redis')
 const pricingService = require('../services/pricingService')
 const CostCalculator = require('./costCalculator')
 
@@ -12,6 +12,11 @@ async function updateRateLimitCounters(rateLimitInfo, usageSummary, model) {
     return { totalTokens: 0, totalCost: 0 }
   }
 
+  const client = redis.getClient()
+  if (!client) {
+    throw new Error('Redis 未连接，无法更新限流计数')
+  }
+
   const inputTokens = toNumber(usageSummary.inputTokens)
   const outputTokens = toNumber(usageSummary.outputTokens)
   const cacheCreateTokens = toNumber(usageSummary.cacheCreateTokens)
@@ -20,7 +25,7 @@ async function updateRateLimitCounters(rateLimitInfo, usageSummary, model) {
   const totalTokens = inputTokens + outputTokens + cacheCreateTokens + cacheReadTokens
 
   if (totalTokens > 0 && rateLimitInfo.tokenCountKey) {
-    await database.incrby(rateLimitInfo.tokenCountKey, Math.round(totalTokens))
+    await client.incrby(rateLimitInfo.tokenCountKey, Math.round(totalTokens))
   }
 
   let totalCost = 0
@@ -55,7 +60,7 @@ async function updateRateLimitCounters(rateLimitInfo, usageSummary, model) {
   }
 
   if (totalCost > 0 && rateLimitInfo.costCountKey) {
-    await database.incrbyfloat(rateLimitInfo.costCountKey, totalCost)
+    await client.incrbyfloat(rateLimitInfo.costCountKey, totalCost)
   }
 
   return { totalTokens, totalCost }

@@ -7,7 +7,7 @@
         <div class="mb-4 flex items-center justify-between sm:mb-6">
           <div class="flex items-center gap-2 sm:gap-3">
             <div
-              class="flex h-8 w-8 items-center justify-center rounded-none bg-gradient-to-br from-blue-500 to-blue-600 sm:h-10 sm:w-10 sm:rounded-none"
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 sm:h-10 sm:w-10 sm:rounded-xl"
             >
               <i class="fas fa-edit text-sm text-white sm:text-base" />
             </div>
@@ -28,7 +28,7 @@
           @submit.prevent="batchUpdateApiKeys"
         >
           <!-- 说明文本 -->
-          <div class="rounded-none bg-blue-50 p-4 dark:bg-blue-900/20">
+          <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
             <div class="flex items-start gap-3">
               <i class="fas fa-info-circle mt-1 text-blue-500" />
               <div>
@@ -86,7 +86,7 @@
                     <span
                       v-for="(tag, index) in form.tags"
                       :key="'selected-' + index"
-                      class="inline-flex items-center gap-1 rounded-none bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                      class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                     >
                       {{ tag }}
                       <button
@@ -109,7 +109,7 @@
                     <button
                       v-for="tag in unselectedTags"
                       :key="'available-' + tag"
-                      class="inline-flex items-center gap-1 rounded-none bg-gray-100 px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
+                      class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                       type="button"
                       @click="selectTag(tag)"
                     >
@@ -133,7 +133,7 @@
                       @keypress.enter.prevent="addTag"
                     />
                     <button
-                      class="rounded-none bg-green-500 px-4 py-2 text-white transition-colors hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
+                      class="rounded-lg bg-green-500 px-4 py-2 text-white transition-colors hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
                       type="button"
                       @click="addTag"
                     >
@@ -147,11 +147,11 @@
 
           <!-- 速率限制设置 -->
           <div
-            class="rounded-none border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20"
+            class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20"
           >
             <div class="mb-2 flex items-center gap-2">
               <div
-                class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-blue-500"
+                class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-blue-500"
               >
                 <i class="fas fa-tachometer-alt text-xs text-white" />
               </div>
@@ -422,7 +422,7 @@
 
           <div class="flex gap-3 pt-4">
             <button
-              class="flex-1 rounded-none bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              class="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               type="button"
               @click="$emit('close')"
             >

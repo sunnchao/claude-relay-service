@@ -137,7 +137,7 @@ const selectTheme = (mode) => {
 /* 基础按钮样式 - 更简洁优雅 */
 .theme-toggle-button {
   @apply flex items-center justify-center;
-  @apply h-9 w-9 rounded-none;
+  @apply h-9 w-9 rounded-full;
   @apply bg-white/90 dark:bg-gray-800/90;
   @apply hover:bg-white dark:hover:bg-gray-700;
   @apply text-gray-600 dark:text-gray-300;
@@ -436,7 +436,7 @@ const selectTheme = (mode) => {
 .theme-segmented {
   @apply inline-flex;
   @apply bg-gray-100 dark:bg-gray-800;
-  @apply rounded-none p-1;
+  @apply rounded-full p-1;
   @apply border border-gray-200 dark:border-gray-700;
   @apply shadow-sm;
 }
@@ -446,7 +446,7 @@ const selectTheme = (mode) => {
   @apply text-xs font-medium;
   @apply text-gray-500 dark:text-gray-400;
   @apply transition-all duration-200;
-  @apply rounded-none;
+  @apply rounded-full;
   @apply flex items-center gap-1;
   @apply cursor-pointer;
   position: relative;

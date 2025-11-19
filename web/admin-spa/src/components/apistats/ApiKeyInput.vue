@@ -1,5 +1,5 @@
 <template>
-  <div class="api-input-wide-card mb-8 rounded-none p-6 shadow-xl">
+  <div class="api-input-wide-card mb-8 rounded-3xl p-6 shadow-xl">
     <!-- 标题区域 -->
     <div class="wide-card-title mb-6">
       <h2 class="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-200">
@@ -23,7 +23,7 @@
         <div class="button-group flex items-center gap-2">
           <!-- 模式切换 -->
           <div
-            class="mode-switch-group flex items-center rounded-none bg-gray-100 p-1 dark:bg-gray-800"
+            class="mode-switch-group flex items-center rounded-lg bg-gray-100 p-1 dark:bg-gray-800"
           >
             <button
               class="mode-switch-btn"
@@ -44,7 +44,7 @@
               <span class="ml-2 hidden sm:inline">聚合</span>
               <span
                 v-if="multiKeyMode && parsedApiKeys.length > 0"
-                class="ml-1 rounded-none bg-white/20 px-1.5 py-0.5 text-xs font-semibold"
+                class="ml-1 rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-semibold"
               >
                 {{ parsedApiKeys.length }}
               </span>
@@ -115,7 +115,7 @@
       <!-- 多 Key 模式额外提示 -->
       <div
         v-if="multiKeyMode"
-        class="mt-2 rounded-none bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+        class="mt-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
       >
         <i class="fas fa-lightbulb mr-2" />
         <span>提示：最多支持同时查询 30 个 API Keys。使用 Ctrl+Enter 快速查询。</span>

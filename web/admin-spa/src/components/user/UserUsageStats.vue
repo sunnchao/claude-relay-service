@@ -8,7 +8,7 @@
       <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
         <select
           v-model="selectedPeriod"
-          class="block w-full rounded-none border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           @change="loadUsageStats"
         >
           <option value="day">Last 24 Hours</option>
@@ -46,7 +46,7 @@
 
     <!-- Stats Cards -->
     <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <div class="overflow-hidden rounded-none bg-white shadow">
+      <div class="overflow-hidden rounded-lg bg-white shadow">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -76,7 +76,7 @@
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-none bg-white shadow">
+      <div class="overflow-hidden rounded-lg bg-white shadow">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -106,7 +106,7 @@
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-none bg-white shadow">
+      <div class="overflow-hidden rounded-lg bg-white shadow">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -136,7 +136,7 @@
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-none bg-white shadow">
+      <div class="overflow-hidden rounded-lg bg-white shadow">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -168,13 +168,13 @@
     </div>
 
     <!-- Daily Usage Chart -->
-    <div v-if="!loading && usageStats" class="rounded-none bg-white shadow">
+    <div v-if="!loading && usageStats" class="rounded-lg bg-white shadow">
       <div class="px-4 py-5 sm:p-6">
         <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Daily Usage Trend</h3>
 
         <!-- Placeholder for chart - you can integrate Chart.js or similar -->
         <div
-          class="flex h-64 items-center justify-center rounded-none border-2 border-dashed border-gray-300"
+          class="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300"
         >
           <div class="text-center">
             <svg
@@ -203,7 +203,7 @@
     <!-- Model Usage Breakdown -->
     <div
       v-if="!loading && usageStats && usageStats.modelStats?.length > 0"
-      class="rounded-none bg-white shadow"
+      class="rounded-lg bg-white shadow"
     >
       <div class="px-4 py-5 sm:p-6">
         <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Usage by Model</h3>
@@ -215,7 +215,7 @@
           >
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <div class="h-2 w-2 rounded-none bg-blue-500"></div>
+                <div class="h-2 w-2 rounded-full bg-blue-500"></div>
               </div>
               <div class="ml-3">
                 <p class="text-sm font-medium text-gray-900">{{ model.name }}</p>
@@ -231,7 +231,7 @@
     </div>
 
     <!-- Detailed Usage Table -->
-    <div v-if="!loading && userApiKeys.length > 0" class="rounded-none bg-white shadow">
+    <div v-if="!loading && userApiKeys.length > 0" class="rounded-lg bg-white shadow">
       <div class="px-4 py-5 sm:p-6">
         <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Usage by API Key</h3>
         <div class="overflow-hidden">
@@ -297,7 +297,7 @@
                 <td class="whitespace-nowrap px-6 py-4">
                   <span
                     :class="[
-                      'inline-flex items-center rounded-none px-2.5 py-0.5 text-xs font-medium',
+                      'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
                       apiKey.isDeleted === 'true' || apiKey.deletedAt
                         ? 'bg-gray-100 text-gray-800'
                         : apiKey.isActive

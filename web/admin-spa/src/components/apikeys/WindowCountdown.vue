@@ -24,9 +24,9 @@
           <span class="text-gray-400">请求</span>
           <span class="text-gray-600"> {{ currentRequests || 0 }}/{{ requestLimit }} </span>
         </div>
-        <div class="h-1 w-full rounded-none bg-gray-200">
+        <div class="h-1 w-full rounded-full bg-gray-200">
           <div
-            class="h-1 rounded-none transition-all duration-300"
+            class="h-1 rounded-full transition-all duration-300"
             :class="getRequestProgressColor()"
             :style="{ width: getRequestProgress() + '%' }"
           />
@@ -41,9 +41,9 @@
             {{ formatTokenCount(currentTokens || 0) }}/{{ formatTokenCount(tokenLimit) }}
           </span>
         </div>
-        <div class="h-1 w-full rounded-none bg-gray-200">
+        <div class="h-1 w-full rounded-full bg-gray-200">
           <div
-            class="h-1 rounded-none transition-all duration-300"
+            class="h-1 rounded-full transition-all duration-300"
             :class="getTokenProgressColor()"
             :style="{ width: getTokenProgress() + '%' }"
           />
@@ -58,9 +58,9 @@
             ${{ (currentCost || 0).toFixed(2) }}/${{ costLimit.toFixed(2) }}
           </span>
         </div>
-        <div class="h-1 w-full rounded-none bg-gray-200">
+        <div class="h-1 w-full rounded-full bg-gray-200">
           <div
-            class="h-1 rounded-none transition-all duration-300"
+            class="h-1 rounded-full transition-all duration-300"
             :class="getCostProgressColor()"
             :style="{ width: getCostProgress() + '%' }"
           />

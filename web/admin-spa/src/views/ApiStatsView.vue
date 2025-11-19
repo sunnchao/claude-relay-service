@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen p-4 md:p-6" :class="isDarkMode ? 'gradient-bg-dark' : 'gradient-bg'">
     <!-- 顶部导航 -->
-    <div class="glass-strong mb-6 rounded-none p-4 shadow-xl md:mb-8 md:p-6">
+    <div class="glass-strong mb-6 rounded-3xl p-4 shadow-xl md:mb-8 md:p-6">
       <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
         <LogoTitle
           :loading="oemLoading"
@@ -24,7 +24,7 @@
           <!-- 用户登录按钮 (仅在 LDAP 启用时显示) -->
           <router-link
             v-if="oemSettings.ldapEnabled"
-            class="user-login-button flex items-center gap-2 rounded-none px-4 py-2 text-white transition-all duration-300 md:px-5 md:py-2.5"
+            class="user-login-button flex items-center gap-2 rounded-2xl px-4 py-2 text-white transition-all duration-300 md:px-5 md:py-2.5"
             to="/user-login"
           >
             <i class="fas fa-user text-sm md:text-base" />
@@ -33,7 +33,7 @@
           <!-- 管理后台按钮 -->
           <router-link
             v-if="oemSettings.showAdminButton !== false"
-            class="admin-button-refined flex items-center gap-2 rounded-none px-4 py-2 transition-all duration-300 md:px-5 md:py-2.5"
+            class="admin-button-refined flex items-center gap-2 rounded-2xl px-4 py-2 transition-all duration-300 md:px-5 md:py-2.5"
             to="/dashboard"
           >
             <i class="fas fa-shield-alt text-sm md:text-base" />
@@ -47,7 +47,7 @@
     <div class="mb-6 md:mb-8">
       <div class="flex justify-center">
         <div
-          class="inline-flex w-full max-w-md rounded-none border border-white/20 bg-white/10 p-1 shadow-lg backdrop-blur-xl md:w-auto"
+          class="inline-flex w-full max-w-md rounded-full border border-white/20 bg-white/10 p-1 shadow-lg backdrop-blur-xl md:w-auto"
         >
           <button
             :class="['tab-pill-button', currentTab === 'stats' ? 'active' : '']"
@@ -75,7 +75,7 @@
       <!-- 错误提示 -->
       <div v-if="error" class="mb-6 md:mb-8">
         <div
-          class="rounded-none border border-red-500/30 bg-red-500/20 p-3 text-sm text-red-800 backdrop-blur-sm dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-200 md:p-4 md:text-base"
+          class="rounded-xl border border-red-500/30 bg-red-500/20 p-3 text-sm text-red-800 backdrop-blur-sm dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-200 md:p-4 md:text-base"
         >
           <i class="fas fa-exclamation-triangle mr-2" />
           {{ error }}
@@ -84,7 +84,7 @@
 
       <!-- 统计数据展示区域 -->
       <div v-if="statsData" class="fade-in">
-        <div class="glass-strong rounded-none p-4 shadow-xl md:p-6">
+        <div class="glass-strong rounded-3xl p-4 shadow-xl md:p-6">
           <!-- 时间范围选择器 -->
           <div class="mb-4 border-b border-gray-200 pb-4 dark:border-gray-700 md:mb-6 md:pb-6">
             <div
@@ -143,7 +143,7 @@
 
     <!-- 教程内容 -->
     <div v-if="currentTab === 'tutorial'" class="tab-content">
-      <div class="glass-strong rounded-none shadow-xl">
+      <div class="glass-strong rounded-3xl shadow-xl">
         <TutorialView />
       </div>
     </div>

@@ -9,7 +9,7 @@
         <div class="modal-content mx-auto w-full max-w-md p-6">
           <div class="mb-6 flex items-start gap-4">
             <div
-              class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-none bg-gradient-to-br from-amber-500 to-amber-600"
+              class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600"
             >
               <i class="fas fa-exclamation-triangle text-lg text-white" />
             </div>
@@ -161,7 +161,7 @@ defineExpose({
 }
 
 .btn {
-  @apply inline-flex items-center justify-center rounded-none px-4 py-2 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
 }
 
 .btn-danger {
@@ -173,7 +173,7 @@ defineExpose({
 }
 
 .loading-spinner {
-  @apply h-4 w-4 animate-spin rounded-none border-2 border-gray-300 border-t-white;
+  @apply h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-white;
 }
 
 /* Modal transitions */

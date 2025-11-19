@@ -12,7 +12,7 @@
         <div class="mb-4 flex items-center justify-between sm:mb-6">
           <div class="flex items-center gap-2 sm:gap-3">
             <div
-              class="flex h-8 w-8 items-center justify-center rounded-none bg-gradient-to-br from-blue-500 to-blue-600 sm:h-10 sm:w-10 sm:rounded-none"
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 sm:h-10 sm:w-10 sm:rounded-xl"
             >
               <i class="fas fa-chart-line text-sm text-white sm:text-base" />
             </div>
@@ -27,57 +27,11 @@
 
         <!-- 内容区 -->
         <div class="modal-scroll-content custom-scrollbar flex-1 overflow-y-auto">
-          <!-- API Key 显示 -->
-          <div class="mb-6">
-            <h4
-              class="mb-2 flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300"
-            >
-              <i class="fas fa-key mr-2 text-purple-500" />
-              当前 API Key
-            </h4>
-            <div
-              v-if="hasPlainKey"
-              class="relative rounded-none border border-purple-200 bg-white/80 p-4 shadow-sm dark:border-purple-600/60 dark:bg-purple-900/20"
-            >
-              <pre
-                class="custom-scrollbar max-h-28 whitespace-pre-wrap break-all font-mono text-sm text-gray-900 dark:text-gray-100"
-                >{{ displayedApiKey }}</pre
-              >
-              <div class="absolute right-3 top-3 flex items-center gap-2">
-                <button
-                  class="btn-icon-sm bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-700/40 dark:text-purple-200 dark:hover:bg-purple-600/50"
-                  :title="showFullKey ? '隐藏完整 Key' : '显示完整 Key'"
-                  type="button"
-                  @click="toggleKeyVisibility"
-                >
-                  <i :class="['fas', showFullKey ? 'fa-eye-slash' : 'fa-eye']" />
-                </button>
-                <button
-                  class="btn-icon-sm bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-700/40 dark:text-blue-200 dark:hover:bg-blue-600/50"
-                  title="复制 API Key"
-                  type="button"
-                  @click="copyApiKey"
-                >
-                  <i class="fas fa-copy" />
-                </button>
-              </div>
-              <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                复制后请妥善保管，避免泄露给未授权的人员。
-              </p>
-            </div>
-            <div
-              v-else
-              class="rounded-none border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200"
-            >
-              该 API Key 未存储明文，无法展示完整值。如需查看，请重新生成密钥。
-            </div>
-          </div>
-
           <!-- 总体统计卡片 -->
           <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
             <!-- 请求统计卡片 -->
             <div
-              class="rounded-none border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 dark:border-blue-700 dark:from-blue-900/20 dark:to-blue-800/20"
+              class="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 dark:border-blue-700 dark:from-blue-900/20 dark:to-blue-800/20"
             >
               <div class="mb-3 flex items-center justify-between">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">总请求数</span>
@@ -93,7 +47,7 @@
 
             <!-- Token统计卡片 -->
             <div
-              class="rounded-none border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-4 dark:border-green-700 dark:from-green-900/20 dark:to-green-800/20"
+              class="rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-4 dark:border-green-700 dark:from-green-900/20 dark:to-green-800/20"
             >
               <div class="mb-3 flex items-center justify-between">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">总Token数</span>
@@ -109,7 +63,7 @@
 
             <!-- 费用统计卡片 -->
             <div
-              class="rounded-none border border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 dark:border-yellow-700 dark:from-yellow-900/20 dark:to-yellow-800/20"
+              class="rounded-lg border border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 dark:border-yellow-700 dark:from-yellow-900/20 dark:to-yellow-800/20"
             >
               <div class="mb-3 flex items-center justify-between">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">总费用</span>
@@ -125,7 +79,7 @@
 
             <!-- 平均统计卡片 -->
             <div
-              class="rounded-none border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 dark:border-purple-700 dark:from-purple-900/20 dark:to-purple-800/20"
+              class="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 dark:border-purple-700 dark:from-purple-900/20 dark:to-purple-800/20"
             >
               <div class="mb-3 flex items-center justify-between">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">平均速率</span>
@@ -152,7 +106,7 @@
               <i class="fas fa-chart-pie mr-2 text-indigo-500" />
               Token 使用分布
             </h4>
-            <div class="space-y-3 rounded-none bg-gray-50 p-4 dark:bg-gray-700/50">
+            <div class="space-y-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50">
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
                   <i class="fas fa-arrow-down mr-2 text-green-500" />
@@ -200,7 +154,7 @@
               <i class="fas fa-shield-alt mr-2 text-red-500" />
               限制设置
             </h4>
-            <div class="space-y-3 rounded-none bg-gray-50 p-4 dark:bg-gray-700/50">
+            <div class="space-y-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50">
               <div v-if="apiKey.dailyCostLimit > 0" class="space-y-1.5">
                 <LimitProgressBar
                   :current="dailyCost"
@@ -242,7 +196,7 @@
 
               <div
                 v-if="apiKey.concurrencyLimit > 0"
-                class="flex items-center justify-between rounded-none border border-purple-200/70 bg-white/60 px-3 py-2 text-sm shadow-sm dark:border-purple-500/40 dark:bg-purple-950/20"
+                class="flex items-center justify-between rounded-lg border border-purple-200/70 bg-white/60 px-3 py-2 text-sm shadow-sm dark:border-purple-500/40 dark:bg-purple-950/20"
               >
                 <span class="text-gray-600 dark:text-gray-300">并发限制</span>
                 <span class="font-semibold text-purple-600 dark:text-purple-300">
@@ -287,8 +241,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import { showToast } from '@/utils/toast'
+import { computed } from 'vue'
 import LimitProgressBar from './LimitProgressBar.vue'
 import WindowCountdown from './WindowCountdown.vue'
 
@@ -304,27 +257,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
-
-const showFullKey = ref(false)
-
-const hasPlainKey = computed(() => {
-  const rawKey = props.apiKey?.fullKey
-  return typeof rawKey === 'string' && rawKey.trim().length > 0
-})
-
-const displayedApiKey = computed(() => {
-  if (!hasPlainKey.value) {
-    return ''
-  }
-
-  const key = props.apiKey.fullKey || ''
-  if (showFullKey.value || key.length <= 12) {
-    return key
-  }
-
-  const hiddenLength = Math.max(0, key.length - 12)
-  return `${key.slice(0, 8)}${'●'.repeat(hiddenLength)}${key.slice(-4)}`
-})
 
 // 计算属性
 const totalRequests = computed(() => props.apiKey.usage?.total?.requests || 0)
@@ -369,75 +301,6 @@ const opusUsagePercentage = computed(() => {
   return (weeklyOpusCost.value / weeklyOpusCostLimit.value) * 100
 })
 
-const copyTextWithFallback = async (text) => {
-  const canUseClipboardApi =
-    typeof navigator !== 'undefined' &&
-    navigator.clipboard &&
-    typeof navigator.clipboard.writeText === 'function'
-
-  if (canUseClipboardApi) {
-    await navigator.clipboard.writeText(text)
-    return
-  }
-
-  if (typeof document === 'undefined') {
-    throw new Error('Clipboard unavailable')
-  }
-
-  const textarea = document.createElement('textarea')
-  textarea.value = text
-  textarea.setAttribute('readonly', '')
-  textarea.style.position = 'fixed'
-  textarea.style.opacity = '0'
-  textarea.style.pointerEvents = 'none'
-  document.body.appendChild(textarea)
-  textarea.select()
-
-  const successful = document.execCommand('copy')
-  document.body.removeChild(textarea)
-
-  if (!successful) {
-    throw new Error('execCommand failed')
-  }
-}
-
-const toggleKeyVisibility = () => {
-  if (!hasPlainKey.value) {
-    return
-  }
-  showFullKey.value = !showFullKey.value
-}
-
-const copyApiKey = async () => {
-  if (!hasPlainKey.value) {
-    showToast('当前 API Key 暂不可用', 'warning')
-    return
-  }
-
-  try {
-    await copyTextWithFallback(props.apiKey.fullKey)
-    showToast('API Key 已复制', 'success')
-  } catch (error) {
-    showToast('复制失败，请手动复制', 'error')
-  }
-}
-
-watch(
-  () => (props.apiKey ? props.apiKey.id : null),
-  () => {
-    showFullKey.value = false
-  }
-)
-
-watch(
-  () => props.show,
-  (visible) => {
-    if (!visible) {
-      showFullKey.value = false
-    }
-  }
-)
-
 // 方法
 const formatNumber = (num) => {
   if (!num && num !== 0) return '0'
@@ -455,7 +318,6 @@ const formatTokenCount = (count) => {
 }
 
 const close = () => {
-  showFullKey.value = false
   emit('close')
 }
 </script>

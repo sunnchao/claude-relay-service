@@ -6,12 +6,12 @@
     </div>
 
     <div
-      class="glass-strong w-full max-w-md rounded-none p-6 shadow-2xl sm:rounded-none sm:p-8 md:rounded-none md:p-10"
+      class="glass-strong w-full max-w-md rounded-xl p-6 shadow-2xl sm:rounded-2xl sm:p-8 md:rounded-3xl md:p-10"
     >
       <div class="mb-6 text-center sm:mb-8">
         <!-- 使用自定义布局来保持登录页面的居中大logo样式 -->
         <div
-          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-none border border-gray-300/30 bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm sm:mb-6 sm:h-20 sm:w-20 sm:rounded-none"
+          class="mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-gray-300/30 bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm sm:mb-6 sm:h-20 sm:w-20 sm:rounded-2xl"
         >
           <template v-if="!oemLoading">
             <img
@@ -23,7 +23,7 @@
             />
             <i v-else class="fas fa-cloud text-2xl text-gray-700 sm:text-3xl" />
           </template>
-          <div v-else class="h-10 w-10 animate-pulse rounded-none bg-gray-300/50 sm:h-12 sm:w-12" />
+          <div v-else class="h-10 w-10 animate-pulse rounded bg-gray-300/50 sm:h-12 sm:w-12" />
         </div>
         <template v-if="!oemLoading && authStore.oemSettings.siteName">
           <h1 class="header-title mb-2 text-2xl font-bold text-white sm:text-3xl">
@@ -32,7 +32,7 @@
         </template>
         <div
           v-else-if="oemLoading"
-          class="mx-auto mb-2 h-8 w-48 animate-pulse rounded-none bg-gray-300/50 sm:h-9 sm:w-64"
+          class="mx-auto mb-2 h-8 w-48 animate-pulse rounded bg-gray-300/50 sm:h-9 sm:w-64"
         />
         <p class="text-base text-gray-600 dark:text-gray-400 sm:text-lg">管理后台</p>
       </div>
@@ -87,7 +87,7 @@
 
       <div
         v-if="authStore.loginError"
-        class="mt-4 rounded-none border border-red-500/30 bg-red-500/20 p-3 text-center text-xs text-red-800 backdrop-blur-sm dark:text-red-400 sm:mt-6 sm:rounded-none sm:p-4 sm:text-sm"
+        class="mt-4 rounded-lg border border-red-500/30 bg-red-500/20 p-3 text-center text-xs text-red-800 backdrop-blur-sm dark:text-red-400 sm:mt-6 sm:rounded-xl sm:p-4 sm:text-sm"
       >
         <i class="fas fa-exclamation-triangle mr-2" />{{ authStore.loginError }}
       </div>

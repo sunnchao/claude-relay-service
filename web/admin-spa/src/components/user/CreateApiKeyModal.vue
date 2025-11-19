@@ -4,7 +4,7 @@
     class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50"
   >
     <div
-      class="relative top-20 mx-auto w-[768px] max-w-4xl rounded-none border bg-white p-5 shadow-lg"
+      class="relative top-20 mx-auto w-[768px] max-w-4xl rounded-md border bg-white p-5 shadow-lg"
     >
       <div class="mt-3">
         <div class="mb-4 flex items-center justify-between">
@@ -27,7 +27,7 @@
             <input
               id="name"
               v-model="form.name"
-              class="mt-1 block w-full rounded-none border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               :disabled="loading"
               placeholder="Enter API key name"
               required
@@ -42,14 +42,14 @@
             <textarea
               id="description"
               v-model="form.description"
-              class="mt-1 block w-full rounded-none border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               :disabled="loading"
               placeholder="Optional description"
               rows="3"
             ></textarea>
           </div>
 
-          <div v-if="error" class="rounded-none border border-red-200 bg-red-50 p-3">
+          <div v-if="error" class="rounded-md border border-red-200 bg-red-50 p-3">
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
@@ -68,7 +68,7 @@
 
           <div class="flex justify-end space-x-3 pt-4">
             <button
-              class="rounded-none border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               :disabled="loading"
               type="button"
               @click="$emit('close')"
@@ -76,7 +76,7 @@
               Cancel
             </button>
             <button
-              class="rounded-none border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               :disabled="loading || !form.name.trim()"
               type="submit"
             >
@@ -109,7 +109,7 @@
         </form>
 
         <!-- Success Modal for showing the new API key -->
-        <div v-if="newApiKey" class="mt-6 rounded-none border border-green-200 bg-green-50 p-4">
+        <div v-if="newApiKey" class="mt-6 rounded-md border border-green-200 bg-green-50 p-4">
           <div class="flex items-start">
             <div class="flex-shrink-0">
               <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
@@ -127,13 +127,13 @@
                   <strong>Important:</strong> Copy your API key now. You won't be able to see it
                   again!
                 </p>
-                <div class="rounded-none border border-green-300 bg-white p-3">
+                <div class="rounded-md border border-green-300 bg-white p-3">
                   <div class="flex items-center justify-between">
                     <code class="break-all font-mono text-sm text-gray-900">{{
                       newApiKey.key
                     }}</code>
                     <button
-                      class="ml-3 inline-flex flex-shrink-0 items-center rounded-none border border-transparent bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                      class="ml-3 inline-flex flex-shrink-0 items-center rounded border border-transparent bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                       @click="copyToClipboard(newApiKey.key)"
                     >
                       <svg
@@ -156,7 +156,7 @@
               </div>
               <div class="mt-4 flex justify-end">
                 <button
-                  class="rounded-none border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                  class="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   @click="handleClose"
                 >
                   Done

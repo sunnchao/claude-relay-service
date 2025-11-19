@@ -149,11 +149,6 @@ class RedisClient {
     return await this.client.del(key)
   }
 
-  async clearApiKeyDeletionMetadata(keyId) {
-    const keyName = `apikey:${keyId}`
-    await this.client.hdel(keyName, 'isDeleted', 'deletedAt', 'deletedBy', 'deletedByType')
-  }
-
   async getAllApiKeys() {
     const keys = await this.client.keys('apikey:*')
     const apiKeys = []
@@ -1049,40 +1044,6 @@ class RedisClient {
     }
   }
 
-  async deleteUsageDataForKey(keyId) {
-    const client = this.getClientSafe()
-    const today = getDateStringInTimezone()
-    const yesterday = getDateStringInTimezone(new Date(Date.now() - 86400000))
-    const currentMonth = today.substring(0, 7)
-
-    await client.del(`usage:daily:${today}:${keyId}`)
-    await client.del(`usage:daily:${yesterday}:${keyId}`)
-    await client.del(`usage:monthly:${currentMonth}:${keyId}`)
-
-    const usageKeys = await client.keys(`usage:*:${keyId}*`)
-    if (usageKeys.length > 0) {
-      await client.del(...usageKeys)
-    }
-
-    const modelKeys = await client.keys(`usage:${keyId}:model:*`)
-    if (modelKeys.length > 0) {
-      await client.del(...modelKeys)
-    }
-
-    const costKeys = await client.keys(`usage:cost:*:${keyId}:*`)
-    if (costKeys.length > 0) {
-      await client.del(...costKeys)
-    }
-
-    const recordKeys = await client.keys(`usage:records:${keyId}:*`)
-    if (recordKeys.length > 0) {
-      await client.del(...recordKeys)
-    }
-
-    await client.del(`usage:${keyId}`)
-    await client.del(`concurrency:${keyId}`)
-  }
-
   // 🏢 Claude 账户管理
   async setClaudeAccount(accountId, accountData) {
     const key = `claude:account:${accountId}`
@@ -1870,21 +1831,6 @@ class RedisClient {
   async keys(pattern) {
     const client = this.getClientSafe()
     return await client.keys(pattern)
-  }
-
-  async incr(key) {
-    const client = this.getClientSafe()
-    return await client.incr(key)
-  }
-
-  async incrby(key, amount) {
-    const client = this.getClientSafe()
-    return await client.incrby(key, amount)
-  }
-
-  async incrbyfloat(key, amount) {
-    const client = this.getClientSafe()
-    return await client.incrbyfloat(key, amount)
   }
 
   // 📊 获取账户会话窗口内的使用统计（包含模型细分）

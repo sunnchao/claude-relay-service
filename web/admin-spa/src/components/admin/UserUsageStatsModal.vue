@@ -3,7 +3,7 @@
     v-if="show"
     class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50"
   >
-    <div class="relative top-10 mx-auto w-4/5 max-w-4xl rounded-none border bg-white p-5 shadow-lg">
+    <div class="relative top-10 mx-auto w-4/5 max-w-4xl rounded-md border bg-white p-5 shadow-lg">
       <div class="mt-3">
         <div class="mb-6 flex items-center justify-between">
           <div>
@@ -28,7 +28,7 @@
         <div class="mb-6">
           <select
             v-model="selectedPeriod"
-            class="block w-32 rounded-none border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            class="block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
             @change="loadUsageStats"
           >
             <option value="day">Last 24 Hours</option>
@@ -67,7 +67,7 @@
         <div v-else class="space-y-6">
           <!-- Summary Cards -->
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div class="overflow-hidden rounded-none bg-blue-50 shadow">
+            <div class="overflow-hidden rounded-lg bg-blue-50 shadow">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0">
@@ -97,7 +97,7 @@
               </div>
             </div>
 
-            <div class="overflow-hidden rounded-none bg-green-50 shadow">
+            <div class="overflow-hidden rounded-lg bg-green-50 shadow">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0">
@@ -127,7 +127,7 @@
               </div>
             </div>
 
-            <div class="overflow-hidden rounded-none bg-purple-50 shadow">
+            <div class="overflow-hidden rounded-lg bg-purple-50 shadow">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0">
@@ -157,7 +157,7 @@
               </div>
             </div>
 
-            <div class="overflow-hidden rounded-none bg-yellow-50 shadow">
+            <div class="overflow-hidden rounded-lg bg-yellow-50 shadow">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0">
@@ -191,7 +191,7 @@
           <!-- User API Keys Table -->
           <div
             v-if="userDetails?.apiKeys?.length > 0"
-            class="rounded-none border border-gray-200 bg-white"
+            class="rounded-lg border border-gray-200 bg-white"
           >
             <div class="border-b border-gray-200 px-4 py-5 sm:px-6">
               <h4 class="text-lg font-medium leading-6 text-gray-900">API Keys Usage</h4>
@@ -247,7 +247,7 @@
                     <td class="whitespace-nowrap px-6 py-4">
                       <span
                         :class="[
-                          'inline-flex items-center rounded-none px-2.5 py-0.5 text-xs font-medium',
+                          'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
                           apiKey.isActive
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
@@ -276,13 +276,13 @@
           </div>
 
           <!-- Chart Placeholder -->
-          <div class="rounded-none border border-gray-200 bg-white">
+          <div class="rounded-lg border border-gray-200 bg-white">
             <div class="border-b border-gray-200 px-4 py-5 sm:px-6">
               <h4 class="text-lg font-medium leading-6 text-gray-900">Usage Trend</h4>
             </div>
             <div class="p-6">
               <div
-                class="flex h-64 items-center justify-center rounded-none border-2 border-dashed border-gray-300"
+                class="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300"
               >
                 <div class="text-center">
                   <svg
@@ -334,7 +334,7 @@
 
         <div class="mt-6 flex justify-end">
           <button
-            class="rounded-none border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             @click="$emit('close')"
           >
             Close

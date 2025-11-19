@@ -7,7 +7,7 @@
         <div class="mb-4 flex items-center justify-between sm:mb-6">
           <div class="flex items-center gap-2 sm:gap-3">
             <div
-              class="flex h-8 w-8 items-center justify-center rounded-none bg-gradient-to-br from-purple-500 to-purple-600 sm:h-10 sm:w-10 sm:rounded-none"
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 sm:h-10 sm:w-10 sm:rounded-xl"
             >
               <i class="fas fa-layer-group text-sm text-white sm:text-base" />
             </div>
@@ -30,7 +30,7 @@
         </div>
 
         <!-- 创建分组表单 -->
-        <div v-if="showCreateForm" class="mb-6 rounded-none border border-blue-200 bg-blue-50 p-4">
+        <div v-if="showCreateForm" class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
           <h4 class="mb-4 text-lg font-semibold text-gray-900">创建新分组</h4>
           <div class="space-y-4">
             <div>
@@ -96,7 +96,7 @@
             <p class="text-gray-500">加载中...</p>
           </div>
 
-          <div v-else-if="groups.length === 0" class="rounded-none bg-gray-50 py-8 text-center">
+          <div v-else-if="groups.length === 0" class="rounded-lg bg-gray-50 py-8 text-center">
             <i class="fas fa-layer-group mb-4 text-4xl text-gray-300" />
             <p class="text-gray-500">暂无分组</p>
           </div>
@@ -105,7 +105,7 @@
             <div
               v-for="group in groups"
               :key="group.id"
-              class="rounded-none border bg-white p-4 transition-shadow hover:shadow-md"
+              class="rounded-lg border bg-white p-4 transition-shadow hover:shadow-md"
             >
               <div class="mb-3 flex items-start justify-between">
                 <div class="flex-1">
@@ -119,7 +119,7 @@
                 <div class="ml-4 flex items-center gap-2">
                   <span
                     :class="[
-                      'rounded-none px-2 py-1 text-xs font-medium',
+                      'rounded-full px-2 py-1 text-xs font-medium',
                       group.platform === 'claude'
                         ? 'bg-purple-100 text-purple-700'
                         : group.platform === 'gemini'
@@ -203,7 +203,7 @@
 
           <div>
             <label class="mb-2 block text-sm font-semibold text-gray-700">平台类型</label>
-            <div class="rounded-none bg-gray-100 px-3 py-2 text-sm text-gray-600">
+            <div class="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-600">
               {{
                 editForm.platform === 'claude'
                   ? 'Claude'

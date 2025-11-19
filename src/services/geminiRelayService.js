@@ -27,48 +27,9 @@ function convertMessagesToGemini(messages) {
         parts: [{ text: message.content }]
       })
     } else if (message.role === 'assistant') {
-      const parts = []
-
-      // 处理文本内容
-      if (message.content) {
-        parts.push({ text: message.content })
-      }
-
-      // 处理tool_calls（OpenAI格式）转换为functionCall（Gemini格式）
-      if (message.tool_calls && Array.isArray(message.tool_calls)) {
-        for (const toolCall of message.tool_calls) {
-          if (toolCall.type === 'function' && toolCall.function) {
-            parts.push({
-              functionCall: {
-                name: toolCall.function.name,
-                args:
-                  typeof toolCall.function.arguments === 'string'
-                    ? JSON.parse(toolCall.function.arguments)
-                    : toolCall.function.arguments
-              }
-            })
-          }
-        }
-      }
-
       contents.push({
         role: 'model',
-        parts: parts.length > 0 ? parts : [{ text: '' }]
-      })
-    } else if (message.role === 'tool') {
-      // 处理工具调用结果
-      contents.push({
-        role: 'function',
-        parts: [
-          {
-            functionResponse: {
-              name: message.name || 'unknown',
-              response: {
-                content: message.content
-              }
-            }
-          }
-        ]
+        parts: [{ text: message.content }]
       })
     }
   }
@@ -85,39 +46,7 @@ function convertGeminiResponse(geminiResponse, model, stream = false) {
       return null
     }
 
-    const parts = candidate.content?.parts || []
-    const delta = {}
-
-    // 处理所有part类型
-    for (const part of parts) {
-      if (part.text) {
-        delta.content = (delta.content || '') + part.text
-      }
-
-      // 处理functionCall
-      if (part.functionCall) {
-        delta.tool_calls = delta.tool_calls || []
-        delta.tool_calls.push({
-          id: `call_${Date.now()}_${delta.tool_calls.length}`,
-          type: 'function',
-          function: {
-            name: part.functionCall.name,
-            arguments: JSON.stringify(part.functionCall.args || {})
-          }
-        })
-      }
-
-      // 处理executableCode
-      if (part.executableCode) {
-        delta.executable_code = part.executableCode
-      }
-
-      // 处理codeExecutionResult
-      if (part.codeExecutionResult) {
-        delta.code_execution_result = part.codeExecutionResult
-      }
-    }
-
+    const content = candidate.content?.parts?.[0]?.text || ''
     const finishReason = candidate.finishReason?.toLowerCase()
 
     return {
@@ -128,7 +57,9 @@ function convertGeminiResponse(geminiResponse, model, stream = false) {
       choices: [
         {
           index: 0,
-          delta,
+          delta: {
+            content
+          },
           finish_reason: finishReason === 'stop' ? 'stop' : null
         }
       ]
@@ -140,42 +71,7 @@ function convertGeminiResponse(geminiResponse, model, stream = false) {
       throw new Error('No response from Gemini')
     }
 
-    const parts = candidate.content?.parts || []
-    const message = {
-      role: 'assistant',
-      content: ''
-    }
-
-    // 处理所有part类型
-    for (const part of parts) {
-      if (part.text) {
-        message.content += part.text
-      }
-
-      // 关键修复：处理functionCall
-      if (part.functionCall) {
-        message.tool_calls = message.tool_calls || []
-        message.tool_calls.push({
-          id: `call_${Date.now()}_${message.tool_calls.length}`,
-          type: 'function',
-          function: {
-            name: part.functionCall.name,
-            arguments: JSON.stringify(part.functionCall.args || {})
-          }
-        })
-      }
-
-      // 处理executableCode
-      if (part.executableCode) {
-        message.executable_code = part.executableCode
-      }
-
-      // 处理codeExecutionResult
-      if (part.codeExecutionResult) {
-        message.code_execution_result = part.codeExecutionResult
-      }
-    }
-
+    const content = candidate.content?.parts?.[0]?.text || ''
     const finishReason = candidate.finishReason?.toLowerCase() || 'stop'
 
     // 计算 token 使用量
@@ -193,7 +89,10 @@ function convertGeminiResponse(geminiResponse, model, stream = false) {
       choices: [
         {
           index: 0,
-          message,
+          message: {
+            role: 'assistant',
+            content
+          },
           finish_reason: finishReason
         }
       ],
@@ -330,8 +229,7 @@ async function sendGeminiRequest({
   signal,
   projectId,
   location = 'us-central1',
-  accountId = null,
-  tools = null // ✅ 新增：tools参数支持
+  accountId = null
 }) {
   // 确保模型名称格式正确
   if (!model.startsWith('models/')) {
@@ -353,12 +251,6 @@ async function sendGeminiRequest({
 
   if (systemInstruction) {
     requestBody.systemInstruction = { parts: [{ text: systemInstruction }] }
-  }
-
-  // ✅ 关键修复：添加tools支持
-  if (tools && Array.isArray(tools) && tools.length > 0) {
-    requestBody.tools = tools
-    logger.debug(`🔧 Added ${tools.length} tools to Gemini request`)
   }
 
   // 配置请求选项

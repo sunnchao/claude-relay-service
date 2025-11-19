@@ -23,9 +23,9 @@
             {{ calculatePercentage(stat) }}%
           </span>
         </div>
-        <div class="h-2 w-full rounded-none bg-gray-200 dark:bg-gray-700">
+        <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
           <div
-            class="h-2 rounded-none transition-all duration-300"
+            class="h-2 rounded-full transition-all duration-300"
             :class="getProgressColor(index)"
             :style="{ width: calculatePercentage(stat) + '%' }"
           />

@@ -1,5 +1,5 @@
 <template>
-  <div class="inline-flex items-center gap-1.5 rounded-none px-2 py-1" :class="badgeClass">
+  <div class="inline-flex items-center gap-1.5 rounded-md px-2 py-1" :class="badgeClass">
     <div class="flex items-center gap-1">
       <i :class="['text-xs', iconClass]" />
       <span class="text-xs font-medium">{{ label }}</span>
@@ -10,9 +10,9 @@
       <span class="text-xs">${{ limit.toFixed(2) }}</span>
     </div>
     <!-- 小型进度条 -->
-    <div class="h-1 w-12 rounded-none bg-gray-200 dark:bg-gray-600">
+    <div class="h-1 w-12 rounded-full bg-gray-200 dark:bg-gray-600">
       <div
-        class="h-1 rounded-none transition-all duration-300"
+        class="h-1 rounded-full transition-all duration-300"
         :class="progressClass"
         :style="{ width: progress + '%' }"
       />

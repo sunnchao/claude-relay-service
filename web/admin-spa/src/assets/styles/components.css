@@ -25,7 +25,7 @@
 .tab-btn {
   position: relative;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: 12px;
   font-weight: 500;
   letter-spacing: 0.025em;
 }
@@ -57,7 +57,7 @@
 /* 卡片 */
 .card {
   background: var(--surface-color);
-  border-radius: 0;
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
@@ -79,7 +79,7 @@
 /* 统计卡片 */
 .stat-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%);
-  border-radius: 0;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 24px;
   position: relative;
@@ -113,7 +113,7 @@
 .stat-icon {
   width: 56px;
   height: 56px;
-  border-radius: 0;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,7 +127,7 @@
 /* 按钮 */
 .btn {
   font-weight: 500;
-  border-radius: 0;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -144,7 +144,7 @@
   width: 0;
   height: 0;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 0;
+  border-radius: 50%;
   transform: translate(-50%, -50%);
   transition:
     width 0.3s ease,
@@ -220,7 +220,7 @@
 .form-input {
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 0;
+  border-radius: 12px;
   padding: 8px 12px;
   font-size: 14px;
   transition: all 0.2s ease;
@@ -239,7 +239,7 @@
 /* 表格容器 */
 .table-container {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 0;
+  border-radius: 16px;
   overflow: hidden;
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
@@ -267,7 +267,7 @@
 
 .modal-content {
   background: rgba(255, 255, 255, 0.98);
-  border-radius: 0;
+  border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow:
     0 10px 25px -5px rgba(0, 0, 0, 0.15),
@@ -306,7 +306,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 0;
+  border-radius: 50%;
   border-top: 2px solid white;
   animation: spin 1s linear infinite;
 }
@@ -338,14 +338,14 @@
   .glass,
   .glass-strong {
     margin: 12px;
-    border-radius: 0;
+    border-radius: 16px;
     padding: 16px;
   }
 
   /* 统计卡片 */
   .stat-card {
     padding: 12px;
-    border-radius: 0;
+    border-radius: 12px;
   }
 
   .stat-icon {
@@ -373,7 +373,7 @@
 
   /* 卡片 */
   .card {
-    border-radius: 0;
+    border-radius: 12px;
   }
 
   /* 表单元素 */
@@ -420,7 +420,7 @@
   .glass,
   .glass-strong {
     margin: 16px;
-    border-radius: 0;
+    border-radius: 20px;
   }
 
   /* 统计卡片 */

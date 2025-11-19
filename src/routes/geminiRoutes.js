@@ -662,7 +662,7 @@ async function handleGenerateContent(req, res) {
       return undefined
     }
 
-    const { project, user_prompt_id, request: requestData, tools } = req.body
+    const { project, user_prompt_id, request: requestData } = req.body
     // 从路径参数或请求体中获取模型名
     const model = req.body.model || req.params.modelName || 'gemini-2.5-flash'
     const sessionHash = sessionHelper.generateSessionHash(req.body)
@@ -688,13 +688,6 @@ async function handleGenerateContent(req, res) {
         // 直接的 Gemini 格式请求（没有 request 包装）
         actualRequestData = req.body
       }
-    }
-
-    // ✅ 关键修复：添加tools支持（从请求体或actualRequestData中获取）
-    const effectiveTools = tools || actualRequestData?.tools || req.body.tools
-    if (effectiveTools && Array.isArray(effectiveTools) && effectiveTools.length > 0) {
-      actualRequestData.tools = effectiveTools
-      logger.debug(`🔧 Gemini content generation: Added ${effectiveTools.length} tools to request`)
     }
 
     // 验证必需参数
@@ -823,7 +816,7 @@ async function handleStreamGenerateContent(req, res) {
       return undefined
     }
 
-    const { project, user_prompt_id, request: requestData, tools } = req.body
+    const { project, user_prompt_id, request: requestData } = req.body
     // 从路径参数或请求体中获取模型名
     const model = req.body.model || req.params.modelName || 'gemini-2.5-flash'
     const sessionHash = sessionHelper.generateSessionHash(req.body)
@@ -849,13 +842,6 @@ async function handleStreamGenerateContent(req, res) {
         // 直接的 Gemini 格式请求（没有 request 包装）
         actualRequestData = req.body
       }
-    }
-
-    // ✅ 关键修复：添加tools支持（从请求体或actualRequestData中获取）
-    const effectiveTools = tools || actualRequestData?.tools || req.body.tools
-    if (effectiveTools && Array.isArray(effectiveTools) && effectiveTools.length > 0) {
-      actualRequestData.tools = effectiveTools
-      logger.debug(`🔧 Gemini content generation: Added ${effectiveTools.length} tools to request`)
     }
 
     // 验证必需参数

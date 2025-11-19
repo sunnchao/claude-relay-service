@@ -25,7 +25,7 @@
               <div class="flex items-baseline space-x-4">
                 <button
                   :class="[
-                    'rounded-none px-3 py-2 text-sm font-medium',
+                    'rounded-md px-3 py-2 text-sm font-medium',
                     activeTab === 'overview'
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                       : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -36,7 +36,7 @@
                 </button>
                 <button
                   :class="[
-                    'rounded-none px-3 py-2 text-sm font-medium',
+                    'rounded-md px-3 py-2 text-sm font-medium',
                     activeTab === 'api-keys'
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                       : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -47,7 +47,7 @@
                 </button>
                 <button
                   :class="[
-                    'rounded-none px-3 py-2 text-sm font-medium',
+                    'rounded-md px-3 py-2 text-sm font-medium',
                     activeTab === 'usage'
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                       : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -58,7 +58,7 @@
                 </button>
                 <button
                   :class="[
-                    'rounded-none px-3 py-2 text-sm font-medium',
+                    'rounded-md px-3 py-2 text-sm font-medium',
                     activeTab === 'tutorial'
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                       : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -79,7 +79,7 @@
             <ThemeToggle mode="icon" />
 
             <button
-              class="rounded-none px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              class="rounded-md px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
               @click="handleLogout"
             >
               Logout
@@ -102,7 +102,7 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-          <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -134,7 +134,7 @@
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -166,7 +166,7 @@
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -198,7 +198,7 @@
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -230,7 +230,7 @@
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-none bg-white shadow dark:bg-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -264,7 +264,7 @@
         </div>
 
         <!-- User Info -->
-        <div class="rounded-none bg-white shadow dark:bg-gray-800">
+        <div class="rounded-lg bg-white shadow dark:bg-gray-800">
           <div class="px-4 py-5 sm:p-6">
             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
               Account Information
@@ -293,7 +293,7 @@
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Role</dt>
                   <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                     <span
-                      class="inline-flex items-center rounded-none bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                      class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                     >
                       {{ userProfile?.role || 'user' }}
                     </span>

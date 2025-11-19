@@ -26,7 +26,7 @@
               活跃 API Keys
               <span
                 v-if="apiKeys.length > 0"
-                class="ml-2 rounded-none bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+                class="ml-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 dark:bg-gray-700 dark:text-gray-100"
               >
                 {{ apiKeys.length }}
               </span>
@@ -43,7 +43,7 @@
               已删除 API Keys
               <span
                 v-if="deletedApiKeys.length > 0"
-                class="ml-2 rounded-none bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+                class="ml-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 dark:bg-gray-700 dark:text-gray-100"
               >
                 {{ deletedApiKeys.length }}
               </span>
@@ -61,7 +61,7 @@
               <!-- 时间范围筛选 -->
               <div class="group relative min-w-[140px]">
                 <div
-                  class="absolute -inset-0.5 rounded-none bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
+                  class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
                 ></div>
                 <CustomDropdown
                   v-model="globalDateFilter.preset"
@@ -97,7 +97,7 @@
               <!-- 标签筛选器 -->
               <div class="group relative min-w-[140px]">
                 <div
-                  class="absolute -inset-0.5 rounded-none bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
+                  class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
                 ></div>
                 <div class="relative">
                   <CustomDropdown
@@ -110,7 +110,7 @@
                   />
                   <span
                     v-if="selectedTagFilter"
-                    class="absolute -right-2 -top-2 z-10 flex h-5 w-5 items-center justify-center rounded-none bg-purple-500 text-xs text-white shadow-sm"
+                    class="absolute -right-2 -top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 text-xs text-white shadow-sm"
                   >
                     {{ selectedTagCount }}
                   </span>
@@ -131,12 +131,12 @@
                 </div>
                 <div class="group relative flex-1">
                   <div
-                    class="pointer-events-none absolute -inset-0.5 rounded-none bg-gradient-to-r from-cyan-500 to-teal-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
+                    class="pointer-events-none absolute -inset-0.5 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
                   ></div>
                   <div class="relative flex items-center">
                     <input
                       v-model="searchKeyword"
-                      class="h-10 w-full rounded-none border border-gray-200 bg-white px-3 pl-9 text-sm text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-200 hover:border-gray-300 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 dark:hover:border-gray-500"
+                      class="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 pl-9 text-sm text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-200 hover:border-gray-300 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 dark:hover:border-gray-500"
                       :placeholder="
                         searchMode === 'bindingAccount'
                           ? '搜索所属账号...'
@@ -150,7 +150,7 @@
                     <i class="fas fa-search absolute left-3 text-sm text-cyan-500" />
                     <button
                       v-if="searchKeyword"
-                      class="absolute right-2 flex h-5 w-5 items-center justify-center rounded-none text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                      class="absolute right-2 flex h-5 w-5 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                       @click="clearSearch"
                     >
                       <i class="fas fa-times text-xs" />
@@ -164,12 +164,12 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
               <!-- 刷新按钮 -->
               <button
-                class="group relative flex items-center justify-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-gray-500 sm:w-auto"
+                class="group relative flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-gray-500 sm:w-auto"
                 :disabled="apiKeysLoading"
                 @click="loadApiKeys()"
               >
                 <div
-                  class="absolute -inset-0.5 rounded-none bg-gradient-to-r from-green-500 to-teal-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
+                  class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-green-500 to-teal-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
                 ></div>
                 <i
                   :class="[
@@ -182,7 +182,7 @@
 
               <!-- 选择/取消选择按钮 -->
               <button
-                class="flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 @click="toggleSelectionMode"
               >
                 <i :class="showCheckboxes ? 'fas fa-times' : 'fas fa-check-square'"></i>
@@ -191,11 +191,11 @@
 
               <!-- 导出数据按钮 -->
               <button
-                class="group relative flex items-center justify-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-gray-500 sm:w-auto"
+                class="group relative flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-gray-500 sm:w-auto"
                 @click="exportToExcel"
               >
                 <div
-                  class="absolute -inset-0.5 rounded-none bg-gradient-to-r from-emerald-500 to-green-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
+                  class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
                 ></div>
                 <i class="fas fa-file-excel relative text-emerald-500" />
                 <span class="relative">导出数据</span>
@@ -204,11 +204,11 @@
               <!-- 批量编辑按钮 - 移到刷新按钮旁边 -->
               <button
                 v-if="selectedApiKeys.length > 0"
-                class="group relative flex items-center justify-center gap-2 rounded-none border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-100 hover:shadow-md dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 sm:w-auto"
+                class="group relative flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-100 hover:shadow-md dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 sm:w-auto"
                 @click="openBatchEditModal()"
               >
                 <div
-                  class="absolute -inset-0.5 rounded-none bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
+                  class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
                 ></div>
                 <i class="fas fa-edit relative text-blue-600 dark:text-blue-400" />
                 <span class="relative">编辑选中 ({{ selectedApiKeys.length }})</span>
@@ -217,11 +217,11 @@
               <!-- 批量删除按钮 - 移到刷新按钮旁边 -->
               <button
                 v-if="selectedApiKeys.length > 0"
-                class="group relative flex items-center justify-center gap-2 rounded-none border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-md dark:border-red-700 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 sm:w-auto"
+                class="group relative flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-100 hover:shadow-md dark:border-red-700 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 sm:w-auto"
                 @click="batchDeleteApiKeys()"
               >
                 <div
-                  class="absolute -inset-0.5 rounded-none bg-gradient-to-r from-red-500 to-pink-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
+                  class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 opacity-0 blur transition duration-300 group-hover:opacity-20"
                 ></div>
                 <i class="fas fa-trash relative text-red-600 dark:text-red-400" />
                 <span class="relative">删除选中 ({{ selectedApiKeys.length }})</span>
@@ -229,7 +229,7 @@
 
               <!-- 创建按钮 -->
               <button
-                class="flex w-full items-center justify-center gap-2 rounded-none bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-2 text-sm font-medium text-white shadow-md transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg sm:w-auto"
+                class="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-2 text-sm font-medium text-white shadow-md transition-all duration-200 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg sm:w-auto"
                 @click.stop="openCreateApiKeyModal"
               >
                 <i class="fas fa-plus"></i>
@@ -245,7 +245,7 @@
 
           <div v-else-if="apiKeys.length === 0" class="py-12 text-center">
             <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-none bg-gray-100 dark:bg-gray-700"
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"
             >
               <i class="fas fa-key text-xl text-gray-400" />
             </div>
@@ -265,7 +265,7 @@
                       <div class="flex items-center">
                         <input
                           v-model="selectAllChecked"
-                          class="h-4 w-4 rounded-none border-gray-300 text-blue-600 focus:ring-blue-500"
+                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           :indeterminate="isIndeterminate"
                           type="checkbox"
                           @change="handleSelectAll"
@@ -431,7 +431,7 @@
                         <div class="flex items-center">
                           <input
                             v-model="selectedApiKeys"
-                            class="h-4 w-4 rounded-none border-gray-300 text-blue-600 focus:ring-blue-500"
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             type="checkbox"
                             :value="key.id"
                             @change="updateSelectAllState"
@@ -466,7 +466,7 @@
                             class="flex items-center gap-1 text-xs"
                           >
                             <span
-                              class="inline-flex items-center rounded-none bg-indigo-100 px-1.5 py-0.5 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+                              class="inline-flex items-center rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
                             >
                               <i class="fas fa-brain mr-1 text-[10px]" />
                               Claude
@@ -478,7 +478,7 @@
                           <!-- Gemini 绑定 -->
                           <div v-if="key.geminiAccountId" class="flex items-center gap-1 text-xs">
                             <span
-                              class="inline-flex items-center rounded-none bg-yellow-100 px-1.5 py-0.5 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                              class="inline-flex items-center rounded bg-yellow-100 px-1.5 py-0.5 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
                             >
                               <i class="fas fa-robot mr-1 text-[10px]" />
                               Gemini
@@ -490,7 +490,7 @@
                           <!-- OpenAI 绑定 -->
                           <div v-if="key.openaiAccountId" class="flex items-center gap-1 text-xs">
                             <span
-                              class="inline-flex items-center rounded-none bg-gray-100 px-1.5 py-0.5 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                              class="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                             >
                               <i class="fa-openai mr-1 text-[10px]" />
                               OpenAI
@@ -502,7 +502,7 @@
                           <!-- Bedrock 绑定 -->
                           <div v-if="key.bedrockAccountId" class="flex items-center gap-1 text-xs">
                             <span
-                              class="inline-flex items-center rounded-none bg-orange-100 px-1.5 py-0.5 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                              class="inline-flex items-center rounded bg-orange-100 px-1.5 py-0.5 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
                             >
                               <i class="fas fa-cloud mr-1 text-[10px]" />
                               Bedrock
@@ -514,7 +514,7 @@
                           <!-- Droid 绑定 -->
                           <div v-if="key.droidAccountId" class="flex items-center gap-1 text-xs">
                             <span
-                              class="inline-flex items-center rounded-none bg-cyan-100 px-1.5 py-0.5 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
+                              class="inline-flex items-center rounded bg-cyan-100 px-1.5 py-0.5 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
                             >
                               <i class="fas fa-robot mr-1 text-[10px]" />
                               Droid
@@ -546,7 +546,7 @@
                           <span
                             v-for="tag in key.tags || []"
                             :key="tag"
-                            class="inline-flex items-center rounded-none bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                            class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                           >
                             {{ tag }}
                           </span>
@@ -560,7 +560,7 @@
                       <td class="whitespace-nowrap px-3 py-3">
                         <span
                           :class="[
-                            'inline-flex items-center rounded-none px-3 py-1 text-xs font-semibold',
+                            'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold',
                             key.isActive
                               ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                               : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
@@ -568,7 +568,7 @@
                         >
                           <div
                             :class="[
-                              'mr-2 h-2 w-2 rounded-none',
+                              'mr-2 h-2 w-2 rounded-full',
                               key.isActive ? 'bg-green-500' : 'bg-red-500'
                             ]"
                           />
@@ -783,7 +783,7 @@
                       >
                         <div class="flex gap-1">
                           <button
-                            class="rounded-none px-2 py-1 text-xs font-medium text-purple-600 transition-colors hover:bg-purple-50 hover:text-purple-900 dark:hover:bg-purple-900/20"
+                            class="rounded px-2 py-1 text-xs font-medium text-purple-600 transition-colors hover:bg-purple-50 hover:text-purple-900 dark:hover:bg-purple-900/20"
                             title="查看详细统计"
                             @click="showUsageDetails(key)"
                           >
@@ -792,7 +792,7 @@
                           </button>
                           <button
                             v-if="key && key.id"
-                            class="rounded-none px-2 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:hover:bg-indigo-900/20"
+                            class="rounded px-2 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-900 dark:hover:bg-indigo-900/20"
                             title="模型使用分布"
                             @click="toggleApiKeyModelStats(key.id)"
                           >
@@ -805,7 +805,7 @@
                             <span class="ml-1 hidden xl:inline">模型</span>
                           </button>
                           <button
-                            class="rounded-none px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:hover:bg-blue-900/20"
+                            class="rounded px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-900 dark:hover:bg-blue-900/20"
                             title="编辑"
                             @click="openEditApiKeyModal(key)"
                           >
@@ -818,7 +818,7 @@
                               (isApiKeyExpired(key.expiresAt) ||
                                 isApiKeyExpiringSoon(key.expiresAt))
                             "
-                            class="rounded-none px-2 py-1 text-xs font-medium text-green-600 transition-colors hover:bg-green-50 hover:text-green-900 dark:hover:bg-green-900/20"
+                            class="rounded px-2 py-1 text-xs font-medium text-green-600 transition-colors hover:bg-green-50 hover:text-green-900 dark:hover:bg-green-900/20"
                             title="续期"
                             @click="openRenewApiKeyModal(key)"
                           >
@@ -830,7 +830,7 @@
                               key.isActive
                                 ? 'text-orange-600 hover:bg-orange-50 hover:text-orange-900 dark:hover:bg-orange-900/20'
                                 : 'text-green-600 hover:bg-green-50 hover:text-green-900 dark:hover:bg-green-900/20',
-                              'rounded-none px-2 py-1 text-xs font-medium transition-colors'
+                              'rounded px-2 py-1 text-xs font-medium transition-colors'
                             ]"
                             :title="key.isActive ? '禁用' : '激活'"
                             @click="toggleApiKeyStatus(key)"
@@ -841,7 +841,7 @@
                             }}</span>
                           </button>
                           <button
-                            class="rounded-none px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:hover:bg-red-900/20"
+                            class="rounded px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-900 dark:hover:bg-red-900/20"
                             title="删除"
                             @click="deleteApiKey(key.id)"
                           >
@@ -875,7 +875,7 @@
                                 v-if="
                                   apiKeyModelStats[key.id] && apiKeyModelStats[key.id].length > 0
                                 "
-                                class="rounded-none bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                                class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                               >
                                 {{ apiKeyModelStats[key.id].length }} 个模型
                               </span>
@@ -883,14 +883,12 @@
                               <!-- API Keys日期筛选器 -->
                               <div class="flex items-center gap-1">
                                 <!-- 快捷日期选择 -->
-                                <div
-                                  class="flex gap-1 rounded-none bg-gray-100 p-1 dark:bg-gray-700"
-                                >
+                                <div class="flex gap-1 rounded bg-gray-100 p-1 dark:bg-gray-700">
                                   <button
                                     v-for="option in getApiKeyDateFilter(key.id).presetOptions"
                                     :key="option.value"
                                     :class="[
-                                      'rounded-none px-2 py-1 text-xs font-medium transition-colors',
+                                      'rounded px-2 py-1 text-xs font-medium transition-colors',
                                       getApiKeyDateFilter(key.id).preset === option.value &&
                                       getApiKeyDateFilter(key.id).type === 'preset'
                                         ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800'
@@ -958,7 +956,7 @@
                             <div
                               v-for="stat in apiKeyModelStats[key.id]"
                               :key="stat.model"
-                              class="rounded-none border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 transition-all duration-200 hover:border-indigo-300 hover:shadow-lg dark:border-gray-600 dark:from-gray-800 dark:to-gray-700 dark:hover:border-indigo-500"
+                              class="rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 transition-all duration-200 hover:border-indigo-300 hover:shadow-lg dark:border-gray-600 dark:from-gray-800 dark:to-gray-700 dark:hover:border-indigo-500"
                             >
                               <div class="mb-3 flex items-start justify-between">
                                 <div class="flex-1">
@@ -967,7 +965,7 @@
                                     >{{ stat.model }}</span
                                   >
                                   <span
-                                    class="rounded-none bg-blue-50 px-2 py-1 text-xs text-gray-500 dark:bg-blue-900/30 dark:text-gray-400"
+                                    class="rounded-full bg-blue-50 px-2 py-1 text-xs text-gray-500 dark:bg-blue-900/30 dark:text-gray-400"
                                     >{{ stat.requests }} 次请求</span
                                   >
                                 </div>
@@ -1046,10 +1044,10 @@
 
                               <!-- 进度条 -->
                               <div
-                                class="mt-3 h-2 w-full rounded-none bg-gray-200 dark:bg-gray-700"
+                                class="mt-3 h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700"
                               >
                                 <div
-                                  class="h-2 rounded-none bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500"
+                                  class="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500"
                                   :style="{
                                     width:
                                       calculateApiKeyModelPercentage(
@@ -1075,7 +1073,7 @@
                           <!-- 总计统计，仅在有数据时显示 -->
                           <div
                             v-if="apiKeyModelStats[key.id] && apiKeyModelStats[key.id].length > 0"
-                            class="mt-4 rounded-none border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 p-3 dark:border-indigo-700 dark:from-indigo-900/20 dark:to-purple-900/20"
+                            class="mt-4 rounded-lg border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 p-3 dark:border-indigo-700 dark:from-indigo-900/20 dark:to-purple-900/20"
                           >
                             <div class="flex items-center justify-between text-sm">
                               <span
@@ -1130,7 +1128,7 @@
                   <input
                     v-if="shouldShowCheckboxes"
                     v-model="selectedApiKeys"
-                    class="mt-1 h-4 w-4 rounded-none border-gray-300 text-blue-600 focus:ring-blue-500"
+                    class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     type="checkbox"
                     :value="key.id"
                     @change="updateSelectAllState"
@@ -1146,7 +1144,7 @@
                 </div>
                 <span
                   :class="[
-                    'inline-flex items-center rounded-none px-2 py-1 text-xs font-semibold',
+                    'inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold',
                     key.isActive
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                       : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
@@ -1154,7 +1152,7 @@
                 >
                   <div
                     :class="[
-                      'mr-1.5 h-1.5 w-1.5 rounded-none',
+                      'mr-1.5 h-1.5 w-1.5 rounded-full',
                       key.isActive ? 'bg-green-500' : 'bg-red-500'
                     ]"
                   />
@@ -1170,7 +1168,7 @@
                   class="flex flex-wrap items-center gap-1 text-xs"
                 >
                   <span
-                    class="inline-flex items-center rounded-none bg-indigo-100 px-2 py-0.5 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+                    class="inline-flex items-center rounded bg-indigo-100 px-2 py-0.5 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
                   >
                     <i class="fas fa-brain mr-1" />
                     Claude
@@ -1182,7 +1180,7 @@
                 <!-- Gemini 绑定 -->
                 <div v-if="key.geminiAccountId" class="flex flex-wrap items-center gap-1 text-xs">
                   <span
-                    class="inline-flex items-center rounded-none bg-yellow-100 px-2 py-0.5 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                    class="inline-flex items-center rounded bg-yellow-100 px-2 py-0.5 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
                   >
                     <i class="fas fa-robot mr-1" />
                     Gemini
@@ -1194,7 +1192,7 @@
                 <!-- OpenAI 绑定 -->
                 <div v-if="key.openaiAccountId" class="flex flex-wrap items-center gap-1 text-xs">
                   <span
-                    class="inline-flex items-center rounded-none bg-gray-100 px-2 py-0.5 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                    class="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                   >
                     <i class="fa-openai mr-1" />
                     OpenAI
@@ -1206,7 +1204,7 @@
                 <!-- Bedrock 绑定 -->
                 <div v-if="key.bedrockAccountId" class="flex flex-wrap items-center gap-1 text-xs">
                   <span
-                    class="inline-flex items-center rounded-none bg-orange-100 px-2 py-0.5 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                    class="inline-flex items-center rounded bg-orange-100 px-2 py-0.5 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
                   >
                     <i class="fas fa-cloud mr-1" />
                     Bedrock
@@ -1218,7 +1216,7 @@
                 <!-- Droid 绑定 -->
                 <div v-if="key.droidAccountId" class="flex flex-wrap items-center gap-1 text-xs">
                   <span
-                    class="inline-flex items-center rounded-none bg-cyan-100 px-2 py-0.5 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
+                    class="inline-flex items-center rounded bg-cyan-100 px-2 py-0.5 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300"
                   >
                     <i class="fas fa-robot mr-1" />
                     Droid
@@ -1252,7 +1250,7 @@
               <!-- 统计信息 -->
               <div class="mb-3 space-y-2">
                 <!-- 今日使用 -->
-                <div class="rounded-none bg-gray-50 p-3 dark:bg-gray-700">
+                <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
                   <div class="mb-2 flex items-center justify-between">
                     <span class="text-xs text-gray-600 dark:text-gray-400">{{
                       globalDateFilter.type === 'custom' ? '累计统计' : '今日使用'
@@ -1397,7 +1395,7 @@
                       {{ key.expiresAt ? formatDate(key.expiresAt) : '永不过期' }}
                     </span>
                     <button
-                      class="inline-flex h-5 w-5 items-center justify-center rounded-none text-gray-300 transition-all duration-200 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/20"
+                      class="inline-flex h-5 w-5 items-center justify-center rounded text-gray-300 transition-all duration-200 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/20"
                       title="编辑过期时间"
                       @click.stop="startEditExpiry(key)"
                     >
@@ -1419,7 +1417,7 @@
                 <span
                   v-for="tag in key.tags"
                   :key="tag"
-                  class="inline-flex items-center rounded-none bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                  class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                 >
                   {{ tag }}
                 </span>
@@ -1428,14 +1426,14 @@
               <!-- 操作按钮 -->
               <div class="mt-3 flex gap-2 border-t border-gray-100 pt-3 dark:border-gray-600">
                 <button
-                  class="flex flex-1 items-center justify-center gap-1 rounded-none bg-blue-50 px-3 py-1.5 text-xs text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50"
+                  class="flex flex-1 items-center justify-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-xs text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50"
                   @click="showUsageDetails(key)"
                 >
                   <i class="fas fa-chart-line" />
                   查看详情
                 </button>
                 <button
-                  class="flex-1 rounded-none bg-gray-50 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  class="flex-1 rounded-lg bg-gray-50 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   @click="openEditApiKeyModal(key)"
                 >
                   <i class="fas fa-edit mr-1" />
@@ -1446,7 +1444,7 @@
                     key.expiresAt &&
                     (isApiKeyExpired(key.expiresAt) || isApiKeyExpiringSoon(key.expiresAt))
                   "
-                  class="flex-1 rounded-none bg-orange-50 px-3 py-1.5 text-xs text-orange-600 transition-colors hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50"
+                  class="flex-1 rounded-lg bg-orange-50 px-3 py-1.5 text-xs text-orange-600 transition-colors hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50"
                   @click="openRenewApiKeyModal(key)"
                 >
                   <i class="fas fa-clock mr-1" />
@@ -1457,7 +1455,7 @@
                     key.isActive
                       ? 'bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50'
                       : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50',
-                    'rounded-none px-3 py-1.5 text-xs transition-colors'
+                    'rounded-lg px-3 py-1.5 text-xs transition-colors'
                   ]"
                   @click="toggleApiKeyStatus(key)"
                 >
@@ -1465,7 +1463,7 @@
                   {{ key.isActive ? '禁用' : '激活' }}
                 </button>
                 <button
-                  class="rounded-none bg-red-50 px-3 py-1.5 text-xs text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50"
+                  class="rounded-lg bg-red-50 px-3 py-1.5 text-xs text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50"
                   @click="deleteApiKey(key.id)"
                 >
                   <i class="fas fa-trash" />
@@ -1487,7 +1485,7 @@
                 <span class="text-xs text-gray-600 dark:text-gray-400 sm:text-sm">每页显示</span>
                 <select
                   v-model="pageSize"
-                  class="rounded-none border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-gray-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-500 sm:text-sm"
+                  class="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 transition-colors hover:border-gray-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-500 sm:text-sm"
                   @change="currentPage = 1"
                 >
                   <option v-for="size in pageSizeOptions" :key="size" :value="size">
@@ -1501,7 +1499,7 @@
             <div class="flex items-center gap-2">
               <!-- 上一页 -->
               <button
-                class="rounded-none border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:py-1 sm:text-sm"
+                class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:py-1 sm:text-sm"
                 :disabled="currentPage === 1"
                 @click="currentPage--"
               >
@@ -1513,7 +1511,7 @@
                 <!-- 第一页 -->
                 <button
                   v-if="shouldShowFirstPage"
-                  class="hidden rounded-none border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:block"
+                  class="hidden rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:block"
                   @click="currentPage = 1"
                 >
                   1
@@ -1529,7 +1527,7 @@
                   v-for="page in pageNumbers"
                   :key="page"
                   :class="[
-                    'rounded-none px-2 py-1 text-xs font-medium sm:px-3 sm:text-sm',
+                    'rounded-md px-2 py-1 text-xs font-medium sm:px-3 sm:text-sm',
                     page === currentPage
                       ? 'bg-blue-600 text-white'
                       : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -1547,7 +1545,7 @@
                 >
                 <button
                   v-if="shouldShowLastPage"
-                  class="hidden rounded-none border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:block"
+                  class="hidden rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:block"
                   @click="currentPage = totalPages"
                 >
                   {{ totalPages }}
@@ -1556,7 +1554,7 @@
 
               <!-- 下一页 -->
               <button
-                class="rounded-none border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:py-1 sm:text-sm"
+                class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:py-1 sm:text-sm"
                 :disabled="currentPage === totalPages || totalPages === 0"
                 @click="currentPage++"
               >
@@ -1575,7 +1573,7 @@
 
           <div v-else-if="deletedApiKeys.length === 0" class="py-12 text-center">
             <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-none bg-gray-100 dark:bg-gray-700"
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"
             >
               <i class="fas fa-trash text-xl text-gray-400" />
             </div>
@@ -1589,7 +1587,7 @@
             <div class="mb-4 flex justify-end">
               <button
                 v-if="deletedApiKeys.length > 0"
-                class="rounded-none bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+                class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
                 @click="clearAllDeletedApiKeys"
               >
                 <i class="fas fa-trash-alt mr-2" />
@@ -1665,7 +1663,7 @@
                       <td class="px-3 py-3">
                         <div class="flex items-center">
                           <div
-                            class="mr-2 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-none bg-gradient-to-br from-red-500 to-red-600"
+                            class="mr-2 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-red-600"
                           >
                             <i class="fas fa-trash text-[10px] text-white" />
                           </div>
@@ -1685,7 +1683,7 @@
                           <!-- Claude OAuth 绑定 -->
                           <div v-if="key.claudeAccountId" class="flex items-center gap-1 text-xs">
                             <span
-                              class="inline-flex items-center rounded-none bg-blue-100 px-1.5 py-0.5 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                              class="inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                             >
                               <i class="fas fa-robot mr-1 text-[10px]" />
                               Claude OAuth
@@ -1697,7 +1695,7 @@
                             class="flex items-center gap-1 text-xs"
                           >
                             <span
-                              class="inline-flex items-center rounded-none bg-green-100 px-1.5 py-0.5 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                              class="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                             >
                               <i class="fas fa-terminal mr-1 text-[10px]" />
                               Claude Console
@@ -1709,7 +1707,7 @@
                             class="flex items-center gap-1 text-xs"
                           >
                             <span
-                              class="inline-flex items-center rounded-none bg-purple-100 px-1.5 py-0.5 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                              class="inline-flex items-center rounded bg-purple-100 px-1.5 py-0.5 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                             >
                               <i class="fa-google mr-1 text-[10px]" />
                               Gemini
@@ -1837,7 +1835,7 @@
                         <div class="flex items-center gap-2">
                           <button
                             v-if="key.canRestore"
-                            class="rounded-none bg-green-50 px-3 py-1.5 text-xs font-medium text-green-600 transition-colors hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
+                            class="rounded-lg bg-green-50 px-3 py-1.5 text-xs font-medium text-green-600 transition-colors hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
                             title="恢复 API Key"
                             @click="restoreApiKey(key.id)"
                           >
@@ -1845,7 +1843,7 @@
                             恢复
                           </button>
                           <button
-                            class="rounded-none bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                            class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
                             title="彻底删除 API Key"
                             @click="permanentDeleteApiKey(key.id)"
                           >
@@ -4300,7 +4298,7 @@ onMounted(async () => {
 
 /* 自定义日期范围选择器高度对齐 */
 .custom-date-range-picker :deep(.el-input__wrapper) {
-  @apply h-[38px] rounded-none border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800;
+  @apply h-[38px] rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md dark:border-gray-600 dark:bg-gray-800;
 }
 .custom-date-range-picker :deep(.el-input__inner) {
   @apply h-full py-2 text-sm font-medium text-gray-700 dark:text-gray-200;

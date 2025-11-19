@@ -13,7 +13,7 @@
       <div v-if="multiKeyMode && aggregatedStats" class="space-y-4">
         <!-- API Keys 概况 -->
         <div
-          class="rounded-none bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:from-blue-900/20 dark:to-indigo-900/20"
+          class="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:from-blue-900/20 dark:to-indigo-900/20"
         >
           <div class="mb-3 flex items-center justify-between">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -21,7 +21,7 @@
               API Keys 概况
             </span>
             <span
-              class="rounded-none bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-800 dark:text-blue-200"
+              class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-800 dark:text-blue-200"
             >
               {{ aggregatedStats.activeKeys }}/{{ aggregatedStats.totalKeys }}
             </span>
@@ -44,7 +44,7 @@
 
         <!-- 聚合统计数据 -->
         <div
-          class="rounded-none bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:from-purple-900/20 dark:to-pink-900/20"
+          class="rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:from-purple-900/20 dark:to-pink-900/20"
         >
           <div class="mb-3 flex items-center">
             <i class="fas fa-chart-pie mr-2 text-purple-500" />
@@ -84,7 +84,7 @@
         <!-- 无效 Keys 提示 -->
         <div
           v-if="invalidKeys && invalidKeys.length > 0"
-          class="rounded-none bg-red-50 p-3 text-sm dark:bg-red-900/20"
+          class="rounded-lg bg-red-50 p-3 text-sm dark:bg-red-900/20"
         >
           <i class="fas fa-exclamation-triangle mr-2 text-red-600 dark:text-red-400" />
           <span class="text-red-700 dark:text-red-300">
@@ -94,7 +94,7 @@
 
         <!-- 提示信息 -->
         <div
-          class="rounded-none bg-gray-50 p-3 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+          class="rounded-lg bg-gray-50 p-3 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400"
         >
           <i class="fas fa-info-circle mr-1" />
           每个 API Key 有独立的限制设置，聚合模式下不显示单个限制配置
@@ -122,16 +122,16 @@
           </div>
           <div
             v-if="statsData.limits.dailyCostLimit > 0"
-            class="h-2 w-full rounded-none bg-gray-200 dark:bg-gray-700"
+            class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700"
           >
             <div
-              class="h-2 rounded-none transition-all duration-300"
+              class="h-2 rounded-full transition-all duration-300"
               :class="getDailyCostProgressColor()"
               :style="{ width: getDailyCostProgress() + '%' }"
             />
           </div>
-          <div v-else class="h-2 w-full rounded-none bg-gray-200">
-            <div class="h-2 rounded-none bg-green-500" style="width: 0%" />
+          <div v-else class="h-2 w-full rounded-full bg-gray-200">
+            <div class="h-2 rounded-full bg-green-500" style="width: 0%" />
           </div>
         </div>
 
@@ -154,16 +154,16 @@
           </div>
           <div
             v-if="statsData.limits.totalCostLimit > 0"
-            class="h-2 w-full rounded-none bg-gray-200 dark:bg-gray-700"
+            class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700"
           >
             <div
-              class="h-2 rounded-none transition-all duration-300"
+              class="h-2 rounded-full transition-all duration-300"
               :class="getTotalCostProgressColor()"
               :style="{ width: getTotalCostProgress() + '%' }"
             />
           </div>
-          <div v-else class="h-2 w-full rounded-none bg-gray-200">
-            <div class="h-2 rounded-none bg-blue-500" style="width: 0%" />
+          <div v-else class="h-2 w-full rounded-full bg-gray-200">
+            <div class="h-2 rounded-full bg-blue-500" style="width: 0%" />
           </div>
         </div>
 
@@ -179,9 +179,9 @@
               }}
             </span>
           </div>
-          <div class="h-2 w-full rounded-none bg-gray-200 dark:bg-gray-700">
+          <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
             <div
-              class="h-2 rounded-none transition-all duration-300"
+              class="h-2 rounded-full transition-all duration-300"
               :class="getOpusWeeklyCostProgressColor()"
               :style="{ width: getOpusWeeklyCostProgress() + '%' }"
             />
@@ -267,12 +267,12 @@
             </div>
             <div
               v-if="hasClientRestrictions"
-              class="flex flex-wrap gap-2 rounded-none bg-blue-50 p-2 dark:bg-blue-900/20 md:p-3"
+              class="flex flex-wrap gap-2 rounded-lg bg-blue-50 p-2 dark:bg-blue-900/20 md:p-3"
             >
               <span
                 v-for="client in statsData.restrictions.allowedClients"
                 :key="client"
-                class="flex items-center gap-1 rounded-none bg-white px-2 py-1 text-xs text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300 md:text-sm"
+                class="flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300 md:text-sm"
               >
                 <i class="fas fa-id-badge" />
                 {{ client }}
@@ -293,7 +293,7 @@
       </h3>
 
       <div
-        class="rounded-none border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20 md:p-4"
+        class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20 md:p-4"
       >
         <h4
           class="mb-2 flex items-center text-sm font-bold text-amber-800 dark:text-amber-300 md:mb-3 md:text-base"
@@ -305,7 +305,7 @@
           <div
             v-for="model in statsData.restrictions.restrictedModels"
             :key="model"
-            class="rounded-none border border-amber-200 bg-white px-2 py-1 text-xs dark:border-amber-700 dark:bg-gray-800 md:px-3 md:py-2 md:text-sm"
+            class="rounded border border-amber-200 bg-white px-2 py-1 text-xs dark:border-amber-700 dark:bg-gray-800 md:px-3 md:py-2 md:text-sm"
           >
             <i class="fas fa-ban mr-1 text-xs text-red-500 md:mr-2" />
             <span class="break-all text-gray-800 dark:text-gray-200">{{ model }}</span>
