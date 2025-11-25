@@ -3,6 +3,7 @@ const router = express.Router()
 const logger = require('../utils/logger')
 const { authenticateApiKey } = require('../middleware/auth')
 const geminiAccountService = require('../services/geminiAccountService')
+const geminiApiAccountService = require('../services/geminiApiAccountService')
 const { sendGeminiRequest, getAvailableModels } = require('../services/geminiRelayService')
 const crypto = require('crypto')
 const sessionHelper = require('../utils/sessionHelper')
@@ -10,6 +11,8 @@ const unifiedGeminiScheduler = require('../services/unifiedGeminiScheduler')
 const apiKeyService = require('../services/apiKeyService')
 const { updateRateLimitCounters } = require('../utils/rateLimitHelper')
 const { parseSSELine } = require('../utils/sseParser')
+const axios = require('axios')
+const ProxyHelper = require('../utils/proxyHelper')
 // const { OAuth2Client } = require('google-auth-library'); // OAuth2Client is not used in this file
 
 // 生成会话哈希
@@ -77,6 +80,9 @@ async function applyRateLimitTracking(req, usageSummary, model, context = '') {
 router.post('/messages', authenticateApiKey, async (req, res) => {
   const startTime = Date.now()
   let abortController = null
+  let accountId
+  let accountType
+  let sessionHash
 
   try {
     const apiKeyData = req.apiKey
@@ -111,18 +117,17 @@ router.post('/messages', authenticateApiKey, async (req, res) => {
     }
 
     // 生成会话哈希用于粘性会话
-    const sessionHash = generateSessionHash(req)
+    sessionHash = generateSessionHash(req)
 
     // 使用统一调度选择可用的 Gemini 账户（传递请求的模型）
-    let accountId
     try {
       const schedulerResult = await unifiedGeminiScheduler.selectAccountForApiKey(
         apiKeyData,
         sessionHash,
-        model // 传递请求的模型进行过滤
+        model, // 传递请求的模型进行过滤
+        { allowApiAccounts: true } // 允许调度 API 账户
       )
-      const { accountId: selectedAccountId } = schedulerResult
-      accountId = selectedAccountId
+      ;({ accountId, accountType } = schedulerResult)
     } catch (error) {
       logger.error('Failed to select Gemini account:', error)
       return res.status(503).json({
@@ -133,21 +138,38 @@ router.post('/messages', authenticateApiKey, async (req, res) => {
       })
     }
 
+    // 判断账户类型：根据 accountType 判断，而非 accountId 前缀
+    const isApiAccount = accountType === 'gemini-api'
+
     // 获取账户详情
-    const account = await geminiAccountService.getAccount(accountId)
-    if (!account) {
-      return res.status(503).json({
-        error: {
-          message: 'Selected account not found',
-          type: 'service_unavailable'
-        }
-      })
+    let account
+    if (isApiAccount) {
+      account = await geminiApiAccountService.getAccount(accountId)
+      if (!account) {
+        return res.status(503).json({
+          error: {
+            message: 'Gemini API account not found',
+            type: 'service_unavailable'
+          }
+        })
+      }
+      logger.info(`Using Gemini API account: ${account.id} for API key: ${apiKeyData.id}`)
+      // 标记 API 账户被使用
+      await geminiApiAccountService.markAccountUsed(account.id)
+    } else {
+      account = await geminiAccountService.getAccount(accountId)
+      if (!account) {
+        return res.status(503).json({
+          error: {
+            message: 'Gemini OAuth account not found',
+            type: 'service_unavailable'
+          }
+        })
+      }
+      logger.info(`Using Gemini OAuth account: ${account.id} for API key: ${apiKeyData.id}`)
+      // 标记 OAuth 账户被使用
+      await geminiAccountService.markAccountUsed(account.id)
     }
-
-    logger.info(`Using Gemini account: ${account.id} for API key: ${apiKeyData.id}`)
-
-    // 标记账户被使用
-    await geminiAccountService.markAccountUsed(account.id)
 
     // 创建中止控制器
     abortController = new AbortController()
@@ -160,20 +182,126 @@ router.post('/messages', authenticateApiKey, async (req, res) => {
       }
     })
 
-    // 发送请求到 Gemini
-    const geminiResponse = await sendGeminiRequest({
-      messages,
-      model,
-      temperature,
-      maxTokens: max_tokens,
-      stream,
-      accessToken: account.accessToken,
-      proxy: account.proxy,
-      apiKeyId: apiKeyData.id,
-      signal: abortController.signal,
-      projectId: account.projectId,
-      accountId: account.id
-    })
+    let geminiResponse
+
+    if (isApiAccount) {
+      // API 账户：直接调用 Google Gemini API
+      // 转换 OpenAI 格式的 messages 为 Gemini 格式的 contents
+      const contents = messages.map((msg) => ({
+        role: msg.role === 'assistant' ? 'model' : msg.role,
+        parts: [{ text: msg.content }]
+      }))
+
+      const requestBody = {
+        contents,
+        generationConfig: {
+          temperature,
+          maxOutputTokens: max_tokens,
+          topP: 0.95,
+          topK: 40
+        }
+      }
+
+      // 解析代理配置
+      let proxyConfig = null
+      if (account.proxy) {
+        try {
+          proxyConfig =
+            typeof account.proxy === 'string' ? JSON.parse(account.proxy) : account.proxy
+        } catch (e) {
+          logger.warn('Failed to parse proxy configuration:', e)
+        }
+      }
+
+      const apiUrl = stream
+        ? `${account.baseUrl}/v1beta/models/${model}:streamGenerateContent?key=${account.apiKey}&alt=sse`
+        : `${account.baseUrl}/v1beta/models/${model}:generateContent?key=${account.apiKey}`
+
+      const axiosConfig = {
+        method: 'POST',
+        url: apiUrl,
+        data: requestBody,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        responseType: stream ? 'stream' : 'json',
+        signal: abortController.signal
+      }
+
+      // 添加代理配置
+      if (proxyConfig) {
+        const proxyHelper = new ProxyHelper()
+        axiosConfig.httpsAgent = proxyHelper.createProxyAgent(proxyConfig)
+        axiosConfig.httpAgent = proxyHelper.createProxyAgent(proxyConfig)
+      }
+
+      try {
+        const apiResponse = await axios(axiosConfig)
+        if (stream) {
+          geminiResponse = apiResponse.data
+        } else {
+          // 转换为 OpenAI 兼容格式
+          const geminiData = apiResponse.data
+          geminiResponse = {
+            id: crypto.randomUUID(),
+            object: 'chat.completion',
+            created: Math.floor(Date.now() / 1000),
+            model,
+            choices: [
+              {
+                index: 0,
+                message: {
+                  role: 'assistant',
+                  content:
+                    geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated'
+                },
+                finish_reason: 'stop'
+              }
+            ],
+            usage: {
+              prompt_tokens: geminiData.usageMetadata?.promptTokenCount || 0,
+              completion_tokens: geminiData.usageMetadata?.candidatesTokenCount || 0,
+              total_tokens: geminiData.usageMetadata?.totalTokenCount || 0
+            }
+          }
+
+          // 记录使用统计
+          if (geminiData.usageMetadata) {
+            await apiKeyService.recordUsage(
+              apiKeyData.id,
+              geminiData.usageMetadata.promptTokenCount || 0,
+              geminiData.usageMetadata.candidatesTokenCount || 0,
+              0,
+              0,
+              model,
+              accountId // 使用原始 accountId（含 api: 前缀）
+            )
+          }
+        }
+      } catch (error) {
+        logger.error('Gemini API request failed:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        })
+        throw error
+      }
+    } else {
+      // OAuth 账户：使用现有的 sendGeminiRequest
+      geminiResponse = await sendGeminiRequest({
+        messages,
+        model,
+        temperature,
+        maxTokens: max_tokens,
+        stream,
+        accessToken: account.accessToken,
+        proxy: account.proxy,
+        apiKeyId: apiKeyData.id,
+        signal: abortController.signal,
+        projectId: account.projectId,
+        accountId: account.id
+      })
+    }
 
     if (stream) {
       // 设置流式响应头
@@ -182,15 +310,90 @@ router.post('/messages', authenticateApiKey, async (req, res) => {
       res.setHeader('Connection', 'keep-alive')
       res.setHeader('X-Accel-Buffering', 'no')
 
-      // 流式传输响应
-      for await (const chunk of geminiResponse) {
-        if (abortController.signal.aborted) {
-          break
+      if (isApiAccount) {
+        // API 账户：处理 SSE 流并记录使用统计
+        let totalUsage = {
+          promptTokenCount: 0,
+          candidatesTokenCount: 0,
+          totalTokenCount: 0
         }
-        res.write(chunk)
-      }
 
-      res.end()
+        geminiResponse.on('data', (chunk) => {
+          try {
+            const chunkStr = chunk.toString()
+            res.write(chunkStr)
+
+            // 尝试从 SSE 流中提取 usage 数据
+            const lines = chunkStr.split('\n')
+            for (const line of lines) {
+              if (line.startsWith('data:')) {
+                const data = line.substring(5).trim()
+                if (data && data !== '[DONE]') {
+                  try {
+                    const parsed = JSON.parse(data)
+                    if (parsed.usageMetadata || parsed.response?.usageMetadata) {
+                      totalUsage = parsed.usageMetadata || parsed.response.usageMetadata
+                    }
+                  } catch (e) {
+                    // 解析失败，忽略
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            logger.error('Error processing stream chunk:', error)
+          }
+        })
+
+        geminiResponse.on('end', () => {
+          res.end()
+
+          // 异步记录使用统计
+          if (totalUsage.totalTokenCount > 0) {
+            apiKeyService
+              .recordUsage(
+                apiKeyData.id,
+                totalUsage.promptTokenCount || 0,
+                totalUsage.candidatesTokenCount || 0,
+                0,
+                0,
+                model,
+                accountId // 使用原始 accountId（含 api: 前缀）
+              )
+              .then(() => {
+                logger.info(
+                  `📊 Recorded Gemini API stream usage - Input: ${totalUsage.promptTokenCount}, Output: ${totalUsage.candidatesTokenCount}`
+                )
+              })
+              .catch((error) => {
+                logger.error('Failed to record Gemini API usage:', error)
+              })
+          }
+        })
+
+        geminiResponse.on('error', (error) => {
+          logger.error('Stream error:', error)
+          if (!res.headersSent) {
+            res.status(500).json({
+              error: {
+                message: error.message || 'Stream error',
+                type: 'api_error'
+              }
+            })
+          } else {
+            res.end()
+          }
+        })
+      } else {
+        // OAuth 账户：使用原有的流式传输逻辑
+        for await (const chunk of geminiResponse) {
+          if (abortController.signal.aborted) {
+            break
+          }
+          res.write(chunk)
+        }
+        res.end()
+      }
     } else {
       // 非流式响应
       res.json(geminiResponse)
@@ -202,14 +405,24 @@ router.post('/messages', authenticateApiKey, async (req, res) => {
     logger.error('Gemini request error:', error)
 
     // 处理速率限制
-    if (error.status === 429) {
-      if (req.apiKey && req.account) {
-        await geminiAccountService.setAccountRateLimited(req.account.id, true)
+    const errorStatus = error.response?.status || error.status
+    if (errorStatus === 429 && accountId) {
+      try {
+        // 使用已有的 accountType 变量，而非检查前缀
+        const rateLimitAccountType = accountType || 'gemini'
+        await unifiedGeminiScheduler.markAccountRateLimited(
+          accountId,
+          rateLimitAccountType,
+          sessionHash
+        )
+        logger.warn(`⚠️ Gemini account ${accountId} rate limited (/messages), marking as limited`)
+      } catch (limitError) {
+        logger.warn('Failed to mark account as rate limited:', limitError)
       }
     }
 
     // 返回错误响应
-    const status = error.status || 500
+    const status = errorStatus || 500
     const errorResponse = {
       error: error.error || {
         message: error.message || 'Internal server error',
@@ -700,13 +913,38 @@ async function handleGenerateContent(req, res) {
       })
     }
 
-    // 使用统一调度选择账号
-    const { accountId } = await unifiedGeminiScheduler.selectAccountForApiKey(
+    // 使用统一调度选择账号（v1internal 不允许 API 账户）
+    const schedulerResult = await unifiedGeminiScheduler.selectAccountForApiKey(
       req.apiKey,
       sessionHash,
       model
+      // 不传 allowApiAccounts: true，所以不会调度 API 账户
     )
+    const { accountId, accountType } = schedulerResult
+
+    // v1internal 路由只支持 OAuth 账户，不支持 API Key 账户
+    if (accountType === 'gemini-api') {
+      logger.error(`❌ v1internal routes do not support Gemini API accounts. Account: ${accountId}`)
+      return res.status(400).json({
+        error: {
+          message:
+            'This endpoint only supports Gemini OAuth accounts. Gemini API Key accounts are not compatible with v1internal format.',
+          type: 'invalid_account_type'
+        }
+      })
+    }
+
     const account = await geminiAccountService.getAccount(accountId)
+    if (!account) {
+      logger.error(`❌ Gemini account not found: ${accountId}`)
+      return res.status(404).json({
+        error: {
+          message: 'Gemini account not found',
+          type: 'account_not_found'
+        }
+      })
+    }
+
     const { accessToken, refreshToken } = account
 
     const version = req.path.includes('v1beta') ? 'v1beta' : 'v1internal'
@@ -854,13 +1092,38 @@ async function handleStreamGenerateContent(req, res) {
       })
     }
 
-    // 使用统一调度选择账号
-    const { accountId } = await unifiedGeminiScheduler.selectAccountForApiKey(
+    // 使用统一调度选择账号（v1internal 不允许 API 账户）
+    const schedulerResult = await unifiedGeminiScheduler.selectAccountForApiKey(
       req.apiKey,
       sessionHash,
       model
+      // 不传 allowApiAccounts: true，所以不会调度 API 账户
     )
+    const { accountId, accountType } = schedulerResult
+
+    // v1internal 路由只支持 OAuth 账户，不支持 API Key 账户
+    if (accountType === 'gemini-api') {
+      logger.error(`❌ v1internal routes do not support Gemini API accounts. Account: ${accountId}`)
+      return res.status(400).json({
+        error: {
+          message:
+            'This endpoint only supports Gemini OAuth accounts. Gemini API Key accounts are not compatible with v1internal format.',
+          type: 'invalid_account_type'
+        }
+      })
+    }
+
     const account = await geminiAccountService.getAccount(accountId)
+    if (!account) {
+      logger.error(`❌ Gemini account not found: ${accountId}`)
+      return res.status(404).json({
+        error: {
+          message: 'Gemini account not found',
+          type: 'account_not_found'
+        }
+      })
+    }
+
     const { accessToken, refreshToken } = account
 
     const version = req.path.includes('v1beta') ? 'v1beta' : 'v1internal'
@@ -924,86 +1187,104 @@ async function handleStreamGenerateContent(req, res) {
     res.setHeader('X-Accel-Buffering', 'no')
 
     // 处理流式响应并捕获usage数据
-    let streamBuffer = '' // 统一的流处理缓冲区
+    // 方案 A++：透明转发 + 异步 usage 提取 + SSE 心跳机制
+    let streamBuffer = '' // 缓冲区用于处理不完整的行
     let totalUsage = {
       promptTokenCount: 0,
       candidatesTokenCount: 0,
       totalTokenCount: 0
     }
-    const usageReported = false
+    let usageReported = false // 修复：改为 let 以便后续修改
+
+    // SSE 心跳机制：防止 Clash 等代理 120 秒超时
+    let heartbeatTimer = null
+    let lastDataTime = Date.now()
+    const HEARTBEAT_INTERVAL = 15000 // 15 秒
+
+    const sendHeartbeat = () => {
+      const timeSinceLastData = Date.now() - lastDataTime
+      if (timeSinceLastData >= HEARTBEAT_INTERVAL && !res.destroyed) {
+        res.write('\n') // 发送空行保持连接活跃
+        logger.info(`💓 Sent SSE keepalive (gap: ${(timeSinceLastData / 1000).toFixed(1)}s)`)
+      }
+    }
+
+    heartbeatTimer = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL)
 
     streamResponse.on('data', (chunk) => {
       try {
-        const chunkStr = chunk.toString()
+        // 更新最后数据时间
+        lastDataTime = Date.now()
 
-        if (!chunkStr.trim()) {
-          return
+        // 1️⃣ 立即转发原始数据（零延迟，最高优先级）
+        // 对所有版本（v1beta 和 v1internal）都采用透明转发
+        if (!res.destroyed) {
+          res.write(chunk) // 直接转发 Buffer，无需转换和序列化
         }
 
-        // 使用统一缓冲区处理不完整的行
-        streamBuffer += chunkStr
-        const lines = streamBuffer.split('\n')
-        streamBuffer = lines.pop() || '' // 保留最后一个不完整的行
+        // 2️⃣ 异步提取 usage 数据（不阻塞转发）
+        // 使用 setImmediate 将解析放到下一个事件循环
+        setImmediate(() => {
+          try {
+            const chunkStr = chunk.toString()
+            if (!chunkStr.trim()) {
+              return
+            }
 
-        const processedLines = []
+            // 快速检查是否包含 usage 数据（避免不必要的解析）
+            if (!chunkStr.includes('usageMetadata')) {
+              return
+            }
 
-        for (const line of lines) {
-          if (!line.trim()) {
-            continue // 跳过空行，不添加到处理队列
-          }
+            // 处理不完整的行
+            streamBuffer += chunkStr
+            const lines = streamBuffer.split('\n')
+            streamBuffer = lines.pop() || ''
 
-          // 解析 SSE 行
-          const parsed = parseSSELine(line)
-
-          // 提取 usage 数据（适用于所有版本）
-          if (parsed.type === 'data' && parsed.data.response?.usageMetadata) {
-            totalUsage = parsed.data.response.usageMetadata
-            logger.debug('📊 Captured Gemini usage data:', totalUsage)
-          }
-
-          // 根据版本处理输出
-          if (version === 'v1beta') {
-            if (parsed.type === 'data') {
-              if (parsed.data.response) {
-                // 有 response 字段，只返回 response 的内容
-                processedLines.push(`data: ${JSON.stringify(parsed.data.response)}`)
-              } else {
-                // 没有 response 字段，返回整个数据对象
-                processedLines.push(`data: ${JSON.stringify(parsed.data)}`)
+            // 仅解析包含 usage 的行
+            for (const line of lines) {
+              if (!line.trim() || !line.includes('usageMetadata')) {
+                continue
               }
-            } else if (parsed.type === 'control') {
-              // 控制消息（如 [DONE]）保持原样
-              processedLines.push(line)
-            }
-            // 跳过其他类型的行（'other', 'invalid'）
-          }
-        }
 
-        // 发送数据到客户端
-        if (version === 'v1beta') {
-          for (const line of processedLines) {
-            if (!res.destroyed) {
-              res.write(`${line}\n\n`)
+              try {
+                const parsed = parseSSELine(line)
+                if (parsed.type === 'data' && parsed.data.response?.usageMetadata) {
+                  totalUsage = parsed.data.response.usageMetadata
+                  logger.debug('📊 Captured Gemini usage data:', totalUsage)
+                }
+              } catch (parseError) {
+                // 解析失败但不影响转发
+                logger.warn('⚠️ Failed to parse usage line:', parseError.message)
+              }
             }
+          } catch (error) {
+            // 提取失败但不影响转发
+            logger.warn('⚠️ Error extracting usage data:', error.message)
           }
-        } else {
-          // v1internal 直接转发原始数据
-          if (!res.destroyed) {
-            res.write(chunkStr)
-          }
-        }
+        })
       } catch (error) {
         logger.error('Error processing stream chunk:', error)
+        // 不中断流，继续处理后续数据
       }
     })
 
-    streamResponse.on('end', async () => {
+    streamResponse.on('end', () => {
       logger.info('Stream completed successfully')
 
-      // 记录使用统计
+      // 清理心跳定时器
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer)
+        heartbeatTimer = null
+      }
+
+      // 立即结束响应，不阻塞
+      res.end()
+
+      // 异步记录使用统计（不阻塞响应）
       if (!usageReported && totalUsage.totalTokenCount > 0) {
-        try {
-          await apiKeyService.recordUsage(
+        Promise.all([
+          apiKeyService.recordUsage(
             req.apiKey.id,
             totalUsage.promptTokenCount || 0,
             totalUsage.candidatesTokenCount || 0,
@@ -1011,12 +1292,8 @@ async function handleStreamGenerateContent(req, res) {
             0, // cacheReadTokens
             model,
             account.id
-          )
-          logger.info(
-            `📊 Recorded Gemini stream usage - Input: ${totalUsage.promptTokenCount}, Output: ${totalUsage.candidatesTokenCount}, Total: ${totalUsage.totalTokenCount}`
-          )
-
-          await applyRateLimitTracking(
+          ),
+          applyRateLimitTracking(
             req,
             {
               inputTokens: totalUsage.promptTokenCount || 0,
@@ -1027,17 +1304,30 @@ async function handleStreamGenerateContent(req, res) {
             model,
             'gemini-stream'
           )
-        } catch (error) {
-          logger.error('Failed to record Gemini usage:', error)
-        }
+        ])
+          .then(() => {
+            logger.info(
+              `📊 Recorded Gemini stream usage - Input: ${totalUsage.promptTokenCount}, Output: ${totalUsage.candidatesTokenCount}, Total: ${totalUsage.totalTokenCount}`
+            )
+            usageReported = true
+          })
+          .catch((error) => {
+            logger.error('Failed to record Gemini usage:', error)
+          })
       }
-
-      res.end()
     })
 
     streamResponse.on('error', (error) => {
       logger.error('Stream error:', error)
+
+      // 清理心跳定时器
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer)
+        heartbeatTimer = null
+      }
+
       if (!res.headersSent) {
+        // 如果还没发送响应头，可以返回正常的错误响应
         res.status(500).json({
           error: {
             message: error.message || 'Stream error',
@@ -1045,6 +1335,27 @@ async function handleStreamGenerateContent(req, res) {
           }
         })
       } else {
+        // 如果已经开始流式传输，发送 SSE 格式的错误事件和结束标记
+        // 这样客户端可以正确识别流的结束，避免 "Premature close" 错误
+        if (!res.destroyed) {
+          try {
+            // 发送错误事件（SSE 格式）
+            res.write(
+              `data: ${JSON.stringify({
+                error: {
+                  message: error.message || 'Stream error',
+                  type: 'stream_error',
+                  code: error.code
+                }
+              })}\n\n`
+            )
+
+            // 发送 SSE 结束标记
+            res.write('data: [DONE]\n\n')
+          } catch (writeError) {
+            logger.error('Error sending error event:', writeError)
+          }
+        }
         res.end()
       }
     })
