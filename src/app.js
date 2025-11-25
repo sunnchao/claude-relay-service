@@ -474,9 +474,10 @@ class Application {
         logger.info(
           `🌐 Web interface: http://${config.server.host}:${config.server.port}/admin-next/api-stats`
         )
-        logger.info(
-          `🔗 API endpoint: http://${config.server.host}:${config.server.port}/api/v1/messages`
-        )
+        logger.info(`🔗 API endpoint: http://${config.server.host}:${config.server.port}/claude`)
+        logger.info(`🔗 API endpoint: http://${config.server.host}:${config.server.port}/openai`)
+        logger.info(`🔗 API endpoint: http://${config.server.host}:${config.server.port}/gemini`)
+
         logger.info(`⚙️  Admin API: http://${config.server.host}:${config.server.port}/admin`)
         logger.info(`🏥 Health check: http://${config.server.host}:${config.server.port}/health`)
         logger.info(`📊 Metrics: http://${config.server.host}:${config.server.port}/metrics`)
