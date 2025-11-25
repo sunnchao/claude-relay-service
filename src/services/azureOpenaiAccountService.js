@@ -1,4 +1,5 @@
 const redisClient = require('../models/redis')
+const mysqlService = require('./mysqlService')
 const { v4: uuidv4 } = require('uuid')
 const crypto = require('crypto')
 const config = require('../../config/config')
@@ -154,6 +155,55 @@ async function createAccount(accountData) {
   // 如果是共享账户，添加到共享账户集合
   if (account.accountType === 'shared') {
     await client.sadd(SHARED_AZURE_OPENAI_ACCOUNTS_KEY, accountId)
+  }
+
+  // 同步到 MySQL
+  try {
+    await syncToMySQL({
+      id: accountId,
+      platform: 'azure-openai',
+      name: accountData.name,
+      description: accountData.description || '',
+      email: '',
+      password: '',
+      access_token: encrypt(accountData.apiKey || ''),
+      refresh_token: '',
+      id_token: '',
+      session_key: '',
+      oauth_data: JSON.stringify({
+        azureEndpoint: accountData.azureEndpoint || '',
+        apiVersion: accountData.apiVersion || '2024-02-01',
+        deploymentName: accountData.deploymentName || 'gpt-4',
+        supportedModels: accountData.supportedModels || [
+          'gpt-4',
+          'gpt-4-turbo',
+          'gpt-35-turbo',
+          'gpt-35-turbo-16k'
+        ],
+        subscriptionExpiresAt: accountData.subscriptionExpiresAt || null
+      }),
+      proxy: accountData.proxy
+        ? typeof accountData.proxy === 'string'
+          ? accountData.proxy
+          : JSON.stringify(accountData.proxy)
+        : '',
+      is_active: accountData.isActive !== false,
+      status: 'active',
+      error_message: '',
+      account_type: accountData.accountType || 'shared',
+      priority: parseInt(accountData.priority) || 50,
+      schedulable: accountData.schedulable !== false,
+      auto_stop_on_warning: false,
+      use_unified_user_agent: false,
+      use_unified_client_id: false,
+      unified_client_id: '',
+      subscription_info: '',
+      subscription_expires_at: accountData.subscriptionExpiresAt || null,
+      ext_info: ''
+    })
+    logger.info(`✅ Azure OpenAI account synced to MySQL: ${accountId}`)
+  } catch (mysqlError) {
+    logger.warn(`⚠️ Failed to sync Azure OpenAI account to MySQL: ${mysqlError.message}`)
   }
 
   logger.info(`Created Azure OpenAI account: ${accountId}`)
@@ -520,4 +570,66 @@ module.exports = {
   migrateApiKeysForAzureSupport,
   encrypt,
   decrypt
+}
+
+// MySQL 同步函数
+async function syncToMySQL(accountData) {
+  try {
+    const query = `
+      INSERT INTO accounts (
+        id, platform, name, description, email, password, access_token, refresh_token,
+        id_token, session_key, oauth_data, proxy, is_active, status, error_message,
+        account_type, priority, schedulable, auto_stop_on_warning, use_unified_user_agent,
+        use_unified_client_id, unified_client_id, subscription_info, subscription_expires_at,
+        ext_info
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        name = VALUES(name),
+        description = VALUES(description),
+        access_token = VALUES(access_token),
+        oauth_data = VALUES(oauth_data),
+        proxy = VALUES(proxy),
+        is_active = VALUES(is_active),
+        status = VALUES(status),
+        error_message = VALUES(error_message),
+        account_type = VALUES(account_type),
+        priority = VALUES(priority),
+        schedulable = VALUES(schedulable),
+        subscription_expires_at = VALUES(subscription_expires_at),
+        updated_at = CURRENT_TIMESTAMP
+    `
+
+    const params = [
+      accountData.id,
+      accountData.platform,
+      accountData.name,
+      accountData.description,
+      accountData.email,
+      accountData.password || '',
+      accountData.access_token || '',
+      accountData.refresh_token || '',
+      accountData.id_token || '',
+      accountData.session_key || '',
+      accountData.oauth_data || '',
+      accountData.proxy || '',
+      accountData.is_active ? 1 : 0,
+      accountData.status || 'active',
+      accountData.error_message || '',
+      accountData.account_type || 'shared',
+      accountData.priority || 50,
+      accountData.schedulable ? 1 : 0,
+      accountData.auto_stop_on_warning ? 1 : 0,
+      accountData.use_unified_user_agent ? 1 : 0,
+      accountData.use_unified_client_id ? 1 : 0,
+      accountData.unified_client_id || '',
+      accountData.subscription_info || '',
+      accountData.subscription_expires_at,
+      accountData.ext_info || ''
+    ]
+
+    await mysqlService.execute(query, params)
+  } catch (error) {
+    logger.error('Failed to sync Azure OpenAI account to MySQL:', error)
+    throw error
+  }
 }

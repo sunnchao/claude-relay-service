@@ -1,4 +1,5 @@
 const redisClient = require('../models/redis')
+const mysqlService = require('./mysqlService')
 const { v4: uuidv4 } = require('uuid')
 const crypto = require('crypto')
 const axios = require('axios')
@@ -597,6 +598,44 @@ async function createAccount(accountData) {
     await client.sadd(SHARED_OPENAI_ACCOUNTS_KEY, accountId)
   }
 
+  // 保存到 MySQL
+  try {
+    const sql = `
+      INSERT INTO accounts (
+        id, platform, name, description, email, access_token, refresh_token,
+        id_token, oauth_data, proxy, is_active, status, error_message,
+        account_type, priority, schedulable, subscription_expires_at,
+        created_at, updated_at, last_used_at, last_refresh_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `
+    const values = [
+      account.id,
+      'openai',
+      account.name,
+      account.description,
+      account.email,
+      account.accessToken,
+      account.refreshToken,
+      account.idToken,
+      account.openaiOauth,
+      account.proxy,
+      account.isActive === 'true',
+      account.status,
+      null, // error_message
+      account.accountType,
+      parseInt(account.priority),
+      account.schedulable === 'true',
+      account.subscriptionExpiresAt || null,
+      account.createdAt,
+      account.updatedAt,
+      null, // last_used_at
+      account.lastRefresh
+    ]
+    await mysqlService.query(sql, values)
+  } catch (error) {
+    logger.error('❌ Failed to save OpenAI account to MySQL:', error)
+  }
+
   logger.info(`Created OpenAI account: ${accountId}`)
   return account
 }
@@ -698,6 +737,42 @@ async function updateAccount(accountId, updates) {
 
   await client.hset(`${OPENAI_ACCOUNT_KEY_PREFIX}${accountId}`, updates)
 
+  // 更新 MySQL
+  try {
+    const sql = `
+      UPDATE accounts SET
+        name = ?, description = ?, email = ?, access_token = ?, refresh_token = ?,
+        id_token = ?, oauth_data = ?, proxy = ?, is_active = ?, status = ?,
+        error_message = ?, account_type = ?, priority = ?, schedulable = ?,
+        subscription_expires_at = ?, updated_at = ?
+      WHERE id = ?
+    `
+    // 合并更新后的账户数据
+    const updatedAccount = { ...existingAccount, ...updates }
+    const values = [
+      updatedAccount.name,
+      updatedAccount.description,
+      updatedAccount.email,
+      updatedAccount.accessToken,
+      updatedAccount.refreshToken,
+      updatedAccount.idToken,
+      updatedAccount.openaiOauth,
+      updatedAccount.proxy,
+      updatedAccount.isActive === 'true',
+      updatedAccount.status,
+      updatedAccount.errorMessage || null,
+      updatedAccount.accountType,
+      parseInt(updatedAccount.priority),
+      updatedAccount.schedulable === 'true',
+      updatedAccount.subscriptionExpiresAt || null,
+      updatedAccount.updatedAt,
+      accountId
+    ]
+    await mysqlService.query(sql, values)
+  } catch (error) {
+    logger.error('❌ Failed to update OpenAI account in MySQL:', error)
+  }
+
   logger.info(`Updated OpenAI account: ${accountId}`)
 
   // 合并更新后的账户数据
@@ -738,6 +813,14 @@ async function deleteAccount(accountId) {
     if (mappedAccountId === accountId) {
       await client.del(key)
     }
+  }
+
+  // 从 MySQL 删除
+  try {
+    const sql = 'DELETE FROM accounts WHERE id = ?'
+    await mysqlService.query(sql, [accountId])
+  } catch (error) {
+    logger.error('❌ Failed to delete OpenAI account from MySQL:', error)
   }
 
   logger.info(`Deleted OpenAI account: ${accountId}`)

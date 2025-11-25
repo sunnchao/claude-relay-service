@@ -3,6 +3,7 @@ const crypto = require('crypto')
 const ProxyHelper = require('../utils/proxyHelper')
 const axios = require('axios')
 const redis = require('../models/redis')
+const mysqlService = require('./mysqlService')
 const config = require('../../config/config')
 const logger = require('../utils/logger')
 const { maskToken } = require('../utils/tokenMask')
@@ -157,6 +158,48 @@ class ClaudeAccountService {
     }
 
     await redis.setClaudeAccount(accountId, accountData)
+
+    // 保存到 MySQL
+    try {
+      const sql = `
+        INSERT INTO accounts (
+          id, platform, name, description, email, password, access_token,
+          refresh_token, oauth_data, proxy, is_active, status, error_message,
+          account_type, priority, schedulable, auto_stop_on_warning,
+          use_unified_user_agent, use_unified_client_id, unified_client_id,
+          subscription_info, subscription_expires_at, ext_info, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `
+      const values = [
+        accountData.id,
+        accountData.platform,
+        accountData.name,
+        accountData.description,
+        accountData.email,
+        accountData.password,
+        accountData.accessToken,
+        accountData.refreshToken,
+        accountData.claudeAiOauth,
+        accountData.proxy,
+        accountData.isActive === 'true',
+        accountData.status,
+        accountData.errorMessage,
+        accountData.accountType,
+        parseInt(accountData.priority),
+        accountData.schedulable === 'true',
+        accountData.autoStopOnWarning === 'true',
+        accountData.useUnifiedUserAgent === 'true',
+        accountData.useUnifiedClientId === 'true',
+        accountData.unifiedClientId,
+        accountData.subscriptionInfo,
+        accountData.subscriptionExpiresAt || null,
+        accountData.extInfo,
+        accountData.createdAt
+      ]
+      await mysqlService.query(sql, values)
+    } catch (error) {
+      logger.error('❌ Failed to save Claude account to MySQL:', error)
+    }
 
     logger.success(`🏢 Created Claude account: ${name} (${accountId})`)
 
@@ -773,6 +816,48 @@ class ClaudeAccountService {
 
       await redis.setClaudeAccount(accountId, updatedData)
 
+      // 更新 MySQL
+      try {
+        const sql = `
+          UPDATE accounts SET
+            name = ?, description = ?, email = ?, password = ?, access_token = ?,
+            refresh_token = ?, oauth_data = ?, proxy = ?, is_active = ?, status = ?,
+            error_message = ?, account_type = ?, priority = ?, schedulable = ?,
+            auto_stop_on_warning = ?, use_unified_user_agent = ?,
+            use_unified_client_id = ?, unified_client_id = ?, subscription_info = ?,
+            subscription_expires_at = ?, ext_info = ?, updated_at = ?
+          WHERE id = ?
+        `
+        const values = [
+          updatedData.name,
+          updatedData.description,
+          updatedData.email,
+          updatedData.password,
+          updatedData.accessToken,
+          updatedData.refreshToken,
+          updatedData.claudeAiOauth,
+          updatedData.proxy,
+          updatedData.isActive === 'true',
+          updatedData.status,
+          updatedData.errorMessage,
+          updatedData.accountType,
+          parseInt(updatedData.priority),
+          updatedData.schedulable === 'true',
+          updatedData.autoStopOnWarning === 'true',
+          updatedData.useUnifiedUserAgent === 'true',
+          updatedData.useUnifiedClientId === 'true',
+          updatedData.unifiedClientId,
+          updatedData.subscriptionInfo,
+          updatedData.subscriptionExpiresAt || null,
+          updatedData.extInfo,
+          updatedData.updatedAt,
+          accountId
+        ]
+        await mysqlService.query(sql, values)
+      } catch (error) {
+        logger.error('❌ Failed to update Claude account in MySQL:', error)
+      }
+
       if (shouldClearAutoStopFields) {
         const fieldsToRemove = [
           'rateLimitAutoStopped',
@@ -805,6 +890,14 @@ class ClaudeAccountService {
 
       if (result === 0) {
         throw new Error('Account not found')
+      }
+
+      // 从 MySQL 删除
+      try {
+        const sql = 'DELETE FROM accounts WHERE id = ?'
+        await mysqlService.query(sql, [accountId])
+      } catch (error) {
+        logger.error('❌ Failed to delete Claude account from MySQL:', error)
       }
 
       logger.success(`🗑️ Deleted Claude account: ${accountId}`)

@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const { v4: uuidv4 } = require('uuid')
 const config = require('../../config/config')
 const redis = require('../models/redis')
+const mysqlService = require('./mysqlService')
 const logger = require('../utils/logger')
 const requestLogService = require('./requestLogService')
 
@@ -146,10 +147,15 @@ class ApiKeyService {
       activationUnit: activationUnit || 'days', // 新增：激活时间单位
       expirationMode: expirationMode || 'fixed', // 新增：过期模式
       isActivated: expirationMode === 'fixed' ? 'true' : 'false', // 根据模式决定激活状态
-      activatedAt: expirationMode === 'fixed' ? new Date().toISOString() : '', // 激活时间
-      createdAt: new Date().toISOString(),
+      activatedAt: expirationMode === 'fixed' ? this._formatDateForMySQL(new Date()) : '', // 激活时间
+      createdAt: this._formatDateForMySQL(new Date()),
       lastUsedAt: '',
-      expiresAt: expirationMode === 'fixed' ? expiresAt || '' : '', // 固定模式才设置过期时间
+      expiresAt:
+        expirationMode === 'fixed'
+          ? expiresAt
+            ? this._formatDateForMySQL(new Date(expiresAt))
+            : ''
+          : '', // 固定模式才设置过期时间
       createdBy: options.createdBy || 'admin',
       userId: options.userId || '',
       userUsername: options.userUsername || '',
@@ -158,6 +164,65 @@ class ApiKeyService {
 
     // 保存API Key数据并建立哈希映射
     await redis.setApiKey(keyId, keyData, hashedKey)
+
+    // 保存到 MySQL
+    try {
+      const sql = `
+        INSERT INTO api_keys (
+          id, name, description, api_key_hash, token_limit, concurrency_limit,
+          rate_limit_window, rate_limit_requests, rate_limit_cost, is_active,
+          claude_account_id, claude_console_account_id, gemini_account_id,
+          openai_account_id, azure_openai_account_id, bedrock_account_id,
+          droid_account_id, permissions, enable_model_restriction, restricted_models,
+          enable_client_restriction, allowed_clients, daily_cost_limit,
+          total_cost_limit, weekly_opus_cost_limit, tags, activation_days,
+          activation_unit, expiration_mode, is_activated, activated_at,
+          expires_at, created_by, user_id, user_username, icon, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `
+      const values = [
+        keyData.id,
+        keyData.name,
+        keyData.description,
+        keyData.apiKey, // hashedKey
+        parseInt(keyData.tokenLimit),
+        parseInt(keyData.concurrencyLimit),
+        parseInt(keyData.rateLimitWindow),
+        parseInt(keyData.rateLimitRequests),
+        parseFloat(keyData.rateLimitCost),
+        keyData.isActive === 'true',
+        keyData.claudeAccountId || null,
+        keyData.claudeConsoleAccountId || null,
+        keyData.geminiAccountId || null,
+        keyData.openaiAccountId || null,
+        keyData.azureOpenaiAccountId || null,
+        keyData.bedrockAccountId || null,
+        keyData.droidAccountId || null,
+        keyData.permissions,
+        keyData.enableModelRestriction === 'true',
+        keyData.restrictedModels,
+        keyData.enableClientRestriction === 'true',
+        keyData.allowedClients,
+        parseFloat(keyData.dailyCostLimit),
+        parseFloat(keyData.totalCostLimit),
+        parseFloat(keyData.weeklyOpusCostLimit),
+        keyData.tags,
+        parseInt(keyData.activationDays),
+        keyData.activationUnit,
+        keyData.expirationMode,
+        keyData.isActivated === 'true',
+        keyData.activatedAt ? this._formatDateForMySQL(new Date(keyData.activatedAt)) : null,
+        keyData.expiresAt ? this._formatDateForMySQL(new Date(keyData.expiresAt)) : null,
+        keyData.createdBy,
+        keyData.userId || null,
+        keyData.userUsername || null,
+        keyData.icon || null,
+        this._formatDateForMySQL(new Date(keyData.createdAt))
+      ]
+      await mysqlService.query(sql, values)
+    } catch (error) {
+      logger.error('❌ Failed to save API key to MySQL:', error)
+    }
 
     logger.success(`🔑 Generated new API key: ${name} (${keyId})`)
 
@@ -716,6 +781,67 @@ class ApiKeyService {
       // 更新时不需要重新建立哈希映射，因为API Key本身没有变化
       await redis.setApiKey(keyId, updatedData)
 
+      // 更新 MySQL
+      try {
+        const sql = `
+          UPDATE api_keys SET
+            name = ?, description = ?, token_limit = ?, concurrency_limit = ?,
+            rate_limit_window = ?, rate_limit_requests = ?, rate_limit_cost = ?,
+            is_active = ?, claude_account_id = ?, claude_console_account_id = ?,
+            gemini_account_id = ?, openai_account_id = ?, azure_openai_account_id = ?,
+            bedrock_account_id = ?, droid_account_id = ?, permissions = ?,
+            enable_model_restriction = ?, restricted_models = ?,
+            enable_client_restriction = ?, allowed_clients = ?,
+            daily_cost_limit = ?, total_cost_limit = ?, weekly_opus_cost_limit = ?,
+            tags = ?, activation_days = ?, activation_unit = ?, expiration_mode = ?,
+            is_activated = ?, activated_at = ?, expires_at = ?,
+            user_id = ?, user_username = ?, created_by = ?, updated_at = ?
+          WHERE id = ?
+        `
+        const values = [
+          updatedData.name,
+          updatedData.description,
+          parseInt(updatedData.tokenLimit),
+          parseInt(updatedData.concurrencyLimit),
+          parseInt(updatedData.rateLimitWindow),
+          parseInt(updatedData.rateLimitRequests),
+          parseFloat(updatedData.rateLimitCost),
+          updatedData.isActive === 'true',
+          updatedData.claudeAccountId || null,
+          updatedData.claudeConsoleAccountId || null,
+          updatedData.geminiAccountId || null,
+          updatedData.openaiAccountId || null,
+          updatedData.azureOpenaiAccountId || null,
+          updatedData.bedrockAccountId || null,
+          updatedData.droidAccountId || null,
+          updatedData.permissions,
+          updatedData.enableModelRestriction === 'true',
+          updatedData.restrictedModels,
+          updatedData.enableClientRestriction === 'true',
+          updatedData.allowedClients,
+          parseFloat(updatedData.dailyCostLimit),
+          parseFloat(updatedData.totalCostLimit),
+          parseFloat(updatedData.weeklyOpusCostLimit),
+          updatedData.tags,
+          parseInt(updatedData.activationDays),
+          updatedData.activationUnit,
+          updatedData.expirationMode,
+          updatedData.isActivated === 'true',
+          updatedData.activatedAt
+            ? this._formatDateForMySQL(new Date(updatedData.activatedAt))
+            : null,
+          updatedData.expiresAt ? this._formatDateForMySQL(new Date(updatedData.expiresAt)) : null,
+          updatedData.userId || null,
+          updatedData.userUsername || null,
+          updatedData.createdBy,
+          this._formatDateForMySQL(new Date(updatedData.updatedAt)),
+          keyId
+        ]
+        await mysqlService.query(sql, values)
+      } catch (error) {
+        logger.error('❌ Failed to update API key in MySQL:', error)
+      }
+
       logger.success(`📝 Updated API key: ${keyId}`)
 
       return { success: true }
@@ -748,6 +874,27 @@ class ApiKeyService {
       // 从哈希映射中移除（这样就不能再使用这个key进行API调用）
       if (keyData.apiKey) {
         await redis.deleteApiKeyHash(keyData.apiKey)
+      }
+
+      // 更新 MySQL
+      try {
+        const sql = `
+          UPDATE api_keys SET
+            is_deleted = TRUE,
+            deleted_at = ?,
+            deleted_by = ?,
+            deleted_by_type = ?,
+            is_active = FALSE
+          WHERE id = ?
+        `
+        await mysqlService.query(sql, [
+          updatedData.deletedAt,
+          updatedData.deletedBy,
+          updatedData.deletedByType,
+          keyId
+        ])
+      } catch (error) {
+        logger.error('❌ Failed to soft delete API key in MySQL:', error)
       }
 
       logger.success(`🗑️ Soft deleted API key: ${keyId} by ${deletedBy} (${deletedByType})`)
@@ -801,6 +948,22 @@ class ApiKeyService {
         })
       }
 
+      // 更新 MySQL
+      try {
+        const sql = `
+          UPDATE api_keys SET
+            is_deleted = FALSE,
+            deleted_at = NULL,
+            deleted_by = NULL,
+            deleted_by_type = NULL,
+            is_active = TRUE
+          WHERE id = ?
+        `
+        await mysqlService.query(sql, [keyId])
+      } catch (error) {
+        logger.error('❌ Failed to restore API key in MySQL:', error)
+      }
+
       logger.success(`✅ Restored API key: ${keyId} by ${restoredBy} (${restoredByType})`)
 
       return { success: true, apiKey: updatedData }
@@ -843,6 +1006,14 @@ class ApiKeyService {
 
       // 删除API Key本身
       await redis.deleteApiKey(keyId)
+
+      // 从 MySQL 删除
+      try {
+        const sql = 'DELETE FROM api_keys WHERE id = ?'
+        await mysqlService.query(sql, [keyId])
+      } catch (error) {
+        logger.error('❌ Failed to permanently delete API key from MySQL:', error)
+      }
 
       logger.success(`🗑️ Permanently deleted API key: ${keyId}`)
 
@@ -1477,7 +1648,19 @@ class ApiKeyService {
       .digest('hex')
   }
 
-  // 📈 获取使用统计
+  // 🔄 格式化日期为 MySQL 兼容格式
+  _formatDateForMySQL(date) {
+    if (!date) {
+      return null
+    }
+    const d = new Date(date)
+    if (isNaN(d.getTime())) {
+      return null
+    }
+    return d.toISOString().slice(0, 19).replace('T', ' ')
+  }
+
+  // � 获取使用统计
   async getUsageStats(keyId, options = {}) {
     const usageStats = await redis.getUsageStats(keyId)
 
@@ -1638,6 +1821,19 @@ class ApiKeyService {
       // 保存新数据并建立新的哈希映射
       await redis.setApiKey(keyId, updatedKeyData, newHashedKey)
 
+      // 更新 MySQL
+      try {
+        const sql = `
+          UPDATE api_keys SET
+            api_key_hash = ?,
+            updated_at = ?
+          WHERE id = ?
+        `
+        await mysqlService.query(sql, [newHashedKey, updatedKeyData.updatedAt, keyId])
+      } catch (error) {
+        logger.error('❌ Failed to update regenerated API key in MySQL:', error)
+      }
+
       logger.info(`🔄 Regenerated API key: ${existingKey.name} (${keyId})`)
 
       return {
@@ -1663,6 +1859,14 @@ class ApiKeyService {
       // 删除key数据和哈希映射
       await redis.deleteApiKey(keyId)
       await redis.deleteApiKeyHash(keyData.apiKey)
+
+      // 从 MySQL 删除
+      try {
+        const sql = 'DELETE FROM api_keys WHERE id = ?'
+        await mysqlService.query(sql, [keyId])
+      } catch (error) {
+        logger.error('❌ Failed to delete API key from MySQL:', error)
+      }
 
       logger.info(`🗑️ Deleted API key: ${keyData.name} (${keyId})`)
       return true

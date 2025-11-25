@@ -1,4 +1,5 @@
 const redisClient = require('../models/redis')
+const mysqlService = require('./mysqlService')
 const { v4: uuidv4 } = require('uuid')
 const crypto = require('crypto')
 const https = require('https')
@@ -432,6 +433,48 @@ async function createAccount(accountData) {
     await client.sadd(SHARED_GEMINI_ACCOUNTS_KEY, id)
   }
 
+  // 保存到 MySQL
+  try {
+    const sql = `
+      INSERT INTO accounts (
+        id, platform, name, description, access_token, refresh_token,
+        oauth_data, proxy, is_active, status, error_message,
+        account_type, priority, schedulable, subscription_expires_at,
+        ext_info, created_at, updated_at, last_used_at, last_refresh_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `
+    const values = [
+      account.id,
+      account.platform,
+      account.name,
+      account.description,
+      account.accessToken,
+      account.refreshToken,
+      account.geminiOauth,
+      account.proxy,
+      account.isActive === 'true',
+      account.status,
+      null, // error_message
+      account.accountType,
+      parseInt(account.priority),
+      account.schedulable === 'true',
+      account.subscriptionExpiresAt || null,
+      JSON.stringify({
+        projectId: account.projectId,
+        tempProjectId: account.tempProjectId,
+        supportedModels: account.supportedModels,
+        scopes: account.scopes
+      }),
+      account.createdAt,
+      account.updatedAt,
+      null, // last_used_at
+      null // last_refresh_at
+    ]
+    await mysqlService.query(sql, values)
+  } catch (error) {
+    logger.error('❌ Failed to save Gemini account to MySQL:', error)
+  }
+
   logger.info(`Created Gemini account: ${id}`)
 
   // 返回时解析代理配置
@@ -596,6 +639,46 @@ async function updateAccount(accountId, updates) {
 
   await client.hset(`${GEMINI_ACCOUNT_KEY_PREFIX}${accountId}`, updates)
 
+  // 更新 MySQL
+  try {
+    const sql = `
+      UPDATE accounts SET
+        name = ?, description = ?, access_token = ?, refresh_token = ?,
+        oauth_data = ?, proxy = ?, is_active = ?, status = ?,
+        error_message = ?, account_type = ?, priority = ?, schedulable = ?,
+        subscription_expires_at = ?, ext_info = ?, updated_at = ?
+      WHERE id = ?
+    `
+    // 合并更新后的账户数据
+    const updatedAccount = { ...existingAccount, ...updates }
+    const values = [
+      updatedAccount.name,
+      updatedAccount.description,
+      updatedAccount.accessToken,
+      updatedAccount.refreshToken,
+      updatedAccount.geminiOauth,
+      updatedAccount.proxy,
+      updatedAccount.isActive === 'true',
+      updatedAccount.status,
+      updatedAccount.errorMessage || null,
+      updatedAccount.accountType,
+      parseInt(updatedAccount.priority),
+      updatedAccount.schedulable === 'true',
+      updatedAccount.subscriptionExpiresAt || null,
+      JSON.stringify({
+        projectId: updatedAccount.projectId,
+        tempProjectId: updatedAccount.tempProjectId,
+        supportedModels: updatedAccount.supportedModels,
+        scopes: updatedAccount.scopes
+      }),
+      updatedAccount.updatedAt,
+      accountId
+    ]
+    await mysqlService.query(sql, values)
+  } catch (error) {
+    logger.error('❌ Failed to update Gemini account in MySQL:', error)
+  }
+
   logger.info(`Updated Gemini account: ${accountId}`)
 
   // 合并更新后的账户数据
@@ -636,6 +719,14 @@ async function deleteAccount(accountId) {
     if (mappedAccountId === accountId) {
       await client.del(key)
     }
+  }
+
+  // 从 MySQL 删除
+  try {
+    const sql = 'DELETE FROM accounts WHERE id = ?'
+    await mysqlService.query(sql, [accountId])
+  } catch (error) {
+    logger.error('❌ Failed to delete Gemini account from MySQL:', error)
   }
 
   logger.info(`Deleted Gemini account: ${accountId}`)
