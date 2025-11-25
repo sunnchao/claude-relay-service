@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid')
 const config = require('../../config/config')
 const redis = require('../models/redis')
 const logger = require('../utils/logger')
+const requestLogService = require('./requestLogService')
 
 const ACCOUNT_TYPE_CONFIG = {
   claude: { prefix: 'claude:account:' },
@@ -1001,6 +1002,30 @@ class ApiKeyService {
       logParts.push(`Total: ${totalTokens} tokens`)
 
       logger.database(`📊 Recorded usage: ${keyId} - ${logParts.join(', ')}`)
+
+      // 📝 异步记录使用统计到 MySQL（不阻塞主流程）
+      requestLogService
+        .logUsage(requestLogService.generateRequestId(), {
+          apiKeyId: keyId,
+          userId: keyData?.userId || null,
+          accountId: accountId || null,
+          accountType: null,
+          model,
+          inputTokens,
+          outputTokens,
+          cacheCreateTokens,
+          cacheReadTokens,
+          ephemeral5mTokens: 0,
+          ephemeral1hTokens: 0,
+          totalTokens,
+          cost: usageCost,
+          costBreakdown: costInfo && costInfo.costs ? costInfo.costs : undefined,
+          isLongContext: isLongContextRequest,
+          timestamp: new Date()
+        })
+        .catch((err) => {
+          logger.debug('⚠️ Failed to log usage to MySQL:', err.message)
+        })
     } catch (error) {
       logger.error('❌ Failed to record usage:', error)
     }
@@ -1265,6 +1290,37 @@ class ApiKeyService {
         // 发布失败不影响主流程，只记录错误
         logger.warn('⚠️ Failed to publish billing event:', err.message)
       })
+
+      // 📝 异步记录使用统计到 MySQL（不阻塞主流程）
+      requestLogService
+        .logUsage(requestLogService.generateRequestId(), {
+          apiKeyId: keyId,
+          userId: keyData?.userId || null,
+          accountId: accountId || null,
+          accountType: accountType || null,
+          model,
+          inputTokens,
+          outputTokens,
+          cacheCreateTokens,
+          cacheReadTokens,
+          ephemeral5mTokens,
+          ephemeral1hTokens,
+          totalTokens,
+          cost: costInfo.totalCost || 0,
+          costBreakdown: {
+            input: costInfo.inputCost || 0,
+            output: costInfo.outputCost || 0,
+            cacheCreate: costInfo.cacheCreateCost || 0,
+            cacheRead: costInfo.cacheReadCost || 0,
+            ephemeral5m: costInfo.ephemeral5mCost || 0,
+            ephemeral1h: costInfo.ephemeral1hCost || 0
+          },
+          isLongContext: costInfo.isLongContextRequest || false,
+          timestamp: new Date()
+        })
+        .catch((err) => {
+          logger.debug('⚠️ Failed to log usage to MySQL:', err.message)
+        })
     } catch (error) {
       logger.error('❌ Failed to record usage:', error)
     }

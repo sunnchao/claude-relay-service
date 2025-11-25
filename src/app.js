@@ -56,6 +56,11 @@ class Application {
       logger.info('🔄 Initializing pricing service...')
       await pricingService.initialize()
 
+      // 💾 初始化MySQL服务
+      logger.info('🔄 Initializing MySQL service...')
+      const mysqlService = require('./services/mysqlService')
+      await mysqlService.initialize()
+
       // 📋 初始化模型服务
       logger.info('🔄 Initializing model service...')
       const modelService = require('./services/modelService')

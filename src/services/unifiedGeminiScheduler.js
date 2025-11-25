@@ -177,7 +177,6 @@ class UnifiedGeminiScheduler {
   // 📋 获取所有可用账户
   async _getAllAvailableAccounts(apiKeyData, requestedModel = null, allowApiAccounts = false) {
     const availableAccounts = []
-
     // 如果API Key绑定了专属账户，优先返回
     if (apiKeyData.geminiAccountId) {
       // 检查是否是 Gemini API 账户（api: 前缀）
@@ -276,7 +275,7 @@ class UnifiedGeminiScheduler {
     const geminiAccounts = await geminiAccountService.getAllAccounts()
     for (const account of geminiAccounts) {
       if (
-        account.isActive === 'true' &&
+        (account.isActive === 'true' || account.isActive === true) &&
         account.status !== 'error' &&
         (account.accountType === 'shared' || !account.accountType) && // 兼容旧数据
         this._isSchedulable(account.schedulable)
@@ -326,7 +325,7 @@ class UnifiedGeminiScheduler {
       const geminiApiAccounts = await geminiApiAccountService.getAllAccounts()
       for (const account of geminiApiAccounts) {
         if (
-          account.isActive === 'true' &&
+          (account.isActive === 'true' || account.isActive === true) &&
           account.status !== 'error' &&
           (account.accountType === 'shared' || !account.accountType) &&
           this._isSchedulable(account.schedulable)
