@@ -4,7 +4,6 @@
  */
 
 const mysql = require('mysql2/promise')
-const config = require('../../config/config')
 const logger = require('../utils/logger')
 
 class MySQLService {
@@ -14,23 +13,39 @@ class MySQLService {
   }
 
   /**
+   * 从环境变量获取 MySQL 配置
+   */
+  getMySQLConfig() {
+    return {
+      host: process.env.MYSQL_HOST || process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.MYSQL_PORT || process.env.DB_PORT || '3306', 10),
+      user: process.env.MYSQL_USER || process.env.DB_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || '',
+      database: process.env.MYSQL_DATABASE || process.env.DB_NAME || '',
+      connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT || '10', 10),
+      queueLimit: parseInt(process.env.MYSQL_QUEUE_LIMIT || '0', 10)
+    }
+  }
+
+  /**
    * 初始化 MySQL 连接池
    */
   async initialize() {
     try {
+      const config = this.getMySQLConfig()
+
       // 创建连接池
       this.pool = mysql.createPool({
-        host: config.mysql.host,
-        port: config.mysql.port,
-        user: config.mysql.user,
-        password: config.mysql.password,
-        database: config.mysql.database,
-        connectionLimit: config.mysql.connectionLimit,
-        queueLimit: config.mysql.queueLimit,
+        host: config.host,
+        port: config.port,
+        user: config.user,
+        password: config.password,
+        database: config.database,
+        connectionLimit: config.connectionLimit,
+        queueLimit: config.queueLimit,
         waitForConnections: true,
         enableKeepAlive: true,
-        keepAliveInitialDelay: 0,
-        ...(config.mysql.ssl && { ssl: config.mysql.ssl })
+        keepAliveInitialDelay: 0
       })
 
       // 测试连接
@@ -40,7 +55,7 @@ class MySQLService {
 
       this.isConnected = true
       logger.info(
-        `✅ MySQL connected successfully: ${config.mysql.host}:${config.mysql.port}/${config.mysql.database}`
+        `✅ MySQL connected successfully: ${config.host}:${config.port}/${config.database}`
       )
     } catch (error) {
       this.isConnected = false
