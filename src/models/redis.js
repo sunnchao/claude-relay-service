@@ -315,29 +315,38 @@ class RedisClient {
       })
     }
 
-    // 搜索（apiKey 模式在这里处理，bindingAccount 模式在路由层处理）
-    if (search && searchMode === 'apiKey') {
+    // 搜索
+    if (search) {
       const lowerSearch = search.toLowerCase().trim()
-      filteredKeys = filteredKeys.filter(
-        (k) =>
-          (k.name && k.name.toLowerCase().includes(lowerSearch)) ||
-          (k.ownerDisplayName && k.ownerDisplayName.toLowerCase().includes(lowerSearch))
-      )
+      if (searchMode === 'apiKey') {
+        // apiKey 模式：搜索名称和拥有者
+        filteredKeys = filteredKeys.filter(
+          (k) =>
+            (k.name && k.name.toLowerCase().includes(lowerSearch)) ||
+            (k.ownerDisplayName && k.ownerDisplayName.toLowerCase().includes(lowerSearch))
+        )
+      } else if (searchMode === 'bindingAccount') {
+        // bindingAccount 模式：直接在Redis层处理，避免路由层加载10000条
+        const accountNameCacheService = require('../services/accountNameCacheService')
+        filteredKeys = accountNameCacheService.searchByBindingAccount(filteredKeys, lowerSearch)
+      }
     }
 
     // 4. 排序
     filteredKeys.sort((a, b) => {
-      let aVal = a[sortBy]
-      let bVal = b[sortBy]
+      // status 排序实际上使用 isActive 字段（API Key 没有 status 字段）
+      const effectiveSortBy = sortBy === 'status' ? 'isActive' : sortBy
+      let aVal = a[effectiveSortBy]
+      let bVal = b[effectiveSortBy]
 
       // 日期字段转时间戳
-      if (['createdAt', 'expiresAt', 'lastUsedAt'].includes(sortBy)) {
+      if (['createdAt', 'expiresAt', 'lastUsedAt'].includes(effectiveSortBy)) {
         aVal = aVal ? new Date(aVal).getTime() : 0
         bVal = bVal ? new Date(bVal).getTime() : 0
       }
 
       // 布尔字段转数字
-      if (sortBy === 'isActive' || sortBy === 'status') {
+      if (effectiveSortBy === 'isActive') {
         aVal = aVal ? 1 : 0
         bVal = bVal ? 1 : 0
       }
