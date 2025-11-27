@@ -15,6 +15,7 @@ const AccountsView = () => import('@/views/AccountsView.vue')
 const TutorialView = () => import('@/views/TutorialView.vue')
 const SettingsView = () => import('@/views/SettingsView.vue')
 const ApiStatsView = () => import('@/views/ApiStatsView.vue')
+const UsageLogsView = () => import('@/views/UsageLogsView.vue')
 
 const routes = [
   {
@@ -70,6 +71,18 @@ const routes = [
         path: '',
         name: 'Dashboard',
         component: DashboardView
+      }
+    ]
+  },
+  {
+    path: '/usage-logs',
+    component: MainLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'UsageLogs',
+        component: UsageLogsView
       }
     ]
   },

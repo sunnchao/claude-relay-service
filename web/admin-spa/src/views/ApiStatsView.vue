@@ -137,6 +137,11 @@
 
           <!-- 模型使用统计 -->
           <ModelUsageStats />
+
+          <!-- 使用日志 -->
+          <div class="mt-6 md:mt-8">
+            <UsageLogs />
+          </div>
         </div>
       </div>
     </div>
@@ -164,6 +169,7 @@ import TokenDistribution from '@/components/apistats/TokenDistribution.vue'
 import LimitConfig from '@/components/apistats/LimitConfig.vue'
 import AggregatedStatsCard from '@/components/apistats/AggregatedStatsCard.vue'
 import ModelUsageStats from '@/components/apistats/ModelUsageStats.vue'
+import UsageLogs from '@/components/apistats/UsageLogs.vue'
 import TutorialView from './TutorialView.vue'
 
 const route = useRoute()

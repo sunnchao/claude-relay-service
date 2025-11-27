@@ -92,6 +92,25 @@ class ApiStatsClient {
       body: JSON.stringify({ apiIds, period })
     })
   }
+
+  // 获取使用日志
+  async getUsageLogs({ apiId, apiKey, limit = 50, offset = 0 }) {
+    const payload = {
+      limit,
+      offset
+    }
+
+    if (apiId) {
+      payload.apiId = apiId
+    } else if (apiKey) {
+      payload.apiKey = apiKey
+    }
+
+    return this.request('/apiStats/api/usage-logs', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+  }
 }
 
 export const apiStatsClient = new ApiStatsClient()
