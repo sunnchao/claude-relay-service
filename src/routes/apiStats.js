@@ -946,4 +946,149 @@ router.post('/api/user-model-stats', async (req, res) => {
   }
 })
 
+// 📜 获取使用日志列表接口
+router.post('/api/usage-logs', async (req, res) => {
+  try {
+    const { apiKey, apiId, limit = 50, offset = 0 } = req.body
+
+    let keyData
+    let keyId
+
+    if (apiId) {
+      // 通过 apiId 查询
+      if (
+        typeof apiId !== 'string' ||
+        !apiId.match(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i)
+      ) {
+        return res.status(400).json({
+          error: 'Invalid API ID format',
+          message: 'API ID must be a valid UUID'
+        })
+      }
+
+      // 直接通过 ID 获取 API Key 数据
+      keyData = await redis.getApiKey(apiId)
+
+      if (!keyData || Object.keys(keyData).length === 0) {
+        logger.security(`🔒 API key not found for ID: ${apiId} from ${req.ip || 'unknown'}`)
+        return res.status(404).json({
+          error: 'API key not found',
+          message: 'The specified API key does not exist'
+        })
+      }
+
+      // 检查是否激活
+      if (keyData.isActive !== 'true') {
+        return res.status(403).json({
+          error: 'API key is disabled',
+          message: 'This API key has been disabled'
+        })
+      }
+
+      // 检查是否过期
+      if (keyData.expiresAt && new Date() > new Date(keyData.expiresAt)) {
+        return res.status(403).json({
+          error: 'API key has expired',
+          message: 'This API key has expired'
+        })
+      }
+
+      keyId = apiId
+    } else if (apiKey) {
+      // 通过 apiKey 查询（保持向后兼容）
+      if (typeof apiKey !== 'string' || apiKey.length < 10 || apiKey.length > 512) {
+        logger.security(`🔒 Invalid API key format in usage logs query from ${req.ip || 'unknown'}`)
+        return res.status(400).json({
+          error: 'Invalid API key format',
+          message: 'API key format is invalid'
+        })
+      }
+
+      // 验证API Key（使用不触发激活的验证方法）
+      const validation = await apiKeyService.validateApiKeyForStats(apiKey)
+
+      if (!validation.valid) {
+        const clientIP = req.ip || req.connection?.remoteAddress || 'unknown'
+        logger.security(
+          `🔒 Invalid API key in usage logs query: ${validation.error} from ${clientIP}`
+        )
+        return res.status(401).json({
+          error: 'Invalid API key',
+          message: validation.error
+        })
+      }
+
+      const { keyData: validatedKeyData } = validation
+      keyData = validatedKeyData
+      keyId = keyData.id
+    } else {
+      logger.security(`🔒 Missing API key or ID in usage logs query from ${req.ip || 'unknown'}`)
+      return res.status(400).json({
+        error: 'API Key or ID is required',
+        message: 'Please provide your API Key or API ID'
+      })
+    }
+
+    logger.api(
+      `📜 Usage logs query from key: ${keyData.name} (${keyId}) - limit: ${limit}, offset: ${offset}`
+    )
+
+    // 参数验证
+    const limitNum = Math.min(Math.max(1, parseInt(limit) || 50), 200)
+    const offsetNum = Math.max(0, parseInt(offset) || 0)
+
+    // 获取使用记录 - Redis 中已经存储了最近的记录
+    const allRecords = await redis.getUsageRecords(keyId, 200)
+
+    // 计算分页
+    const total = allRecords.length
+    const paginatedRecords = allRecords.slice(offsetNum, offsetNum + limitNum)
+
+    // 计算统计信息
+    let totalCost = 0
+    let totalTokens = 0
+    let totalInputTokens = 0
+    let totalOutputTokens = 0
+    let totalCacheCreateTokens = 0
+    let totalCacheReadTokens = 0
+
+    for (const record of paginatedRecords) {
+      totalCost += record.cost || 0
+      totalTokens += record.totalTokens || 0
+      totalInputTokens += record.inputTokens || 0
+      totalOutputTokens += record.outputTokens || 0
+      totalCacheCreateTokens += record.cacheCreateTokens || 0
+      totalCacheReadTokens += record.cacheReadTokens || 0
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        records: paginatedRecords,
+        pagination: {
+          total,
+          limit: limitNum,
+          offset: offsetNum,
+          hasMore: offsetNum + limitNum < total
+        },
+        summary: {
+          totalCost: Number(totalCost.toFixed(6)),
+          formattedCost: CostCalculator.formatCost(totalCost),
+          totalTokens,
+          totalInputTokens,
+          totalOutputTokens,
+          totalCacheCreateTokens,
+          totalCacheReadTokens
+        }
+      }
+    })
+  } catch (error) {
+    logger.error('❌ Failed to process usage logs query:', error)
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to retrieve usage logs'
+    })
+  }
+})
+
 module.exports = router

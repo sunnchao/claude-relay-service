@@ -29,6 +29,8 @@ const fs = require('fs')
 const path = require('path')
 const config = require('../../config/config')
 const ProxyHelper = require('../utils/proxyHelper')
+const requestLogService = require('../services/requestLogService')
+const mysqlService = require('../services/mysqlService')
 
 const router = express.Router()
 
@@ -7078,6 +7080,89 @@ router.get('/usage-costs', authenticateAdmin, async (req, res) => {
     return res
       .status(500)
       .json({ error: 'Failed to calculate usage costs', message: error.message })
+  }
+})
+
+// 📜 全局使用日志查询（管理员）
+router.get('/usage-logs', authenticateAdmin, async (req, res) => {
+  try {
+    if (!mysqlService.isConnectionHealthy()) {
+      return res.status(503).json({
+        success: false,
+        error: 'usage_logs_unavailable',
+        message: 'Usage logs storage is not enabled'
+      })
+    }
+
+    const {
+      limit = 50,
+      offset = 0,
+      apiKeyId,
+      userId,
+      accountId,
+      accountType,
+      model,
+      search,
+      startDate,
+      endDate,
+      isLongContext
+    } = req.query
+
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200)
+    const offsetNum = Math.max(parseInt(offset, 10) || 0, 0)
+
+    let longContextFilter
+    if (typeof isLongContext !== 'undefined') {
+      if (String(isLongContext).toLowerCase() === 'true') {
+        longContextFilter = true
+      } else if (String(isLongContext).toLowerCase() === 'false') {
+        longContextFilter = false
+      }
+    }
+
+    const filters = {
+      apiKeyId: apiKeyId ? apiKeyId.trim() : undefined,
+      userId: userId ? userId.trim() : undefined,
+      accountId: accountId ? accountId.trim() : undefined,
+      accountType: accountType ? accountType.trim() : undefined,
+      model: model ? model.trim() : undefined,
+      search: search ? search.trim() : undefined,
+      startDate,
+      endDate,
+      isLongContext: longContextFilter
+    }
+
+    const result = await requestLogService.queryUsageLogs(filters, limitNum, offsetNum)
+    const summary = result.summary || {
+      totalCost: 0,
+      totalTokens: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCacheCreateTokens: 0,
+      totalCacheReadTokens: 0
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        records: result.records,
+        pagination: {
+          total: result.total,
+          limit: limitNum,
+          offset: offsetNum,
+          hasMore: offsetNum + limitNum < result.total
+        },
+        summary: {
+          ...summary,
+          formattedCost: CostCalculator.formatCost(summary.totalCost || 0)
+        }
+      }
+    })
+  } catch (error) {
+    logger.error('❌ Failed to fetch usage logs:', error)
+    return res
+      .status(500)
+      .json({ error: 'Failed to fetch usage logs', message: error.message || 'Unknown error' })
   }
 })
 

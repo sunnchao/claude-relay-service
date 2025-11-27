@@ -312,6 +312,191 @@ class RequestLogService {
   }
 
   /**
+   * 分页查询使用日志
+   * @param {Object} filters 过滤条件
+   * @param {number} limit 返回记录数
+   * @param {number} offset 偏移量
+   * @returns {Promise<{records: Array, total: number, summary: Object}>}
+   */
+  async queryUsageLogs(filters = {}, limit = 50, offset = 0) {
+    const emptySummary = {
+      totalCost: 0,
+      totalTokens: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCacheCreateTokens: 0,
+      totalCacheReadTokens: 0
+    }
+
+    if (!mysqlService.isConnectionHealthy()) {
+      return {
+        records: [],
+        total: 0,
+        summary: emptySummary
+      }
+    }
+
+    try {
+      const whereClauses = []
+      const params = []
+
+      const addEqualFilter = (field, value) => {
+        if (value) {
+          whereClauses.push(`${field} = ?`)
+          params.push(value)
+        }
+      }
+
+      addEqualFilter('ul.api_key_id', filters.apiKeyId)
+      addEqualFilter('ul.user_id', filters.userId)
+      addEqualFilter('ul.account_id', filters.accountId)
+      addEqualFilter('ul.account_type', filters.accountType)
+      addEqualFilter('ul.model', filters.model)
+
+      if (filters.search) {
+        const trimmed = filters.search.trim()
+        if (trimmed) {
+          const wildcard = `%${trimmed}%`
+          whereClauses.push(
+            '(ul.api_key_id LIKE ? OR ul.request_id LIKE ? OR ul.user_id LIKE ? OR ul.model LIKE ? OR ak.name LIKE ? OR ul.account_id LIKE ?)'
+          )
+          params.push(wildcard, wildcard, wildcard, wildcard, wildcard, wildcard)
+        }
+      }
+
+      const startDate = filters.startDate ? new Date(filters.startDate) : null
+      if (startDate && !isNaN(startDate.getTime())) {
+        whereClauses.push('ul.usage_timestamp >= ?')
+        params.push(startDate)
+      }
+
+      const endDate = filters.endDate ? new Date(filters.endDate) : null
+      if (endDate && !isNaN(endDate.getTime())) {
+        whereClauses.push('ul.usage_timestamp <= ?')
+        params.push(endDate)
+      }
+
+      if (filters.isLongContext === true) {
+        whereClauses.push('ul.is_long_context = true')
+      } else if (filters.isLongContext === false) {
+        whereClauses.push('ul.is_long_context = false')
+      }
+
+      const whereClause = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : ''
+
+      const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200)
+      const offsetNum = Math.max(parseInt(offset, 10) || 0, 0)
+
+      const dataSql = `
+        SELECT
+          ul.id,
+          ul.request_id,
+          ul.api_key_id,
+          ul.user_id,
+          ul.account_id,
+          ul.account_type,
+          ul.model,
+          ul.input_tokens,
+          ul.output_tokens,
+          ul.cache_create_tokens,
+          ul.cache_read_tokens,
+          ul.ephemeral_5m_tokens,
+          ul.ephemeral_1h_tokens,
+          ul.total_tokens,
+          ul.cost,
+          ul.cost_breakdown,
+          ul.is_long_context,
+          ul.usage_timestamp,
+          ul.created_at,
+          ak.name AS api_key_name
+        FROM usage_logs ul
+        LEFT JOIN api_keys ak ON ak.id = ul.api_key_id
+        ${whereClause}
+        ORDER BY ul.usage_timestamp DESC
+        LIMIT ${limitNum} OFFSET ${offsetNum}
+      `
+
+      const rows = (await mysqlService.query(dataSql, params)) || []
+
+      const summarySql = `
+        SELECT
+          COUNT(1) AS total,
+          COALESCE(SUM(ul.cost), 0) AS totalCost,
+          COALESCE(SUM(ul.total_tokens), 0) AS totalTokens,
+          COALESCE(SUM(ul.input_tokens), 0) AS totalInputTokens,
+          COALESCE(SUM(ul.output_tokens), 0) AS totalOutputTokens,
+          COALESCE(SUM(ul.cache_create_tokens), 0) AS totalCacheCreateTokens,
+          COALESCE(SUM(ul.cache_read_tokens), 0) AS totalCacheReadTokens
+        FROM usage_logs ul
+        ${whereClause}
+      `
+
+      const summaryRows = await mysqlService.query(summarySql, params)
+      const summaryRow = summaryRows && summaryRows.length ? summaryRows[0] : null
+
+      const parseJson = (value) => {
+        if (!value) {
+          return null
+        }
+        if (typeof value === 'object') {
+          return value
+        }
+        try {
+          return JSON.parse(value)
+        } catch (error) {
+          logger.warn('⚠️ Failed to parse cost breakdown JSON:', error)
+          return null
+        }
+      }
+
+      const records = rows.map((row) => ({
+        id: row.id,
+        requestId: row.request_id,
+        apiKeyId: row.api_key_id,
+        apiKeyName: row.api_key_name || null,
+        userId: row.user_id,
+        accountId: row.account_id,
+        accountType: row.account_type,
+        model: row.model,
+        inputTokens: Number(row.input_tokens) || 0,
+        outputTokens: Number(row.output_tokens) || 0,
+        cacheCreateTokens: Number(row.cache_create_tokens) || 0,
+        cacheReadTokens: Number(row.cache_read_tokens) || 0,
+        ephemeral5mTokens: Number(row.ephemeral_5m_tokens) || 0,
+        ephemeral1hTokens: Number(row.ephemeral_1h_tokens) || 0,
+        totalTokens: Number(row.total_tokens) || 0,
+        cost: Number(row.cost) || 0,
+        costBreakdown: parseJson(row.cost_breakdown),
+        isLongContext: Boolean(row.is_long_context),
+        usageTimestamp: row.usage_timestamp,
+        createdAt: row.created_at
+      }))
+
+      return {
+        records,
+        total: summaryRow?.total || 0,
+        summary: summaryRow
+          ? {
+              totalCost: Number(summaryRow.totalCost) || 0,
+              totalTokens: Number(summaryRow.totalTokens) || 0,
+              totalInputTokens: Number(summaryRow.totalInputTokens) || 0,
+              totalOutputTokens: Number(summaryRow.totalOutputTokens) || 0,
+              totalCacheCreateTokens: Number(summaryRow.totalCacheCreateTokens) || 0,
+              totalCacheReadTokens: Number(summaryRow.totalCacheReadTokens) || 0
+            }
+          : emptySummary
+      }
+    } catch (error) {
+      logger.error('❌ Failed to query usage logs list:', error)
+      return {
+        records: [],
+        total: 0,
+        summary: emptySummary
+      }
+    }
+  }
+
+  /**
    * 查询完整日志（请求+响应+使用统计）
    * @param {string} requestId - 请求ID
    */
