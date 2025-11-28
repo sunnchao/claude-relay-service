@@ -8,6 +8,15 @@ class ApiStatsClient {
     this.isDev = import.meta.env.DEV
   }
 
+  getAdminToken() {
+    try {
+      return localStorage.getItem('authToken') || ''
+    } catch (error) {
+      console.warn('Unable to read auth token for API stats:', error)
+      return ''
+    }
+  }
+
   async request(url, options = {}) {
     try {
       // 在开发环境中，为 /admin 路径添加 /webapi 前缀
@@ -15,12 +24,20 @@ class ApiStatsClient {
         url = '/webapi' + url
       }
 
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      }
+
+      const token = this.getAdminToken()
+      if (token && !headers.Authorization) {
+        headers.Authorization = `Bearer ${token}`
+      }
+
       const response = await fetch(`${this.baseURL}${url}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers
-        },
-        ...options
+        credentials: options.credentials || 'same-origin',
+        ...options,
+        headers
       })
 
       const data = await response.json()
@@ -94,11 +111,22 @@ class ApiStatsClient {
   }
 
   // 获取使用日志
-  async getUsageLogs({ apiId, apiKey, limit = 50, offset = 0 }) {
-    const payload = {
-      limit,
-      offset
-    }
+  async getUsageLogs(options = {}) {
+    const { apiId, apiKey, limit, offset, params = {} } = options
+    const payload = { ...params }
+
+    payload.limit =
+      typeof limit !== 'undefined'
+        ? limit
+        : typeof payload.limit !== 'undefined'
+          ? payload.limit
+          : 50
+    payload.offset =
+      typeof offset !== 'undefined'
+        ? offset
+        : typeof payload.offset !== 'undefined'
+          ? payload.offset
+          : 0
 
     if (apiId) {
       payload.apiId = apiId

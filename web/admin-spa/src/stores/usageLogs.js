@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { apiClient } from '@/config/api'
+import { apiStatsClient } from '@/config/apiStats.js'
 import { showToast } from '@/utils/toast'
 
 const defaultSummary = () => ({
@@ -82,7 +82,7 @@ export const useUsageLogsStore = defineStore('usageLogs', () => {
     loading.value = true
     error.value = ''
     try {
-      const response = await apiClient.get('/admin/usage-logs', { params: buildParams() })
+      const response = await apiStatsClient.getUsageLogs({ params: buildParams() })
 
       if (response.success) {
         logs.value = response.data.records || []

@@ -5,8 +5,76 @@ const apiKeyService = require('../services/apiKeyService')
 const CostCalculator = require('../utils/costCalculator')
 const claudeAccountService = require('../services/claudeAccountService')
 const openaiAccountService = require('../services/openaiAccountService')
+const requestLogService = require('../services/requestLogService')
 
 const router = express.Router()
+
+const getCookieValue = (req, name) => {
+  if (req.cookies && req.cookies[name]) {
+    return req.cookies[name]
+  }
+
+  const cookieHeader = req.headers?.cookie
+  if (!cookieHeader) {
+    return null
+  }
+
+  for (const cookie of cookieHeader.split(';')) {
+    const [key, ...rest] = cookie.trim().split('=')
+    if (key === name) {
+      return rest.join('=')
+    }
+  }
+
+  return null
+}
+
+const resolveAdminSession = async (req) => {
+  try {
+    const authHeader = req.headers['authorization']
+    let token = req.headers['x-admin-token']
+
+    if (!token && typeof authHeader === 'string') {
+      const trimmed = authHeader.trim()
+      if (trimmed) {
+        token = trimmed.replace(/^Bearer\s+/i, '').trim()
+      }
+    }
+
+    if (!token) {
+      const cookieToken = getCookieValue(req, 'adminToken')
+      if (cookieToken) {
+        token = cookieToken
+      }
+    }
+
+    if (!token || token.length < 16) {
+      return null
+    }
+
+    const session = await redis.getSession(token)
+    if (session && session.username) {
+      return {
+        username: session.username,
+        sessionId: token
+      }
+    }
+
+    return null
+  } catch (error) {
+    logger.debug('⚠️ Failed to resolve admin session for usage logs:', error.message)
+    return null
+  }
+}
+
+const sanitizeFilterValue = (value) => {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  const trimmed = value.trim()
+  return trimmed || undefined
+}
 
 // 🏠 重定向页面请求到新版 admin-spa
 router.get('/', (req, res) => {
@@ -1227,6 +1295,70 @@ router.post('/api/user-model-stats', async (req, res) => {
 router.post('/api/usage-logs', async (req, res) => {
   try {
     const { apiKey, apiId, limit = 50, offset = 0 } = req.body
+    const limitNum = Math.min(Math.max(1, parseInt(limit) || 50), 200)
+    const offsetNum = Math.max(0, parseInt(offset) || 0)
+    const adminSession = await resolveAdminSession(req)
+
+    if (adminSession && !apiKey) {
+      const {
+        apiKeyId,
+        userId,
+        accountId,
+        accountType,
+        model,
+        search,
+        startDate,
+        endDate,
+        isLongContext
+      } = req.body
+
+      const filters = {
+        apiKeyId: sanitizeFilterValue(apiKeyId) || sanitizeFilterValue(apiId),
+        userId: sanitizeFilterValue(userId),
+        accountId: sanitizeFilterValue(accountId),
+        accountType: sanitizeFilterValue(accountType),
+        model: sanitizeFilterValue(model),
+        search: sanitizeFilterValue(search),
+        startDate: sanitizeFilterValue(startDate),
+        endDate: sanitizeFilterValue(endDate)
+      }
+
+      if (typeof isLongContext === 'boolean') {
+        filters.isLongContext = isLongContext
+      }
+
+      logger.api(
+        `📜 Admin usage logs query by ${adminSession.username} - limit: ${limitNum}, offset: ${offsetNum}`
+      )
+
+      const usageResult = await requestLogService.queryUsageLogs(filters, limitNum, offsetNum)
+      const summaryData = usageResult.summary || {
+        totalCost: 0,
+        totalTokens: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalCacheCreateTokens: 0,
+        totalCacheReadTokens: 0
+      }
+
+      return res.json({
+        success: true,
+        data: {
+          mode: 'admin',
+          records: usageResult.records || [],
+          pagination: {
+            total: usageResult.total || 0,
+            limit: limitNum,
+            offset: offsetNum,
+            hasMore: offsetNum + limitNum < (usageResult.total || 0)
+          },
+          summary: {
+            ...summaryData,
+            formattedCost: CostCalculator.formatCost(summaryData.totalCost || 0)
+          }
+        }
+      })
+    }
 
     let keyData
     let keyId
@@ -1307,12 +1439,8 @@ router.post('/api/usage-logs', async (req, res) => {
     }
 
     logger.api(
-      `📜 Usage logs query from key: ${keyData.name} (${keyId}) - limit: ${limit}, offset: ${offset}`
+      `📜 Usage logs query from key: ${keyData.name} (${keyId}) - limit: ${limitNum}, offset: ${offsetNum}`
     )
-
-    // 参数验证
-    const limitNum = Math.min(Math.max(1, parseInt(limit) || 50), 200)
-    const offsetNum = Math.max(0, parseInt(offset) || 0)
 
     // 获取使用记录 - Redis 中已经存储了最近的记录
     const allRecords = await redis.getUsageRecords(keyId, 200)
