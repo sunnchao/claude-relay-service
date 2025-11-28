@@ -165,6 +165,14 @@ class ApiKeyService {
     // 保存API Key数据并建立哈希映射
     await redis.setApiKey(keyId, keyData, hashedKey)
 
+    // 同步添加到费用排序索引
+    try {
+      const costRankService = require('./costRankService')
+      await costRankService.addKeyToIndexes(keyId)
+    } catch (err) {
+      logger.warn(`Failed to add key ${keyId} to cost rank indexes:`, err.message)
+    }
+
     // 保存到 MySQL
     try {
       const sql = `
@@ -883,6 +891,14 @@ class ApiKeyService {
         await redis.deleteApiKeyHash(keyData.apiKey)
       }
 
+      // 从费用排序索引中移除
+      try {
+        const costRankService = require('./costRankService')
+        await costRankService.removeKeyFromIndexes(keyId)
+      } catch (err) {
+        logger.warn(`Failed to remove key ${keyId} from cost rank indexes:`, err.message)
+      }
+
       // 更新 MySQL
       try {
         const sql = `
@@ -953,6 +969,14 @@ class ApiKeyService {
           name: keyData.name,
           isActive: 'true'
         })
+      }
+
+      // 重新添加到费用排序索引
+      try {
+        const costRankService = require('./costRankService')
+        await costRankService.addKeyToIndexes(keyId)
+      } catch (err) {
+        logger.warn(`Failed to add restored key ${keyId} to cost rank indexes:`, err.message)
       }
 
       // 更新 MySQL
