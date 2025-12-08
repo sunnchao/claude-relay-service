@@ -1293,7 +1293,8 @@ class ApiKeyService {
     usageObject,
     model = 'unknown',
     accountId = null,
-    accountType = null
+    accountType = null,
+    accountName = null
   ) {
     try {
       // 提取 token 数量
@@ -1525,6 +1526,7 @@ class ApiKeyService {
           userId: keyData?.userId || null,
           accountId: accountId || null,
           accountType: accountType || null,
+          accountName: accountName || null,
           model,
           inputTokens,
           outputTokens,

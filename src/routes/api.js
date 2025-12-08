@@ -207,8 +207,8 @@ async function handleMessagesRequest(req, res) {
               const cacheReadTokens = usageData.cache_read_input_tokens || 0
               const model = usageData.model || 'unknown'
 
-              // 记录真实的token使用量（包含模型信息和所有4种token以及账户ID）
-              const { accountId: usageAccountId } = usageData
+              // 记录真实的token使用量（包含模型信息和所有4种token、账户ID和账户名称）
+              const { accountId: usageAccountId, accountName: usageAccountName } = usageData
 
               // 构建 usage 对象以传递给 recordUsage
               const usageObject = {
@@ -227,7 +227,14 @@ async function handleMessagesRequest(req, res) {
               }
 
               apiKeyService
-                .recordUsageWithDetails(req.apiKey.id, usageObject, model, usageAccountId, 'claude')
+                .recordUsageWithDetails(
+                  req.apiKey.id,
+                  usageObject,
+                  model,
+                  usageAccountId,
+                  'claude',
+                  usageAccountName
+                )
                 .catch((error) => {
                   logger.error('❌ Failed to record stream usage:', error)
                 })

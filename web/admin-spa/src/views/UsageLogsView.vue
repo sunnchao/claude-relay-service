@@ -210,6 +210,9 @@
                   </td>
                   <td>
                     <div class="flex flex-col text-xs">
+                      <span class="font-semibold text-gray-800 dark:text-gray-200">{{
+                        log.accountName || '未命名账户'
+                      }}</span>
                       <span class="uppercase tracking-wide text-gray-600 dark:text-gray-300">{{
                         log.accountType || '-'
                       }}</span>

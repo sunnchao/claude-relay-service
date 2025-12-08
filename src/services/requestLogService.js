@@ -138,6 +138,7 @@ class RequestLogService {
         userId,
         accountId,
         accountType,
+        accountName,
         model,
         inputTokens,
         outputTokens,
@@ -154,11 +155,11 @@ class RequestLogService {
 
       const sql = `
         INSERT INTO usage_logs (
-          request_id, api_key_id, user_id, account_id, account_type, model,
+          request_id, api_key_id, user_id, account_id, account_type, account_name, model,
           input_tokens, output_tokens, cache_create_tokens, cache_read_tokens,
           ephemeral_5m_tokens, ephemeral_1h_tokens, total_tokens,
           cost, cost_breakdown, is_long_context, usage_timestamp
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
 
       const params = [
@@ -167,6 +168,7 @@ class RequestLogService {
         userId || null,
         accountId || null,
         accountType || null,
+        accountName || null,
         model || null,
         inputTokens || 0,
         outputTokens || 0,
@@ -395,6 +397,7 @@ class RequestLogService {
           ul.user_id,
           ul.account_id,
           ul.account_type,
+          ul.account_name,
           ul.model,
           ul.input_tokens,
           ul.output_tokens,
@@ -457,6 +460,7 @@ class RequestLogService {
         userId: row.user_id,
         accountId: row.account_id,
         accountType: row.account_type,
+        accountName: row.account_name || null,
         model: row.model,
         inputTokens: Number(row.input_tokens) || 0,
         outputTokens: Number(row.output_tokens) || 0,

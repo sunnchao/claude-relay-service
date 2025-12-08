@@ -1209,9 +1209,9 @@ class ClaudeRelayService {
         clientHeaders,
         responseStream,
         (usageData) => {
-          // 在usageCallback中添加accountId
+          // 在usageCallback中添加accountId和accountName
           if (usageCallback && typeof usageCallback === 'function') {
-            usageCallback({ ...usageData, accountId })
+            usageCallback({ ...usageData, accountId, accountName: account?.name || null })
           }
         },
         accountId,

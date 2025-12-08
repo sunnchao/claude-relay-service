@@ -1228,9 +1228,17 @@ class DroidRelayService {
     try {
       const keyId = apiKeyData?.id
       const accountId = this._extractAccountId(account)
+      const accountName = account?.name || null
 
       if (keyId) {
-        await apiKeyService.recordUsageWithDetails(keyId, usageObject, model, accountId, 'droid')
+        await apiKeyService.recordUsageWithDetails(
+          keyId,
+          usageObject,
+          model,
+          accountId,
+          'droid',
+          accountName
+        )
       } else if (accountId) {
         await redis.incrementAccountUsage(
           accountId,

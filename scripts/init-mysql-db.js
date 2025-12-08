@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS usage_logs (
   user_id VARCHAR(64) DEFAULT NULL COMMENT '用户ID',
   account_id VARCHAR(64) DEFAULT NULL COMMENT '账户ID',
   account_type VARCHAR(32) DEFAULT NULL COMMENT '账户类型',
+  account_name VARCHAR(255) DEFAULT NULL COMMENT '账户名称',
   model VARCHAR(128) DEFAULT NULL COMMENT '使用的模型',
   input_tokens INT DEFAULT 0 COMMENT '输入 tokens',
   output_tokens INT DEFAULT 0 COMMENT '输出 tokens',
