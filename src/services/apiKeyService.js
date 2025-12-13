@@ -185,7 +185,7 @@ class ApiKeyService {
     try {
       const sql = `
         INSERT INTO api_keys (
-          id, name, description, api_key_hash, token_limit, concurrency_limit,
+          id, name, description, api_key_hash, api_key_plain, token_limit, concurrency_limit,
           rate_limit_window, rate_limit_requests, rate_limit_cost, is_active,
           claude_account_id, claude_console_account_id, gemini_account_id,
           openai_account_id, azure_openai_account_id, bedrock_account_id,
@@ -194,13 +194,14 @@ class ApiKeyService {
           total_cost_limit, weekly_opus_cost_limit, tags, activation_days,
           activation_unit, expiration_mode, is_activated, activated_at,
           expires_at, created_by, user_id, user_username, icon, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
       const values = [
         keyData.id,
         keyData.name,
         keyData.description,
         keyData.apiKey, // hashedKey
+        apiKey, // 明文 API Key
         parseInt(keyData.tokenLimit),
         parseInt(keyData.concurrencyLimit),
         parseInt(keyData.rateLimitWindow),

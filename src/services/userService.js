@@ -1,12 +1,17 @@
 const redis = require('../models/redis')
 const crypto = require('crypto')
+const bcrypt = require('bcryptjs')
 const logger = require('../utils/logger')
 const config = require('../../config/config')
+
+// 密码哈希盐轮数
+const BCRYPT_SALT_ROUNDS = 12
 
 class UserService {
   constructor() {
     this.userPrefix = 'user:'
     this.usernamePrefix = 'username:'
+    this.emailPrefix = 'email:'
     this.userSessionPrefix = 'user_session:'
   }
 
@@ -18,6 +23,177 @@ class UserService {
   // 🔑 生成会话Token
   generateSessionToken() {
     return crypto.randomBytes(32).toString('hex')
+  }
+
+  // 🔐 哈希密码
+  async hashPassword(password) {
+    return bcrypt.hash(password, BCRYPT_SALT_ROUNDS)
+  }
+
+  // 🔐 验证密码
+  async verifyPassword(password, hash) {
+    return bcrypt.compare(password, hash)
+  }
+
+  // 👤 创建本地用户（含密码）
+  async createLocalUser(userData) {
+    try {
+      const {
+        username,
+        email,
+        password,
+        displayName,
+        role = config.userManagement.defaultUserRole
+      } = userData
+
+      // 检查用户名是否已存在
+      const existingUser = await this.getUserByUsername(username)
+      if (existingUser) {
+        throw new Error('Username already exists')
+      }
+
+      // 检查邮箱是否已存在
+      if (email) {
+        const existingEmail = await this.getUserByEmail(email)
+        if (existingEmail) {
+          throw new Error('Email already exists')
+        }
+      }
+
+      // 哈希密码
+      const passwordHash = await this.hashPassword(password)
+
+      const userId = this.generateUserId()
+      const user = {
+        id: userId,
+        username,
+        email: email || null,
+        displayName: displayName || username,
+        firstName: null,
+        lastName: null,
+        role,
+        isActive: true,
+        isLocalUser: true, // 标记为本地用户
+        passwordHash,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastLoginAt: null,
+        apiKeyCount: 0,
+        totalUsage: {
+          requests: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          totalCost: 0
+        }
+      }
+
+      // 保存用户信息
+      await redis.set(`${this.userPrefix}${userId}`, JSON.stringify(user))
+      await redis.set(`${this.usernamePrefix}${username}`, userId)
+      if (email) {
+        await redis.set(`${this.emailPrefix}${email.toLowerCase()}`, userId)
+      }
+
+      // 尝试转移匹配的API Keys
+      await this.transferMatchingApiKeys(user)
+
+      logger.info(`📝 Created local user: ${username} (${userId})`)
+
+      // 返回用户信息（不包含密码哈希）
+      const { passwordHash: _, ...safeUser } = user
+      return safeUser
+    } catch (error) {
+      logger.error('❌ Error creating local user:', error)
+      throw error
+    }
+  }
+
+  // 🔐 验证本地用户凭据
+  async validateLocalCredentials(username, password) {
+    try {
+      const user = await this.getUserByUsername(username)
+      if (!user) {
+        return { success: false, error: 'User not found' }
+      }
+
+      // 检查是否为本地用户
+      if (!user.isLocalUser || !user.passwordHash) {
+        return { success: false, error: 'Not a local user' }
+      }
+
+      // 检查用户是否被禁用
+      if (!user.isActive) {
+        return { success: false, error: 'User is disabled' }
+      }
+
+      // 验证密码
+      const isValid = await this.verifyPassword(password, user.passwordHash)
+      if (!isValid) {
+        return { success: false, error: 'Invalid password' }
+      }
+
+      // 返回用户信息（不包含密码哈希）
+      const { passwordHash: _, ...safeUser } = user
+      return { success: true, user: safeUser }
+    } catch (error) {
+      logger.error('❌ Error validating local credentials:', error)
+      return { success: false, error: 'Validation failed' }
+    }
+  }
+
+  // 👤 通过邮箱获取用户
+  async getUserByEmail(email) {
+    try {
+      if (!email) {
+        return null
+      }
+
+      const userId = await redis.get(`${this.emailPrefix}${email.toLowerCase()}`)
+      if (!userId) {
+        return null
+      }
+
+      const userData = await redis.get(`${this.userPrefix}${userId}`)
+      return userData ? JSON.parse(userData) : null
+    } catch (error) {
+      logger.error('❌ Error getting user by email:', error)
+      throw error
+    }
+  }
+
+  // 🔐 修改密码
+  async changePassword(userId, currentPassword, newPassword) {
+    try {
+      const userData = await redis.get(`${this.userPrefix}${userId}`)
+      if (!userData) {
+        throw new Error('User not found')
+      }
+
+      const user = JSON.parse(userData)
+
+      // 检查是否为本地用户
+      if (!user.isLocalUser || !user.passwordHash) {
+        throw new Error('Cannot change password for non-local user')
+      }
+
+      // 验证当前密码
+      const isValid = await this.verifyPassword(currentPassword, user.passwordHash)
+      if (!isValid) {
+        throw new Error('Current password is incorrect')
+      }
+
+      // 哈希新密码
+      user.passwordHash = await this.hashPassword(newPassword)
+      user.updatedAt = new Date().toISOString()
+
+      await redis.set(`${this.userPrefix}${userId}`, JSON.stringify(user))
+
+      logger.info(`🔐 Password changed for user: ${user.username} (${userId})`)
+      return true
+    } catch (error) {
+      logger.error('❌ Error changing password:', error)
+      throw error
+    }
   }
 
   // 👤 创建或更新用户
