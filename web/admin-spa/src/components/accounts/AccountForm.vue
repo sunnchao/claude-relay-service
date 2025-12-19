@@ -1513,6 +1513,48 @@
                 </p>
               </div>
 
+              <!-- 模型白名单配置 -->
+              <div>
+                <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                  >模型白名单 (可选)</label
+                >
+                <div class="mb-3 rounded-lg bg-teal-50 p-3 dark:bg-teal-900/30">
+                  <p class="text-xs text-teal-700 dark:text-teal-400">
+                    <i class="fas fa-info-circle mr-1" />
+                    选择允许使用此账户的模型。留空表示支持所有模型。
+                  </p>
+                </div>
+
+                <!-- 模型复选框列表 -->
+                <div class="mb-3 grid grid-cols-2 gap-2">
+                  <label
+                    v-for="model in openaiResponsesModels"
+                    :key="model.value"
+                    class="flex cursor-pointer items-center rounded-lg border p-3 transition-all hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                    :class="
+                      openaiResponsesAllowedModels.includes(model.value)
+                        ? 'border-teal-500 bg-teal-50 dark:border-teal-400 dark:bg-teal-900/30'
+                        : 'border-gray-300'
+                    "
+                  >
+                    <input
+                      v-model="openaiResponsesAllowedModels"
+                      class="mr-2 text-teal-600 focus:ring-teal-500"
+                      type="checkbox"
+                      :value="model.value"
+                    />
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                      model.label
+                    }}</span>
+                  </label>
+                </div>
+
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  已选择 {{ openaiResponsesAllowedModels.length }} 个模型
+                  <span v-if="openaiResponsesAllowedModels.length === 0">（支持所有模型）</span>
+                </p>
+              </div>
+
               <!-- 限流时长字段 - 隐藏不显示，使用默认值60 -->
               <input v-model.number="form.rateLimitDuration" type="hidden" value="60" />
             </div>
@@ -2016,6 +2058,54 @@
                   </li>
                 </ul>
               </div>
+            </div>
+
+            <!-- OpenAI 模型映射表 -->
+            <div v-if="form.platform === 'openai'">
+              <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                >模型映射表 (可选)</label
+              >
+              <div class="mb-3 rounded-lg bg-emerald-50 p-3 dark:bg-emerald-900/30">
+                <p class="text-xs text-emerald-700 dark:text-emerald-400">
+                  <i class="fas fa-info-circle mr-1" />
+                  留空表示支持所有模型且不修改请求。配置映射后，左侧模型会被识别为支持的模型，右侧是实际发送的模型。
+                </p>
+              </div>
+              <div class="mb-3 space-y-2">
+                <div
+                  v-for="(mapping, index) in modelMappingsOpenAI"
+                  :key="index"
+                  class="flex items-center gap-2"
+                >
+                  <input
+                    v-model="mapping.from"
+                    class="form-input flex-1 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                    placeholder="原始模型名称"
+                    type="text"
+                  />
+                  <i class="fas fa-arrow-right text-gray-400 dark:text-gray-500" />
+                  <input
+                    v-model="mapping.to"
+                    class="form-input flex-1 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                    placeholder="映射后的模型名称"
+                    type="text"
+                  />
+                  <button
+                    class="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                    type="button"
+                    @click="removeModelMappingOpenAI(index)"
+                  >
+                    <i class="fas fa-trash" />
+                  </button>
+                </div>
+              </div>
+              <button
+                class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-700 dark:border-gray-600 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-300"
+                type="button"
+                @click="addModelMappingOpenAI"
+              >
+                <i class="fas fa-plus mr-2" /> 添加模型映射
+              </button>
             </div>
 
             <!-- 代理设置 -->
@@ -3219,6 +3309,48 @@
                 限制该账户的并发请求数量，0 表示不限制
               </p>
             </div>
+
+            <!-- 模型白名单配置 -->
+            <div>
+              <label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+                >模型白名单 (可选)</label
+              >
+              <div class="mb-3 rounded-lg bg-teal-50 p-3 dark:bg-teal-900/30">
+                <p class="text-xs text-teal-700 dark:text-teal-400">
+                  <i class="fas fa-info-circle mr-1" />
+                  选择允许使用此账户的模型。留空表示支持所有模型。
+                </p>
+              </div>
+
+              <!-- 模型复选框列表 -->
+              <div class="mb-3 grid grid-cols-2 gap-2">
+                <label
+                  v-for="model in openaiResponsesModels"
+                  :key="model.value"
+                  class="flex cursor-pointer items-center rounded-lg border p-3 transition-all hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  :class="
+                    openaiResponsesAllowedModels.includes(model.value)
+                      ? 'border-teal-500 bg-teal-50 dark:border-teal-400 dark:bg-teal-900/30'
+                      : 'border-gray-300'
+                  "
+                >
+                  <input
+                    v-model="openaiResponsesAllowedModels"
+                    class="mr-2 text-teal-600 focus:ring-teal-500"
+                    type="checkbox"
+                    :value="model.value"
+                  />
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                    model.label
+                  }}</span>
+                </label>
+              </div>
+
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                已选择 {{ openaiResponsesAllowedModels.length }} 个模型
+                <span v-if="openaiResponsesAllowedModels.length === 0">（支持所有模型）</span>
+              </p>
+            </div>
           </div>
 
           <!-- Gemini API 特定字段（编辑模式）-->
@@ -4043,8 +4175,23 @@ const commonModels = [
   { value: 'GLM', label: 'GLM', color: 'teal' }
 ]
 
+// OpenAI-Responses 常用模型列表
+const openaiResponsesModels = [
+  { value: 'gpt-5-codex', label: 'gpt-5-codex', color: 'emerald' },
+  { value: 'gpt-5.1-codex', label: 'gpt-5.1-codex', color: 'emerald' },
+  { value: 'gpt-5.2-codex', label: 'gpt-5.2-codex', color: 'green' },
+  { value: 'gpt-5.2', label: 'gpt-5.2', color: 'blue' },
+  { value: 'gpt-5.1-codex-max', label: 'gpt-5.1-codex-max', color: 'blue' }
+]
+
+// OpenAI-Responses 白名单选中的模型列表
+const openaiResponsesAllowedModels = ref([])
+
 // 模型映射表数据
 const modelMappings = ref([])
+
+// OpenAI 模型映射表数据
+const modelMappingsOpenAI = ref([])
 
 // 初始化模型映射表
 const initModelMappings = () => {
@@ -4081,6 +4228,45 @@ const initModelMappings = () => {
         to: model
       }))
     }
+  }
+}
+
+// 初始化 OpenAI 模型映射表
+const initModelMappingsOpenAI = () => {
+  if (props.account?.platform === 'openai' && props.account?.supportedModels) {
+    // 如果是对象格式（映射表）
+    if (
+      typeof props.account.supportedModels === 'object' &&
+      !Array.isArray(props.account.supportedModels)
+    ) {
+      const entries = Object.entries(props.account.supportedModels)
+      modelMappingsOpenAI.value = entries.map(([from, to]) => ({ from, to }))
+    } else if (Array.isArray(props.account.supportedModels)) {
+      // 如果是数组格式（旧格式），转换为映射表（自映射）
+      modelMappingsOpenAI.value = props.account.supportedModels.map((model) => ({
+        from: model,
+        to: model
+      }))
+    }
+  }
+}
+
+// 初始化 OpenAI-Responses 白名单
+const initOpenAIResponsesAllowedModels = () => {
+  if (props.account?.platform === 'openai-responses' && props.account?.supportedModels) {
+    // 如果是对象格式（白名单映射表）
+    if (
+      typeof props.account.supportedModels === 'object' &&
+      !Array.isArray(props.account.supportedModels)
+    ) {
+      openaiResponsesAllowedModels.value = Object.keys(props.account.supportedModels)
+    } else if (Array.isArray(props.account.supportedModels)) {
+      // 如果是数组格式（旧格式）
+      openaiResponsesAllowedModels.value = props.account.supportedModels
+    }
+  } else {
+    // 如果没有设置，清空白名单
+    openaiResponsesAllowedModels.value = []
   }
 }
 
@@ -4694,6 +4880,16 @@ const handleOAuthSuccess = async (tokenInfoOrList) => {
       data.openaiOauth = tokenInfo.tokens || tokenInfo
       data.accountInfo = tokenInfo.accountInfo
       data.priority = form.value.priority || 50
+      // 处理模型映射表
+      if (modelMappingsOpenAI.value.length > 0) {
+        const mapping = {}
+        for (const m of modelMappingsOpenAI.value) {
+          const from = (m.from || '').trim()
+          const to = (m.to || '').trim()
+          if (from && to) mapping[from] = to
+        }
+        data.supportedModels = mapping
+      }
     } else if (currentPlatform === 'droid') {
       const rawTokens = tokenInfo.tokens || tokenInfo || {}
 
@@ -5054,6 +5250,16 @@ const createAccount = async () => {
       data.needsImmediateRefresh = true
       data.requireRefreshSuccess = true // 必须刷新成功才能创建账户
       data.priority = form.value.priority || 50
+      // 处理模型映射表
+      if (modelMappingsOpenAI.value.length > 0) {
+        const mapping = {}
+        for (const m of modelMappingsOpenAI.value) {
+          const from = (m.from || '').trim()
+          const to = (m.to || '').trim()
+          if (from && to) mapping[from] = to
+        }
+        data.supportedModels = mapping
+      }
     } else if (form.value.platform === 'droid') {
       data.priority = form.value.priority || 50
       data.endpointType = form.value.endpointType || 'anthropic'
@@ -5104,6 +5310,7 @@ const createAccount = async () => {
       data.rateLimitDuration = 60 // 默认值60，不从用户输入获取
       data.dailyQuota = form.value.dailyQuota || 0
       data.quotaResetTime = form.value.quotaResetTime || '00:00'
+      data.supportedModels = convertOpenAIResponsesMappingsToObject() || {}
     } else if (form.value.platform === 'gemini-api') {
       // Gemini API 账户特定数据
       data.baseUrl = form.value.baseUrl || 'https://generativelanguage.googleapis.com'
@@ -5400,6 +5607,19 @@ const updateAccount = async () => {
     // OpenAI 账号优先级更新
     if (props.account.platform === 'openai') {
       data.priority = form.value.priority || 50
+      // 处理模型映射表
+      if (modelMappingsOpenAI.value.length > 0) {
+        const mapping = {}
+        for (const m of modelMappingsOpenAI.value) {
+          const from = (m.from || '').trim()
+          const to = (m.to || '').trim()
+          if (from && to) mapping[from] = to
+        }
+        data.supportedModels = mapping
+      } else {
+        // 如果映射表为空，设置为空对象（支持所有模型）
+        data.supportedModels = {}
+      }
     }
 
     // Gemini 账号优先级更新
@@ -5438,6 +5658,7 @@ const updateAccount = async () => {
       // 编辑时不上传 rateLimitDuration，保持原值
       data.dailyQuota = form.value.dailyQuota || 0
       data.quotaResetTime = form.value.quotaResetTime || '00:00'
+      data.supportedModels = convertOpenAIResponsesMappingsToObject() || {}
     }
 
     // Bedrock 特定更新
@@ -5902,6 +6123,16 @@ const removeModelMapping = (index) => {
   modelMappings.value.splice(index, 1)
 }
 
+// 添加 OpenAI 模型映射
+const addModelMappingOpenAI = () => {
+  modelMappingsOpenAI.value.push({ from: '', to: '' })
+}
+
+// 移除 OpenAI 模型映射
+const removeModelMappingOpenAI = (index) => {
+  modelMappingsOpenAI.value.splice(index, 1)
+}
+
 // 添加预设映射
 const addPresetMapping = (from, to) => {
   // 检查是否已存在相同的映射
@@ -5936,12 +6167,25 @@ const convertMappingsToObject = () => {
   return Object.keys(mapping).length > 0 ? mapping : null
 }
 
+// 将 OpenAI-Responses 白名单转换为对象格式
+const convertOpenAIResponsesMappingsToObject = () => {
+  const mapping = {}
+
+  // OpenAI-Responses 只支持白名单模式
+  openaiResponsesAllowedModels.value.forEach((model) => {
+    mapping[model] = model
+  })
+
+  return Object.keys(mapping).length > 0 ? mapping : null
+}
+
 // 监听账户变化，更新表单
 watch(
   () => props.account,
   (newAccount) => {
     if (newAccount) {
       initModelMappings()
+      initOpenAIResponsesAllowedModels()
       // 重新初始化代理配置
       const proxyConfig = normalizeProxyFormState(newAccount.proxy)
       const normalizedAuthMethod =
@@ -6240,6 +6484,8 @@ onMounted(() => {
   // 初始化模型映射表（如果是编辑模式）
   if (isEdit.value) {
     initModelMappings()
+    initModelMappingsOpenAI()
+    initOpenAIResponsesAllowedModels()
   }
 
   // 获取Claude Code统一User-Agent信息

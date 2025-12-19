@@ -266,63 +266,63 @@ class Application {
       }
 
       // 🎨 客户端SPA静态文件服务（用户端界面和Landing Page）
-      const clientSpaPath = path.join(__dirname, '..', 'web', 'client-spa', 'dist')
-      if (fs.existsSync(clientSpaPath)) {
-        // 处理不带斜杠的路径，重定向到带斜杠的路径
-        this.app.get('/client', (req, res) => {
-          res.redirect(301, '/client/')
-        })
-
-        // 客户端SPA根路径
-        this.app.get('/client/', (req, res) => {
-          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-          res.sendFile(path.join(clientSpaPath, 'index.html'))
-        })
-
-        // 处理所有其他 /client/* 路径
-        this.app.get('/client/*', (req, res) => {
-          if (req.path === '/client/') {
-            return res.status(500).send('Route configuration error')
-          }
-
-          const requestPath = req.path.replace('/client/', '')
-
-          // 安全检查
-          if (
-            requestPath.includes('..') ||
-            requestPath.includes('//') ||
-            requestPath.includes('\\')
-          ) {
-            return res.status(400).json({ error: 'Invalid path' })
-          }
-
-          // 检查是否为静态资源
-          const filePath = path.join(clientSpaPath, requestPath)
-
-          // 如果文件存在且是静态资源
-          if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-            // 设置缓存头
-            if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
-              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
-            } else if (filePath.endsWith('.html')) {
-              res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-            }
-            return res.sendFile(filePath)
-          }
-
-          // 如果是静态资源但文件不存在
-          if (requestPath.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf)$/i)) {
-            return res.status(404).send('Not found')
-          }
-
-          // 其他所有路径返回 index.html（SPA 路由）
-          res.sendFile(path.join(clientSpaPath, 'index.html'))
-        })
-
-        logger.info('✅ Client SPA static files mounted at /client/')
-      } else {
-        logger.warn('⚠️ Client SPA dist directory not found, skipping /client route')
-      }
+      // const clientSpaPath = path.join(__dirname, '..', 'web', 'client-spa', 'dist')
+      // if (fs.existsSync(clientSpaPath)) {
+      //   // 处理不带斜杠的路径，重定向到带斜杠的路径
+      //   this.app.get('/client', (req, res) => {
+      //     res.redirect(301, '/client/')
+      //   })
+      //
+      //   // 客户端SPA根路径
+      //   this.app.get('/client/', (req, res) => {
+      //     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      //     res.sendFile(path.join(clientSpaPath, 'index.html'))
+      //   })
+      //
+      //   // 处理所有其他 /client/* 路径
+      //   this.app.get('/client/*', (req, res) => {
+      //     if (req.path === '/client/') {
+      //       return res.status(500).send('Route configuration error')
+      //     }
+      //
+      //     const requestPath = req.path.replace('/client/', '')
+      //
+      //     // 安全检查
+      //     if (
+      //       requestPath.includes('..') ||
+      //       requestPath.includes('//') ||
+      //       requestPath.includes('\\')
+      //     ) {
+      //       return res.status(400).json({ error: 'Invalid path' })
+      //     }
+      //
+      //     // 检查是否为静态资源
+      //     const filePath = path.join(clientSpaPath, requestPath)
+      //
+      //     // 如果文件存在且是静态资源
+      //     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      //       // 设置缓存头
+      //       if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      //         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+      //       } else if (filePath.endsWith('.html')) {
+      //         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      //       }
+      //       return res.sendFile(filePath)
+      //     }
+      //
+      //     // 如果是静态资源但文件不存在
+      //     if (requestPath.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf)$/i)) {
+      //       return res.status(404).send('Not found')
+      //     }
+      //
+      //     // 其他所有路径返回 index.html（SPA 路由）
+      //     res.sendFile(path.join(clientSpaPath, 'index.html'))
+      //   })
+      //
+      //   logger.info('✅ Client SPA static files mounted at /client/')
+      // } else {
+      //   logger.warn('⚠️ Client SPA dist directory not found, skipping /client route')
+      // }
 
       // 🛣️ 路由
       this.app.use('/api', apiRoutes)
@@ -347,7 +347,8 @@ class Application {
 
       // 🏠 根路径重定向到客户端Landing Page
       this.app.get('/', (req, res) => {
-        res.redirect('/client/')
+        res.redirect('/admin-next/api-stats')
+        // res.redirect('/client/')
       })
 
       // 🏥 增强的健康检查端点

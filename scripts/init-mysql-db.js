@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
   name VARCHAR(255) NOT NULL COMMENT 'API Key 名称',
   description TEXT DEFAULT NULL COMMENT '描述',
   api_key_hash VARCHAR(255) NOT NULL COMMENT 'API Key 哈希值',
+  api_key_plain VARCHAR(255) DEFAULT NULL COMMENT 'API Key 明文',
   token_limit BIGINT DEFAULT 0 COMMENT 'Token 限制',
   concurrency_limit INT DEFAULT 0 COMMENT '并发限制',
   rate_limit_window INT DEFAULT 0 COMMENT '速率限制窗口(分钟)',

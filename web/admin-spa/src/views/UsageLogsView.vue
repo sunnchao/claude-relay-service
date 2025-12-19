@@ -194,17 +194,17 @@
                   </td>
                   <td class="text-right">
                     <span v-if="log.cacheCreateTokens" class="cache-badge">{{
-                      formatNumber(log.cacheCreateTokens)
+                      log.cacheCreateTokens
                     }}</span>
                     <span v-else class="text-gray-400">-</span>
                   </td>
                   <td class="text-right">
                     <span v-if="log.cacheReadTokens" class="cache-badge">{{
-                      formatNumber(log.cacheReadTokens)
+                      log.cacheReadTokens
                     }}</span>
                     <span v-else class="text-gray-400">-</span>
                   </td>
-                  <td class="text-right font-semibold">{{ formatNumber(log.totalTokens) }}</td>
+                  <td class="text-right font-semibold">{{ log.totalTokens }}</td>
                   <td class="text-right">
                     <span class="cost-badge">{{ formatCost(log.cost) }}</span>
                   </td>

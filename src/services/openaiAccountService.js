@@ -590,6 +590,10 @@ async function createAccount(accountData) {
       typeof accountData.proxy === 'string' ? accountData.proxy : JSON.stringify(accountData.proxy)
   }
 
+  // 处理 supportedModels，确保向后兼容
+  const processedModels = processModelMapping(accountData.supportedModels || [])
+  account.supportedModels = JSON.stringify(processedModels)
+
   const client = redisClient.getClientSafe()
   await client.hset(`${OPENAI_ACCOUNT_KEY_PREFIX}${accountId}`, account)
 
@@ -680,6 +684,17 @@ async function getAccount(accountId) {
     }
   }
 
+  // 解析 supportedModels
+  if (accountData.supportedModels) {
+    try {
+      accountData.supportedModels = JSON.parse(accountData.supportedModels)
+    } catch (e) {
+      accountData.supportedModels = {}
+    }
+  } else {
+    accountData.supportedModels = {}
+  }
+
   return accountData
 }
 
@@ -717,6 +732,12 @@ async function updateAccount(accountId, updates) {
   if (updates.proxy) {
     updates.proxy =
       typeof updates.proxy === 'string' ? updates.proxy : JSON.stringify(updates.proxy)
+  }
+
+  // 处理 supportedModels
+  if (updates.supportedModels !== undefined) {
+    const processedModels = processModelMapping(updates.supportedModels)
+    updates.supportedModels = JSON.stringify(processedModels)
   }
 
   // ✅ 如果通过路由映射更新了 subscriptionExpiresAt，直接保存
@@ -875,6 +896,17 @@ async function getAllAccounts() {
           // 如果解析失败，设置为null
           accountData.proxy = null
         }
+      }
+
+      // 解析 supportedModels
+      if (accountData.supportedModels) {
+        try {
+          accountData.supportedModels = JSON.parse(accountData.supportedModels)
+        } catch (e) {
+          accountData.supportedModels = {}
+        }
+      } else {
+        accountData.supportedModels = {}
       }
 
       const tokenExpiresAt = accountData.expiresAt || null
@@ -1341,6 +1373,79 @@ async function updateCodexUsageSnapshot(accountId, usageSnapshot) {
   await client.hset(`${OPENAI_ACCOUNT_KEY_PREFIX}${accountId}`, updates)
 }
 
+// 🔄 处理模型映射
+function processModelMapping(supportedModels) {
+  // 如果是空值，返回空对象（支持所有模型）
+  if (!supportedModels || (Array.isArray(supportedModels) && supportedModels.length === 0)) {
+    return {}
+  }
+
+  // 如果已经是对象格式（新的映射表格式），直接返回
+  if (typeof supportedModels === 'object' && !Array.isArray(supportedModels)) {
+    return supportedModels
+  }
+
+  // 如果是数组格式（旧格式），转换为映射表
+  if (Array.isArray(supportedModels)) {
+    const mapping = {}
+    supportedModels.forEach((model) => {
+      if (model && typeof model === 'string') {
+        mapping[model] = model // 默认映射：原模型名 -> 原模型名
+      }
+    })
+    return mapping
+  }
+
+  return {}
+}
+
+// 🔍 检查模型是否被支持
+function isModelSupported(modelMapping, requestedModel) {
+  // 如果映射表为空，支持所有模型
+  if (!modelMapping || Object.keys(modelMapping).length === 0) {
+    return true
+  }
+
+  // 检查请求的模型是否在映射表的键中（精确匹配）
+  if (Object.prototype.hasOwnProperty.call(modelMapping, requestedModel)) {
+    return true
+  }
+
+  // 尝试大小写不敏感匹配
+  const requestedModelLower = requestedModel.toLowerCase()
+  for (const key of Object.keys(modelMapping)) {
+    if (key.toLowerCase() === requestedModelLower) {
+      return true
+    }
+  }
+
+  return false
+}
+
+// 🔄 获取映射后的模型名称
+function getMappedModel(modelMapping, requestedModel) {
+  // 如果映射表为空，返回原模型
+  if (!modelMapping || Object.keys(modelMapping).length === 0) {
+    return requestedModel
+  }
+
+  // 精确匹配
+  if (modelMapping[requestedModel]) {
+    return modelMapping[requestedModel]
+  }
+
+  // 大小写不敏感匹配
+  const requestedModelLower = requestedModel.toLowerCase()
+  for (const [key, value] of Object.entries(modelMapping)) {
+    if (key.toLowerCase() === requestedModelLower) {
+      return value
+    }
+  }
+
+  // 没有找到映射，返回原模型
+  return requestedModel
+}
+
 module.exports = {
   createAccount,
   getAccount,
@@ -1362,5 +1467,8 @@ module.exports = {
   encrypt,
   decrypt,
   generateEncryptionKey,
-  decryptCache // 暴露缓存对象以便测试和监控
+  decryptCache, // 暴露缓存对象以便测试和监控
+  processModelMapping,
+  isModelSupported,
+  getMappedModel
 }

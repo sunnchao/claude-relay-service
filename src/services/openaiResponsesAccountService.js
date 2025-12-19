@@ -49,7 +49,8 @@ class OpenAIResponsesAccountService {
       schedulable = true, // 是否可被调度
       dailyQuota = 0, // 每日额度限制（美元），0表示不限制
       quotaResetTime = '00:00', // 额度重置时间（HH:mm格式）
-      rateLimitDuration = 60 // 限流时间（分钟）
+      rateLimitDuration = 60, // 限流时间（分钟）
+      supportedModels = [] // 支持的模型列表，空数组表示支持所有模型
     } = options
 
     // 验证必填字段
@@ -93,7 +94,9 @@ class OpenAIResponsesAccountService {
       dailyUsage: '0',
       lastResetDate: redis.getDateStringInTimezone(),
       quotaResetTime,
-      quotaStoppedAt: ''
+      quotaStoppedAt: '',
+      // 模型限制
+      supportedModels: JSON.stringify(supportedModels)
     }
 
     // 保存到 Redis
@@ -129,6 +132,17 @@ class OpenAIResponsesAccountService {
       }
     }
 
+    // 解析 supportedModels
+    if (accountData.supportedModels) {
+      try {
+        accountData.supportedModels = JSON.parse(accountData.supportedModels)
+      } catch (e) {
+        accountData.supportedModels = []
+      }
+    } else {
+      accountData.supportedModels = []
+    }
+
     return accountData
   }
 
@@ -147,6 +161,11 @@ class OpenAIResponsesAccountService {
     // 处理 JSON 字段
     if (updates.proxy !== undefined) {
       updates.proxy = updates.proxy ? JSON.stringify(updates.proxy) : ''
+    }
+
+    // 处理 supportedModels
+    if (updates.supportedModels !== undefined) {
+      updates.supportedModels = JSON.stringify(updates.supportedModels || [])
     }
 
     // 规范化 baseApi
@@ -250,6 +269,17 @@ class OpenAIResponsesAccountService {
               } catch (e) {
                 accountData.proxy = null
               }
+            }
+
+            // 解析 supportedModels
+            if (accountData.supportedModels) {
+              try {
+                accountData.supportedModels = JSON.parse(accountData.supportedModels)
+              } catch (e) {
+                accountData.supportedModels = []
+              }
+            } else {
+              accountData.supportedModels = []
             }
 
             // 获取限流状态信息（与普通OpenAI账号保持一致的格式）
